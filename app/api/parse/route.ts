@@ -4,44 +4,160 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `You are a commercial real estate data parser. Extract structured deal data from the provided CoStar report or listing data. Return a JSON object with these fields (use null for any field not found):
+const SYSTEM_PROMPT = `You are a commercial real estate data parser for CoStar reports. Extract structured deal data from the provided report. Return a JSON object with these fields. Use null for any field not found. Be aggressive about pulling out everything that's present.
 
 {
+  "property_id": string,
+  "property_name": string,
   "address": string,
-  "neighborhood": string,
   "city": string,
+  "state": string,
+  "zip": string,
+  "county": string,
+  "market": string,
   "submarket": string,
-  "zoning": string,
-  "year_built": number,
-  "stories": number,
+  "submarket_cluster": string,
+  "cbsa": string,
+  "dma": string,
+  "location_type": string,
+  "neighborhood": string,
+
+  "star_rating": number,
+  "property_class": "A" | "B" | "C",
+  "property_type": string,
+
   "unit_count": number,
-  "bedroom_mix": string,
   "building_sf": number,
-  "lot_size": string,
+  "avg_unit_size_sf": number,
+  "stories": number,
+  "typical_floor_sf": number,
+  "building_count": number,
+  "units_per_acre": number,
+  "year_built": number,
+  "year_renovated": number,
+  "construction": string,
+  "elevators": string,
+  "walk_up": boolean,
+  "metering": string,
+  "market_segment": string,
+  "rent_type": string,
+
+  "land_acres": number,
+  "land_sf": number,
+  "bldg_far": number,
+  "zoning": string,
   "apn": string,
-  "parking": string,
+
+  "status": "for_sale" | "sold" | "off_market",
   "list_price": number,
   "sale_price": number,
-  "price_per_door": number,
+  "price_per_unit": number,
   "price_per_sf": number,
   "cap_rate": number,
   "noi": number,
   "grm": number,
+  "sale_type": string,
+  "sale_date": string,
   "last_sale_date": string,
   "last_sale_price": number,
+
+  "sale_history": [
+    { "date": string, "type": string, "price": number, "units": number, "price_per_unit": number, "cap_rate": number, "buyer": string, "seller": string }
+  ],
+
+  "unit_mix": [
+    { "bed_type": string, "units": number, "avg_sf": number, "asking_rent_per_unit": number, "asking_rent_per_sf": number, "concessions_pct": number }
+  ],
+  "asking_rent_per_unit": number,
+  "asking_rent_per_sf": number,
+  "unit_mix_updated": string,
+
+  "vacancy_rate_subject": number,
+  "vacancy_rate_submarket": number,
+  "vacancy_rate_market": number,
+  "market_rent_subject": number,
+  "market_rent_submarket": number,
+  "market_rent_market": number,
+  "concessions_subject": number,
+  "concessions_submarket": number,
+  "concessions_market": number,
+  "under_construction_units_market": number,
+  "twelve_mo_sales_volume_submarket": number,
+  "market_sales_price_per_unit": number,
+
+  "pedestrian_score": number,
+  "cycling_score": number,
+  "car_score": number,
+  "transit_score": number,
+  "walk_score": number,
+  "bike_score": number,
+
+  "parking_spaces": string,
+  "parking_count": number,
+
+  "loan_amount": number,
+  "loan_origination_date": string,
+  "loan_maturity_date": string,
+  "lender": string,
+  "borrower": string,
+  "loan_type": string,
+  "loan_doc_number": string,
+
+  "recorded_owner": string,
+  "true_owner": string,
+  "owner_type": string,
+  "property_manager": string,
+  "property_manager_phone": string,
+  "property_manager_since": string,
+
+  "sale_broker": string,
   "broker_name": string,
   "broker_firm": string,
   "broker_phone": string,
   "broker_email": string,
   "broker_license": string,
   "mls_number": string,
-  "status": "for_sale" | "sold",
+
+  "assessed_total": number,
+  "assessed_improvements": number,
+  "assessed_land": number,
+  "assessment_year": number,
+  "annual_tax": number,
+  "tax_per_unit": number,
+  "tax_year": number,
+
+  "flood_risk_area": string,
+  "flood_zone": string,
+  "in_sfha": boolean,
+  "fema_map_id": string,
+  "fema_map_date": string,
+
+  "demographics_1mi": { "population": number, "households": number, "median_age": number, "median_hh_income": number, "daytime_employees": number, "population_growth_5y": number, "household_growth_5y": number },
+  "demographics_3mi": { "population": number, "households": number, "median_age": number, "median_hh_income": number, "daytime_employees": number, "population_growth_5y": number, "household_growth_5y": number },
+
+  "sale_highlights": string,
+  "building_notes": string,
+  "amenities": string[],
   "value_add_notes": string,
-  "soft_story_retrofit": boolean | null,
-  "capital_improvements": string
+  "capital_improvements": string,
+  "soft_story_retrofit": boolean,
+
+  "transit_stations": [ { "name": string, "type": string, "drive_min": number, "walk_min": number, "distance_mi": number } ],
+  "airports": [ { "name": string, "drive_min": number, "distance_mi": number } ]
 }
 
-Return only valid JSON, no explanation.`
+Notes:
+- For percentages, return as numbers (e.g., 5.21 not "5.21%").
+- For currency, return numeric values only (e.g., 8890000 not "$8.89M").
+- For "Taxes $X/Unit (YEAR)", set tax_per_unit, tax_year, and compute annual_tax = tax_per_unit * unit_count.
+- "Pedestrian Friendly", "Cycling Friendly", "Car Friendly", "Transit Friendly" map to pedestrian_score/cycling_score/car_score/transit_score (numeric only, drop the descriptive label).
+- For unit_mix, each row is a bedroom type. Use "Studio", "1", "2", "3" etc as bed_type.
+- Sale highlights: capture the bullet points as a single string with line breaks.
+- Building notes: capture the editorial narrative paragraphs.
+- Amenities: list of strings like ["Kitchen", "Views", "Oven"].
+- If a year_renovated isn't shown, leave null.
+
+Return only valid JSON, no explanation or markdown.`
 
 function parseResponse(text: string) {
   const raw = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
@@ -51,7 +167,6 @@ function parseResponse(text: string) {
 export async function POST(request: NextRequest) {
   const contentType = request.headers.get('content-type') || ''
 
-  // PDF upload
   if (contentType.includes('multipart/form-data')) {
     const formData = await request.formData()
     const file = formData.get('pdf') as File | null
@@ -65,7 +180,7 @@ export async function POST(request: NextRequest) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 8192,
       messages: [
         {
           role: 'user',
@@ -99,7 +214,6 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Text paste
   const { text } = await request.json()
 
   if (!text?.trim()) {
@@ -108,7 +222,7 @@ export async function POST(request: NextRequest) {
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
+    max_tokens: 8192,
     messages: [
       {
         role: 'user',
