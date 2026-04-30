@@ -8,7 +8,10 @@ type Deal = {
   address: string | null
   neighborhood: string | null
   city: string | null
+  submarket: string | null
+  zoning: string | null
   year_built: number | null
+  stories: number | null
   unit_count: number | null
   bedroom_mix: string | null
   building_sf: number | null
@@ -20,6 +23,7 @@ type Deal = {
   price_per_door: number | null
   price_per_sf: number | null
   cap_rate: number | null
+  noi: number | null
   grm: number | null
   last_sale_date: string | null
   last_sale_price: number | null
@@ -51,7 +55,9 @@ function Field({ label, value }: { label: string; value: string | number | boole
 }
 
 export default function DashboardPage() {
+  const [mode, setMode] = useState<'text' | 'pdf'>('pdf')
   const [text, setText] = useState('')
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [deal, setDeal] = useState<Deal | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -64,16 +70,23 @@ export default function DashboardPage() {
   }
 
   async function handleParse() {
-    if (!text.trim()) return
     setLoading(true)
     setError('')
     setDeal(null)
     try {
-      const res = await fetch('/api/parse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
+      let res: Response
+      if (mode === 'pdf' && pdfFile) {
+        const formData = new FormData()
+        formData.append('pdf', pdfFile)
+        res = await fetch('/api/parse', { method: 'POST', body: formData })
+      } else {
+        if (!text.trim()) return
+        res = await fetch('/api/parse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        })
+      }
       const data = await res.json()
       if (data.error) {
         setError(data.error)
@@ -87,6 +100,8 @@ export default function DashboardPage() {
     }
   }
 
+  const canParse = mode === 'pdf' ? !!pdfFile : !!text.trim()
+
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Header */}
@@ -99,18 +114,75 @@ export default function DashboardPage() {
 
         {/* Input */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#9A6B3F', marginBottom: 12 }}>Paste CoStar Export</div>
-          <textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder="Paste CoStar listing or export data here..."
-            rows={10}
-            style={{ width: '100%', padding: 16, border: '1px solid #ddd', borderRadius: 4, fontSize: 14, background: '#fff', resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
-          />
+          {/* Mode tabs */}
+          <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '1px solid #ddd' }}>
+            {(['pdf', 'text'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                style={{
+                  padding: '8px 20px',
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: mode === m ? '2px solid #111' : '2px solid transparent',
+                  color: mode === m ? '#111' : '#999',
+                  cursor: 'pointer',
+                  marginBottom: -1,
+                }}
+              >
+                {m === 'pdf' ? 'Upload CoStar PDF' : 'Paste Text'}
+              </button>
+            ))}
+          </div>
+
+          {mode === 'pdf' ? (
+            <div
+              onClick={() => document.getElementById('pdf-input')?.click()}
+              style={{
+                border: '2px dashed #ddd',
+                borderRadius: 4,
+                padding: '40px 24px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                background: pdfFile ? '#f9f9f9' : '#fff',
+              }}
+            >
+              <input
+                id="pdf-input"
+                type="file"
+                accept="application/pdf"
+                style={{ display: 'none' }}
+                onChange={e => setPdfFile(e.target.files?.[0] ?? null)}
+              />
+              {pdfFile ? (
+                <div>
+                  <div style={{ fontSize: 13, color: '#111', marginBottom: 4 }}>{pdfFile.name}</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>{(pdfFile.size / 1024).toFixed(0)} KB — click to replace</div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop CoStar PDF report here</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>Reports → Investment Package Report → Generate</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <textarea
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder="Paste CoStar listing or export data here..."
+              rows={10}
+              style={{ width: '100%', padding: 16, border: '1px solid #ddd', borderRadius: 4, fontSize: 14, background: '#fff', resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            />
+          )}
+
           <button
             onClick={handleParse}
-            disabled={loading || !text.trim()}
-            style={{ marginTop: 12, padding: '12px 28px', background: '#111', color: '#fff', border: 'none', borderRadius: 4, fontSize: 14, cursor: loading || !text.trim() ? 'not-allowed' : 'pointer', opacity: loading || !text.trim() ? 0.6 : 1 }}
+            disabled={loading || !canParse}
+            style={{ marginTop: 12, padding: '12px 28px', background: '#111', color: '#fff', border: 'none', borderRadius: 4, fontSize: 14, cursor: loading || !canParse ? 'not-allowed' : 'pointer', opacity: loading || !canParse ? 0.6 : 1 }}
           >
             {loading ? 'Parsing...' : 'Parse Deal'}
           </button>
@@ -150,6 +222,7 @@ export default function DashboardPage() {
                 { label: '$/Door', value: fmt(deal.price_per_door, '$') },
                 { label: '$/SF', value: fmt(deal.price_per_sf, '$') },
                 { label: 'CAP Rate', value: deal.cap_rate ? deal.cap_rate + '%' : null },
+                { label: 'NOI', value: deal.noi ? '$' + (deal.noi / 1000).toFixed(0) + 'K' : null },
                 { label: 'GRM', value: deal.grm },
               ].map(({ label, value }) => (
                 <div key={label}>
@@ -165,11 +238,14 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#666', marginBottom: 16, borderBottom: '2px solid #111', paddingBottom: 8 }}>Property</div>
                 <Field label="Address" value={deal.address} />
                 <Field label="Neighborhood" value={deal.neighborhood} />
+                <Field label="Submarket" value={deal.submarket} />
                 <Field label="Year Built" value={deal.year_built} />
+                <Field label="Stories" value={deal.stories} />
                 <Field label="Unit Count" value={deal.unit_count} />
                 <Field label="Bedroom Mix" value={deal.bedroom_mix} />
                 <Field label="Building SF" value={deal.building_sf ? deal.building_sf.toLocaleString() + ' SF' : null} />
                 <Field label="Lot Size" value={deal.lot_size} />
+                <Field label="Zoning" value={deal.zoning} />
                 <Field label="APN" value={deal.apn} />
                 <Field label="Parking" value={deal.parking} />
                 <Field label="Soft Story Retrofit" value={deal.soft_story_retrofit} />
@@ -181,6 +257,7 @@ export default function DashboardPage() {
                 <Field label="Price Per Door" value={deal.price_per_door ? '$' + deal.price_per_door.toLocaleString() : null} />
                 <Field label="Price Per SF" value={deal.price_per_sf ? '$' + deal.price_per_sf : null} />
                 <Field label="CAP Rate" value={deal.cap_rate ? deal.cap_rate + '%' : null} />
+                <Field label="NOI" value={deal.noi ? '$' + deal.noi.toLocaleString() : null} />
                 <Field label="GRM" value={deal.grm} />
                 <Field label="Last Sale Date" value={deal.last_sale_date} />
                 <Field label="Last Sale Price" value={deal.last_sale_price ? '$' + deal.last_sale_price.toLocaleString() : null} />
