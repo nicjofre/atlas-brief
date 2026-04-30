@@ -63,7 +63,9 @@ ${text}`,
   }
 
   try {
-    const parsed = JSON.parse(content.text)
+    // Strip markdown code blocks if present
+    const raw = content.text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
+    const parsed = JSON.parse(raw)
     return NextResponse.json({ deal: parsed })
   } catch {
     return NextResponse.json({ error: 'Failed to parse response', raw: content.text }, { status: 500 })
