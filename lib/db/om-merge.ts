@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 import type { FieldsChanged } from './augment-merge'
-import { deriveListingFields } from './derive'
+import { deriveListingFields, derivePropertyFields, omSources } from './derive'
 
 type DB = SupabaseClient<Database>
 type PropertyInsert = Database['public']['Tables']['properties']['Insert']
@@ -174,6 +174,15 @@ async function upsertBroker(db: DB, b: OMBrokerPayload): Promise<string | null> 
 
 function omToPropertyFields(om: OMPayload): PropertyInsert {
   const p = om.property ?? {}
+  const derivedProp = derivePropertyFields({
+    unit_count: p.unit_count ?? null,
+    gross_sf: p.gross_sf ?? null,
+    land_acres: p.land_acres ?? null,
+    land_sf: p.lot_sf ?? null,
+    avg_unit_sf: null,
+    units_per_acre: null,
+    bldg_far: null,
+  })
   return {
     street_address: nullIfEmpty(p.address),
     city: nullIfEmpty(p.city),
@@ -184,8 +193,11 @@ function omToPropertyFields(om: OMPayload): PropertyInsert {
     year_renovated: p.year_renovated ?? null,
     unit_count: p.unit_count ?? null,
     gross_sf: p.gross_sf ?? null,
-    lot_sf: p.lot_sf ?? null,
-    land_acres: p.land_acres ?? null,
+    lot_sf: derivedProp.land_sf,
+    land_acres: derivedProp.land_acres,
+    avg_unit_sf: derivedProp.avg_unit_sf,
+    units_per_acre: derivedProp.units_per_acre,
+    bldg_far: derivedProp.bldg_far,
     stories: p.stories ?? null,
     construction_type: nullIfEmpty(p.construction_type),
     property_class: p.property_class ?? null,
@@ -208,6 +220,16 @@ function omToListingFields(om: OMPayload, brokerId: string | null): ListingInser
     sale_price: null,
     grm: l.grm_current ?? null,
     unit_count: p.unit_count ?? null,
+    building_sf: p.gross_sf ?? null,
+    price_per_unit: null,
+    price_per_sf: null,
+  })
+
+  const sources = omSources({
+    cap_rate_current: l.cap_rate_current ?? null,
+    cap_rate_market: l.cap_rate_market ?? null,
+    grm_current: l.grm_current ?? null,
+    grm_market: l.grm_market ?? null,
   })
 
   return {
@@ -219,8 +241,14 @@ function omToListingFields(om: OMPayload, brokerId: string | null): ListingInser
     cap_rate_market: l.cap_rate_market ?? null,
     grm_current: l.grm_current ?? null,
     grm_market: l.grm_market ?? null,
+    cap_rate_current_source: sources.cap_rate_current_source,
+    cap_rate_market_source: sources.cap_rate_market_source,
+    grm_current_source: sources.grm_current_source,
+    grm_market_source: sources.grm_market_source,
     noi_current: l.noi_current ?? null,
     expense_ratio: l.expense_ratio_current ?? null,
+    price_per_unit: derived.price_per_unit,
+    price_per_sf: derived.price_per_sf,
     implied_monthly_rent_current: l.implied_monthly_rent_current ?? null,
     implied_monthly_rent_market: l.implied_monthly_rent_market ?? null,
     implied_gross_annual_current: l.scheduled_gross_income_current ?? derived.implied_gross_annual_current,
@@ -374,7 +402,9 @@ export async function augmentListingFromOm(
   // OM-authoritative fields: always set if non-null
   const omAuthoritative = [
     'cap_rate_current', 'cap_rate_market', 'grm_current', 'grm_market',
-    'noi_current', 'expense_ratio',
+    'cap_rate_current_source', 'cap_rate_market_source',
+    'grm_current_source', 'grm_market_source',
+    'noi_current', 'expense_ratio', 'price_per_unit', 'price_per_sf',
     'implied_monthly_rent_current', 'implied_monthly_rent_market',
     'implied_gross_annual_current', 'implied_gross_annual_market',
     'unit_mix', 'rent_roll', 'in_unit_features', 'marketing_quotes',

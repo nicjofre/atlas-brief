@@ -76,6 +76,14 @@ type AssessmentRow = {
   tax_amount?: number | null
 }
 
+type SourceQualifier = 'stated' | 'at_close' | 'proforma' | null | undefined
+
+function sourceHint(source: SourceQualifier): string | undefined {
+  if (!source) return undefined
+  if (source === 'at_close') return 'at close'
+  return source
+}
+
 type Tab = 'summary' | 'public_record' | 'contacts' | 'loan' | 'notes' | 'augment'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'summary', label: 'Summary' },
@@ -242,10 +250,10 @@ function SummaryTab({
         </Section>
 
         <Section title="Yield (Current vs Market)">
-          <Field label="CAP Current" value={pct(l.cap_rate_current as number | null)} />
-          <Field label="CAP Market" value={pct(l.cap_rate_market as number | null)} hint={l.cap_rate_market == null ? 'om-pending' : undefined} />
-          <Field label="GRM Current" value={plain(l.grm_current as number | null)} />
-          <Field label="GRM Market" value={plain(l.grm_market as number | null)} hint={l.grm_market == null ? 'om-pending' : undefined} />
+          <Field label="CAP Current" value={pct(l.cap_rate_current as number | null)} hint={sourceHint(l.cap_rate_current_source as SourceQualifier)} />
+          <Field label="CAP Market" value={pct(l.cap_rate_market as number | null)} hint={l.cap_rate_market == null ? 'om-pending' : sourceHint(l.cap_rate_market_source as SourceQualifier)} />
+          <Field label="GRM Current" value={plain(l.grm_current as number | null)} hint={sourceHint(l.grm_current_source as SourceQualifier)} />
+          <Field label="GRM Market" value={plain(l.grm_market as number | null)} hint={l.grm_market == null ? 'om-pending' : sourceHint(l.grm_market_source as SourceQualifier)} />
           <Field label="NOI" value={dollars(l.noi_current as number | null)} />
           <Field label="Implied Gross Annual" value={dollars(l.implied_gross_annual_current as number | null)} hint="derived" />
           <Field label="Implied Monthly Rent / Unit" value={dollars(l.implied_monthly_rent_current as number | null)} hint="derived" />

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 import type { ParsedDeal } from './parsed-deal'
-import { deriveListingFields } from './derive'
+import { deriveListingFields, derivePropertyFields, costarSources } from './derive'
 
 type DB = SupabaseClient<Database>
 type PropertyInsert = Database['public']['Tables']['properties']['Insert']
@@ -15,6 +15,15 @@ function nullIfEmpty(s: string | null | undefined): string | null {
 }
 
 function toPropertyFields(deal: ParsedDeal): PropertyInsert {
+  const derivedProp = derivePropertyFields({
+    unit_count: deal.unit_count,
+    gross_sf: deal.building_sf,
+    land_acres: deal.land_acres,
+    land_sf: deal.land_sf,
+    avg_unit_sf: deal.avg_unit_size_sf,
+    units_per_acre: deal.units_per_acre,
+    bldg_far: deal.bldg_far,
+  })
   return {
     apn: nullIfEmpty(deal.apn),
     costar_property_id: nullIfEmpty(deal.property_id),
@@ -35,13 +44,13 @@ function toPropertyFields(deal: ParsedDeal): PropertyInsert {
     year_renovated: deal.year_renovated,
     unit_count: deal.unit_count,
     gross_sf: deal.building_sf,
-    avg_unit_sf: deal.avg_unit_size_sf,
-    lot_sf: deal.land_sf,
-    land_acres: deal.land_acres,
+    avg_unit_sf: derivedProp.avg_unit_sf,
+    lot_sf: derivedProp.land_sf,
+    land_acres: derivedProp.land_acres,
     stories: deal.stories,
     building_count: deal.building_count,
-    units_per_acre: deal.units_per_acre,
-    bldg_far: deal.bldg_far,
+    units_per_acre: derivedProp.units_per_acre,
+    bldg_far: derivedProp.bldg_far,
     typical_floor_sf: deal.typical_floor_sf,
     construction_type: nullIfEmpty(deal.construction),
     elevators: nullIfEmpty(deal.elevators),
@@ -239,7 +248,11 @@ export async function createListing(
     sale_price: deal.sale_price,
     grm: deal.grm,
     unit_count: deal.unit_count,
+    building_sf: deal.building_sf,
+    price_per_unit: deal.price_per_unit,
+    price_per_sf: deal.price_per_sf,
   })
+  const sources = costarSources({ status: deal.status, cap_rate: deal.cap_rate, grm: deal.grm })
 
   const insert: ListingInsert = {
     property_id: propertyId,
@@ -249,11 +262,11 @@ export async function createListing(
     sale_price: deal.sale_price,
     sale_date: deal.sale_date,
     sale_type: nullIfEmpty(deal.sale_type),
-    price_per_unit: deal.price_per_unit,
-    price_per_sf: deal.price_per_sf,
     cap_rate_current: deal.cap_rate,
     grm_current: deal.grm,
     noi_current: deal.noi,
+    cap_rate_current_source: sources.cap_rate_current_source,
+    grm_current_source: sources.grm_current_source,
 
     loan_amount: deal.loan_amount,
     loan_origination_date: deal.loan_origination_date,

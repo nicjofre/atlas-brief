@@ -153,12 +153,16 @@ export type Database = {
           borrower: string | null
           buyer_broker_id: string | null
           cap_rate_current: number | null
+          cap_rate_current_source: string | null
           cap_rate_market: number | null
+          cap_rate_market_source: string | null
           created_at: string
           created_by: string | null
           expense_ratio: number | null
           grm_current: number | null
+          grm_current_source: string | null
           grm_market: number | null
+          grm_market_source: string | null
           hero_photo_index: number | null
           id: string
           implied_gross_annual_current: number | null
@@ -202,12 +206,16 @@ export type Database = {
           borrower?: string | null
           buyer_broker_id?: string | null
           cap_rate_current?: number | null
+          cap_rate_current_source?: string | null
           cap_rate_market?: number | null
+          cap_rate_market_source?: string | null
           created_at?: string
           created_by?: string | null
           expense_ratio?: number | null
           grm_current?: number | null
+          grm_current_source?: string | null
           grm_market?: number | null
+          grm_market_source?: string | null
           hero_photo_index?: number | null
           id?: string
           implied_gross_annual_current?: number | null
@@ -251,12 +259,16 @@ export type Database = {
           borrower?: string | null
           buyer_broker_id?: string | null
           cap_rate_current?: number | null
+          cap_rate_current_source?: string | null
           cap_rate_market?: number | null
+          cap_rate_market_source?: string | null
           created_at?: string
           created_by?: string | null
           expense_ratio?: number | null
           grm_current?: number | null
+          grm_current_source?: string | null
           grm_market?: number | null
+          grm_market_source?: string | null
           hero_photo_index?: number | null
           id?: string
           implied_gross_annual_current?: number | null
