@@ -227,12 +227,14 @@ function Stars({ n }: { n: number | null }) {
 }
 
 export default function DashboardPage() {
-  const [mode, setMode] = useState<'text' | 'pdf'>('pdf')
+  const [mode, setMode] = useState<'text' | 'pdf' | 'om'>('pdf')
   const [text, setText] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [omFile, setOmFile] = useState<File | null>(null)
   const [deal, setDeal] = useState<Deal | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [warning, setWarning] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -244,24 +246,38 @@ export default function DashboardPage() {
   async function handleParse() {
     setLoading(true)
     setError('')
+    setWarning('')
     setDeal(null)
     try {
       let res: Response
-      if (mode === 'pdf' && pdfFile) {
+      if (mode === 'om' && omFile) {
+        const formData = new FormData()
+        formData.append('pdf', omFile)
+        res = await fetch('/api/parse-om', { method: 'POST', body: formData })
+      } else if (mode === 'pdf' && pdfFile) {
         const formData = new FormData()
         formData.append('pdf', pdfFile)
         res = await fetch('/api/parse', { method: 'POST', body: formData })
-      } else {
+      } else if (mode === 'text') {
         if (!text.trim()) return
         res = await fetch('/api/parse', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
         })
+      } else {
+        return
       }
       const data = await res.json()
-      if (data.listingId) {
-        router.push(`/listings/${data.listingId}`)
+      // OM parse returns listing_id (snake_case); CoStar returns listingId
+      const listingId = data.listing_id ?? data.listingId
+      if (listingId) {
+        if (data.existing_listings_for_property && data.existing_listings_for_property > 1) {
+          setWarning(
+            `This property already has ${data.existing_listings_for_property - 1} other listing(s). New listing created — open The Tape to review.`
+          )
+        }
+        router.push(`/listings/${listingId}`)
         return
       }
       if (data.error) {
@@ -277,7 +293,8 @@ export default function DashboardPage() {
     }
   }
 
-  const canParse = mode === 'pdf' ? !!pdfFile : !!text.trim()
+  const canParse =
+    mode === 'om' ? !!omFile : mode === 'pdf' ? !!pdfFile : !!text.trim()
   const headlinePrice = deal?.list_price || deal?.sale_price
 
   return (
@@ -296,7 +313,7 @@ export default function DashboardPage() {
         {/* Input */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '1px solid #ddd' }}>
-            {(['pdf', 'text'] as const).map(m => (
+            {(['pdf', 'om', 'text'] as const).map(m => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
@@ -313,7 +330,7 @@ export default function DashboardPage() {
                   marginBottom: -1,
                 }}
               >
-                {m === 'pdf' ? 'Upload CoStar PDF' : 'Paste Text'}
+                {m === 'pdf' ? 'CoStar PDF' : m === 'om' ? 'Broker OM PDF' : 'Paste Text'}
               </button>
             ))}
           </div>
@@ -345,7 +362,38 @@ export default function DashboardPage() {
               ) : (
                 <div>
                   <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop CoStar PDF report here</div>
-                  <div style={{ fontSize: 11, color: '#999' }}>Property Summary or Atlas Brief Full Report</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>Property Summary export</div>
+                </div>
+              )}
+            </div>
+          ) : mode === 'om' ? (
+            <div
+              onClick={() => document.getElementById('om-input')?.click()}
+              style={{
+                border: '2px dashed #ddd',
+                borderRadius: 4,
+                padding: '40px 24px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                background: omFile ? '#f9f9f9' : '#fff',
+              }}
+            >
+              <input
+                id="om-input"
+                type="file"
+                accept="application/pdf"
+                style={{ display: 'none' }}
+                onChange={e => setOmFile(e.target.files?.[0] ?? null)}
+              />
+              {omFile ? (
+                <div>
+                  <div style={{ fontSize: 13, color: '#111', marginBottom: 4 }}>{omFile.name}</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>{(omFile.size / 1024).toFixed(0)} KB — click to replace</div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop broker Offering Memorandum here</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>Marcus &amp; Millichap, CBRE, Northmarq, Berkadia, Lyon Stahl, etc.</div>
                 </div>
               )}
             </div>
@@ -367,6 +415,7 @@ export default function DashboardPage() {
             {loading ? 'Parsing...' : 'Parse Deal'}
           </button>
           {error && <div style={{ marginTop: 12, color: '#c0392b', fontSize: 13 }}>{error}</div>}
+          {warning && <div style={{ marginTop: 12, color: '#8B6914', fontSize: 13 }}>{warning}</div>}
         </div>
 
         {deal && (

@@ -3,18 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-type AugmentType = 'contacts' | 'public_record' | 'loan'
+type AugmentType = 'contacts' | 'public_record' | 'loan' | 'om'
 
 const TYPE_LABELS: Record<AugmentType, string> = {
   contacts: 'Contacts tab',
   public_record: 'Public Record tab',
   loan: 'Loan tab',
+  om: 'Broker OM PDF',
 }
 
 const TYPE_HINTS: Record<AugmentType, string> = {
   contacts: 'Paste the entire Contacts tab. Captures listing/buyer brokers, property manager, recorded owner, true owner.',
   public_record: 'Paste the entire Public Record tab. Captures owner mailing, subdivision, legal description, transaction history (sales + loans), 5-year assessment history.',
   loan: 'Paste the Loan tab. Enriches existing loan events with maturity date, data source (CMBS/Research), loan classification.',
+  om: 'Upload a broker Offering Memorandum PDF. Captures CAP/GRM split (current vs market), marketing quotes, in-unit features, rent roll, expense breakdown, and richer broker contact info.',
 }
 
 type FieldsChanged = Record<string, { from: unknown; to: unknown }>
@@ -33,6 +35,7 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
   const router = useRouter()
   const [type, setType] = useState<AugmentType>('contacts')
   const [text, setText] = useState('')
+  const [omFile, setOmFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ fields_changed: FieldsChanged } | null>(null)
   const [error, setError] = useState('')
@@ -42,17 +45,27 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
     setError('')
     setResult(null)
     try {
-      const res = await fetch('/api/augment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing_id: listingId, type, text }),
-      })
+      let res: Response
+      if (type === 'om') {
+        if (!omFile) return
+        const formData = new FormData()
+        formData.append('pdf', omFile)
+        formData.append('listing_id', listingId)
+        res = await fetch('/api/parse-om', { method: 'POST', body: formData })
+      } else {
+        res = await fetch('/api/augment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: listingId, type, text }),
+        })
+      }
       const data = await res.json()
       if (data.error) {
         setError(data.error)
       } else {
         setResult({ fields_changed: data.fields_changed ?? {} })
         setText('')
+        setOmFile(null)
         router.refresh()
       }
     } catch {
@@ -62,6 +75,7 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
     }
   }
 
+  const canSubmit = type === 'om' ? !!omFile : text.trim().length > 0
   const changedKeys = result ? Object.keys(result.fields_changed) : []
 
   return (
@@ -93,28 +107,63 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
         <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{TYPE_HINTS[type]}</div>
       </div>
 
-      <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder={`Copy the full ${TYPE_LABELS[type]} content from CoStar and paste here...`}
-        rows={14}
-        style={{
-          width: '100%',
-          padding: 16,
-          border: '1px solid #ddd',
-          borderRadius: 4,
-          fontSize: 13,
-          background: '#fff',
-          resize: 'vertical',
-          outline: 'none',
-          fontFamily: 'monospace',
-          boxSizing: 'border-box',
-        }}
-      />
+      {type === 'om' ? (
+        <div
+          onClick={() => document.getElementById('augment-om-input')?.click()}
+          style={{
+            border: '2px dashed #ddd',
+            borderRadius: 4,
+            padding: '40px 24px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: omFile ? '#f9f9f9' : '#fff',
+          }}
+        >
+          <input
+            id="augment-om-input"
+            type="file"
+            accept="application/pdf"
+            style={{ display: 'none' }}
+            onChange={e => setOmFile(e.target.files?.[0] ?? null)}
+          />
+          {omFile ? (
+            <div>
+              <div style={{ fontSize: 13, color: '#111', marginBottom: 4 }}>{omFile.name}</div>
+              <div style={{ fontSize: 11, color: '#999' }}>
+                {(omFile.size / 1024).toFixed(0)} KB — click to replace
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop OM PDF here</div>
+              <div style={{ fontSize: 11, color: '#999' }}>20-60s parse time depending on length</div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={`Copy the full ${TYPE_LABELS[type]} content from CoStar and paste here...`}
+          rows={14}
+          style={{
+            width: '100%',
+            padding: 16,
+            border: '1px solid #ddd',
+            borderRadius: 4,
+            fontSize: 13,
+            background: '#fff',
+            resize: 'vertical',
+            outline: 'none',
+            fontFamily: 'monospace',
+            boxSizing: 'border-box',
+          }}
+        />
+      )}
 
       <button
         onClick={handleSubmit}
-        disabled={loading || !text.trim()}
+        disabled={loading || !canSubmit}
         style={{
           marginTop: 12,
           padding: '12px 28px',
@@ -123,11 +172,11 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
           border: 'none',
           borderRadius: 4,
           fontSize: 13,
-          cursor: loading || !text.trim() ? 'not-allowed' : 'pointer',
-          opacity: loading || !text.trim() ? 0.6 : 1,
+          cursor: loading || !canSubmit ? 'not-allowed' : 'pointer',
+          opacity: loading || !canSubmit ? 0.6 : 1,
         }}
       >
-        {loading ? 'Parsing...' : 'Apply'}
+        {loading ? (type === 'om' ? 'Parsing OM (~30s)...' : 'Parsing...') : 'Apply'}
       </button>
 
       {error && <div style={{ marginTop: 12, color: '#c0392b', fontSize: 13 }}>{error}</div>}
