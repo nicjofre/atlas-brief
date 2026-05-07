@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      augmentation_log: {
+        Row: {
+          augment_type: string
+          created_at: string
+          created_by: string | null
+          fields_changed: Json | null
+          id: string
+          listing_id: string | null
+          parsed_payload: Json | null
+          property_id: string | null
+          raw_text: string
+        }
+        Insert: {
+          augment_type: string
+          created_at?: string
+          created_by?: string | null
+          fields_changed?: Json | null
+          id?: string
+          listing_id?: string | null
+          parsed_payload?: Json | null
+          property_id?: string | null
+          raw_text: string
+        }
+        Update: {
+          augment_type?: string
+          created_at?: string
+          created_by?: string | null
+          fields_changed?: Json | null
+          id?: string
+          listing_id?: string | null
+          parsed_payload?: Json | null
+          property_id?: string | null
+          raw_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "augmentation_log_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "augmentation_log_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brokers: {
         Row: {
           bio: string | null
@@ -135,7 +186,6 @@ export type Database = {
           rent_roll: Json | null
           rso_applicable: boolean | null
           sale_date: string | null
-          sale_history: Json | null
           sale_price: number | null
           sale_type: string | null
           status: string | null
@@ -185,7 +235,6 @@ export type Database = {
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
-          sale_history?: Json | null
           sale_price?: number | null
           sale_type?: string | null
           status?: string | null
@@ -235,7 +284,6 @@ export type Database = {
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
-          sale_history?: Json | null
           sale_price?: number | null
           sale_type?: string | null
           status?: string | null
@@ -280,6 +328,7 @@ export type Database = {
           assessed_improvements: number | null
           assessed_land: number | null
           assessed_total: number | null
+          assessment_history: Json | null
           assessment_year: number | null
           avg_unit_sf: number | null
           bike_score: number | null
@@ -289,6 +338,7 @@ export type Database = {
           capital_improvements: string | null
           car_score: number | null
           cbsa: string | null
+          census_tract: string | null
           city: string | null
           concessions_market: number | null
           concessions_subject: number | null
@@ -312,8 +362,10 @@ export type Database = {
           id: string
           in_sfha: boolean | null
           land_acres: number | null
+          land_use: string | null
           last_costar_parsed_at: string | null
           lat: number | null
+          legal_description: string | null
           lng: number | null
           location_type: string | null
           lot_sf: number | null
@@ -325,17 +377,22 @@ export type Database = {
           market_segment: string | null
           metering: string | null
           mls_number: string | null
+          municipality: string | null
           neighborhood: string | null
+          owner_mailing_address: string | null
           owner_type: string | null
           parking_count: number | null
           parking_type: string | null
           pedestrian_score: number | null
+          pm_address: string | null
           pm_phone: string | null
           pm_since: string | null
           property_class: string | null
           property_manager: string | null
           property_type: string | null
           recorded_owner: string | null
+          recorded_owner_address: string | null
+          recorded_owner_since: string | null
           rent_type: string | null
           sale_highlights: string | null
           soft_story_retrofit: boolean | null
@@ -343,13 +400,18 @@ export type Database = {
           state: string | null
           stories: number | null
           street_address: string | null
+          subdivision: string | null
           submarket: string | null
           submarket_cluster: string | null
           tax_per_unit: number | null
           tax_year: number | null
+          transaction_history: Json | null
           transit_score: number | null
           transit_stations: Json | null
           true_owner: string | null
+          true_owner_address: string | null
+          true_owner_phone: string | null
+          true_owner_since: string | null
           twelve_mo_sales_volume_submarket: number | null
           typical_floor_sf: number | null
           under_construction_units_market: number | null
@@ -376,6 +438,7 @@ export type Database = {
           assessed_improvements?: number | null
           assessed_land?: number | null
           assessed_total?: number | null
+          assessment_history?: Json | null
           assessment_year?: number | null
           avg_unit_sf?: number | null
           bike_score?: number | null
@@ -385,6 +448,7 @@ export type Database = {
           capital_improvements?: string | null
           car_score?: number | null
           cbsa?: string | null
+          census_tract?: string | null
           city?: string | null
           concessions_market?: number | null
           concessions_subject?: number | null
@@ -408,8 +472,10 @@ export type Database = {
           id?: string
           in_sfha?: boolean | null
           land_acres?: number | null
+          land_use?: string | null
           last_costar_parsed_at?: string | null
           lat?: number | null
+          legal_description?: string | null
           lng?: number | null
           location_type?: string | null
           lot_sf?: number | null
@@ -421,17 +487,22 @@ export type Database = {
           market_segment?: string | null
           metering?: string | null
           mls_number?: string | null
+          municipality?: string | null
           neighborhood?: string | null
+          owner_mailing_address?: string | null
           owner_type?: string | null
           parking_count?: number | null
           parking_type?: string | null
           pedestrian_score?: number | null
+          pm_address?: string | null
           pm_phone?: string | null
           pm_since?: string | null
           property_class?: string | null
           property_manager?: string | null
           property_type?: string | null
           recorded_owner?: string | null
+          recorded_owner_address?: string | null
+          recorded_owner_since?: string | null
           rent_type?: string | null
           sale_highlights?: string | null
           soft_story_retrofit?: boolean | null
@@ -439,13 +510,18 @@ export type Database = {
           state?: string | null
           stories?: number | null
           street_address?: string | null
+          subdivision?: string | null
           submarket?: string | null
           submarket_cluster?: string | null
           tax_per_unit?: number | null
           tax_year?: number | null
+          transaction_history?: Json | null
           transit_score?: number | null
           transit_stations?: Json | null
           true_owner?: string | null
+          true_owner_address?: string | null
+          true_owner_phone?: string | null
+          true_owner_since?: string | null
           twelve_mo_sales_volume_submarket?: number | null
           typical_floor_sf?: number | null
           under_construction_units_market?: number | null
@@ -472,6 +548,7 @@ export type Database = {
           assessed_improvements?: number | null
           assessed_land?: number | null
           assessed_total?: number | null
+          assessment_history?: Json | null
           assessment_year?: number | null
           avg_unit_sf?: number | null
           bike_score?: number | null
@@ -481,6 +558,7 @@ export type Database = {
           capital_improvements?: string | null
           car_score?: number | null
           cbsa?: string | null
+          census_tract?: string | null
           city?: string | null
           concessions_market?: number | null
           concessions_subject?: number | null
@@ -504,8 +582,10 @@ export type Database = {
           id?: string
           in_sfha?: boolean | null
           land_acres?: number | null
+          land_use?: string | null
           last_costar_parsed_at?: string | null
           lat?: number | null
+          legal_description?: string | null
           lng?: number | null
           location_type?: string | null
           lot_sf?: number | null
@@ -517,17 +597,22 @@ export type Database = {
           market_segment?: string | null
           metering?: string | null
           mls_number?: string | null
+          municipality?: string | null
           neighborhood?: string | null
+          owner_mailing_address?: string | null
           owner_type?: string | null
           parking_count?: number | null
           parking_type?: string | null
           pedestrian_score?: number | null
+          pm_address?: string | null
           pm_phone?: string | null
           pm_since?: string | null
           property_class?: string | null
           property_manager?: string | null
           property_type?: string | null
           recorded_owner?: string | null
+          recorded_owner_address?: string | null
+          recorded_owner_since?: string | null
           rent_type?: string | null
           sale_highlights?: string | null
           soft_story_retrofit?: boolean | null
@@ -535,13 +620,18 @@ export type Database = {
           state?: string | null
           stories?: number | null
           street_address?: string | null
+          subdivision?: string | null
           submarket?: string | null
           submarket_cluster?: string | null
           tax_per_unit?: number | null
           tax_year?: number | null
+          transaction_history?: Json | null
           transit_score?: number | null
           transit_stations?: Json | null
           true_owner?: string | null
+          true_owner_address?: string | null
+          true_owner_phone?: string | null
+          true_owner_since?: string | null
           twelve_mo_sales_volume_submarket?: number | null
           typical_floor_sf?: number | null
           under_construction_units_market?: number | null

@@ -114,44 +114,71 @@ function toPropertyFields(deal: ParsedDeal): PropertyInsert {
   }
 }
 
+function saleHistoryToTransactions(deal: ParsedDeal) {
+  if (!deal.sale_history || deal.sale_history.length === 0) return null
+  return deal.sale_history.map(row => ({
+    type: 'sale',
+    date: row.date,
+    subtype: row.type,
+    price: row.price,
+    units: row.units,
+    price_per_unit: row.price_per_unit,
+    cap_rate: row.cap_rate,
+    buyer: row.buyer,
+    seller: row.seller,
+    source: 'costar_pdf',
+  }))
+}
+
 export async function upsertProperty(db: DB, deal: ParsedDeal): Promise<string> {
   const fields = toPropertyFields(deal)
+  const transactions = saleHistoryToTransactions(deal)
 
-  // try APN match first
-  if (fields.apn) {
-    const { data: existing } = await db
-      .from('properties')
-      .select('id')
-      .eq('apn', fields.apn)
-      .maybeSingle()
-
-    if (existing) {
-      const { error } = await db.from('properties').update(fields).eq('id', existing.id)
-      if (error) throw error
-      return existing.id
+  async function findExisting(): Promise<string | null> {
+    if (fields.apn) {
+      const { data } = await db.from('properties').select('id').eq('apn', fields.apn).maybeSingle()
+      if (data) return data.id
     }
+    if (fields.street_address && fields.city && fields.state && fields.zip) {
+      const { data } = await db
+        .from('properties')
+        .select('id')
+        .ilike('street_address', fields.street_address)
+        .ilike('city', fields.city)
+        .eq('state', fields.state)
+        .eq('zip', fields.zip)
+        .maybeSingle()
+      if (data) return data.id
+    }
+    return null
   }
 
-  // fall back to address match
-  if (fields.street_address && fields.city && fields.state && fields.zip) {
-    const { data: existing } = await db
-      .from('properties')
-      .select('id')
-      .ilike('street_address', fields.street_address)
-      .ilike('city', fields.city)
-      .eq('state', fields.state)
-      .eq('zip', fields.zip)
-      .maybeSingle()
+  const existingId = await findExisting()
 
-    if (existing) {
-      const { error } = await db.from('properties').update(fields).eq('id', existing.id)
-      if (error) throw error
-      return existing.id
+  if (existingId) {
+    // update PDF-managed fields; do NOT clobber transaction_history if already enriched
+    const { error } = await db.from('properties').update(fields).eq('id', existingId)
+    if (error) throw error
+
+    if (transactions) {
+      const { data: existing } = await db
+        .from('properties')
+        .select('transaction_history')
+        .eq('id', existingId)
+        .single()
+      if (!existing?.transaction_history) {
+        await db.from('properties').update({ transaction_history: transactions }).eq('id', existingId)
+      }
     }
+    return existingId
   }
 
-  // insert new
-  const { data, error } = await db.from('properties').insert(fields).select('id').single()
+  // insert new — include transaction_history seeded from PDF sale_history
+  const { data, error } = await db
+    .from('properties')
+    .insert({ ...fields, transaction_history: transactions })
+    .select('id')
+    .single()
   if (error) throw error
   return data.id
 }
@@ -238,7 +265,6 @@ export async function createListing(
 
     unit_mix: deal.unit_mix,
     unit_mix_updated: deal.unit_mix_updated,
-    sale_history: deal.sale_history,
 
     last_om_parsed_at: null,
     ...derived,
