@@ -21,7 +21,7 @@ function stripFences(text: string): string {
 async function parseOmFromBase64(base64: string): Promise<OMPayload> {
   const response = await client.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 8192,
+    max_tokens: 16384,
     messages: [
       {
         role: 'user',
