@@ -13,6 +13,8 @@ import {
   type FieldsChanged,
 } from '@/lib/db/augment-merge'
 
+export const maxDuration = 60
+
 const client = new Anthropic()
 
 type AugmentType = 'contacts' | 'public_record' | 'loan'

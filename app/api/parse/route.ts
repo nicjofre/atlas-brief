@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { persistDeal } from '@/lib/db/upsert'
 import type { ParsedDeal } from '@/lib/db/parsed-deal'
 
+export const maxDuration = 60
+
 const client = new Anthropic()
 
 const SYSTEM_PROMPT = `You are a commercial real estate data parser for CoStar reports. Extract structured deal data from the provided report. Return a JSON object with these fields. Use null for any field not found. Be aggressive about pulling out everything that's present.

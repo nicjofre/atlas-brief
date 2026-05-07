@@ -10,6 +10,8 @@ import {
   type OMPayload,
 } from '@/lib/db/om-merge'
 
+export const maxDuration = 60
+
 const client = new Anthropic()
 
 function stripFences(text: string): string {
