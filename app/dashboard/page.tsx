@@ -251,9 +251,26 @@ export default function DashboardPage() {
     try {
       let res: Response
       if (mode === 'om' && omFile) {
-        const formData = new FormData()
-        formData.append('pdf', omFile)
-        res = await fetch('/api/parse-om', { method: 'POST', body: formData })
+        // Upload to Supabase Storage first to bypass Vercel's 4.5MB body limit
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setError('Not signed in')
+          return
+        }
+        const safeName = omFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const path = `${user.id}/${Date.now()}-${safeName}`
+        const { error: uploadError } = await supabase.storage
+          .from('om-uploads')
+          .upload(path, omFile, { contentType: 'application/pdf', upsert: false })
+        if (uploadError) {
+          setError(`Upload failed: ${uploadError.message}`)
+          return
+        }
+        res = await fetch('/api/parse-om', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path, file_name: omFile.name, file_size: omFile.size }),
+        })
       } else if (mode === 'pdf' && pdfFile) {
         const formData = new FormData()
         formData.append('pdf', pdfFile)

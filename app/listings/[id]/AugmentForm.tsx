@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 type AugmentType = 'contacts' | 'public_record' | 'loan' | 'om'
 
@@ -33,6 +34,7 @@ function formatValue(v: unknown): string {
 
 export default function AugmentForm({ listingId }: { listingId: string }) {
   const router = useRouter()
+  const supabase = createClient()
   const [type, setType] = useState<AugmentType>('contacts')
   const [text, setText] = useState('')
   const [omFile, setOmFile] = useState<File | null>(null)
@@ -48,10 +50,31 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
       let res: Response
       if (type === 'om') {
         if (!omFile) return
-        const formData = new FormData()
-        formData.append('pdf', omFile)
-        formData.append('listing_id', listingId)
-        res = await fetch('/api/parse-om', { method: 'POST', body: formData })
+        // Upload to Supabase Storage first to bypass Vercel's 4.5MB body limit
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setError('Not signed in')
+          return
+        }
+        const safeName = omFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const path = `${user.id}/${Date.now()}-${safeName}`
+        const { error: uploadError } = await supabase.storage
+          .from('om-uploads')
+          .upload(path, omFile, { contentType: 'application/pdf', upsert: false })
+        if (uploadError) {
+          setError(`Upload failed: ${uploadError.message}`)
+          return
+        }
+        res = await fetch('/api/parse-om', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listing_id: listingId,
+            path,
+            file_name: omFile.name,
+            file_size: omFile.size,
+          }),
+        })
       } else {
         res = await fetch('/api/augment', {
           method: 'POST',

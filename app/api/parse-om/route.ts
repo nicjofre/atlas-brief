@@ -18,10 +18,7 @@ function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
 }
 
-async function parseOmPdf(file: File): Promise<OMPayload> {
-  const bytes = await file.arrayBuffer()
-  const base64 = Buffer.from(bytes).toString('base64')
-
+async function parseOmFromBase64(base64: string): Promise<OMPayload> {
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 16384,
@@ -48,6 +45,12 @@ async function parseOmPdf(file: File): Promise<OMPayload> {
   return JSON.parse(stripFences(content.text)) as OMPayload
 }
 
+async function parseOmPdfFile(file: File): Promise<OMPayload> {
+  const bytes = await file.arrayBuffer()
+  const base64 = Buffer.from(bytes).toString('base64')
+  return parseOmFromBase64(base64)
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -56,22 +59,52 @@ export async function POST(request: NextRequest) {
   }
 
   const contentType = request.headers.get('content-type') || ''
-  if (!contentType.includes('multipart/form-data')) {
-    return NextResponse.json({ error: 'Expected multipart/form-data' }, { status: 400 })
-  }
 
-  const formData = await request.formData()
-  const file = formData.get('pdf') as File | null
-  const listingIdRaw = formData.get('listing_id')
-  const listingId = typeof listingIdRaw === 'string' && listingIdRaw.trim() !== '' ? listingIdRaw : null
+  let file: File | null = null
+  let storagePath: string | null = null
+  let storageFileName: string | null = null
+  let storageFileSize: number | null = null
+  let listingId: string | null = null
 
-  if (!file) {
-    return NextResponse.json({ error: 'No PDF provided' }, { status: 400 })
+  if (contentType.includes('application/json')) {
+    // path-based: client uploaded PDF to Supabase Storage first, sends the path here
+    const body = await request.json().catch(() => null)
+    if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    storagePath = typeof body.path === 'string' ? body.path : null
+    storageFileName = typeof body.file_name === 'string' ? body.file_name : storagePath
+    storageFileSize = typeof body.file_size === 'number' ? body.file_size : null
+    listingId = typeof body.listing_id === 'string' && body.listing_id.trim() !== '' ? body.listing_id : null
+    if (!storagePath) {
+      return NextResponse.json({ error: 'Missing path' }, { status: 400 })
+    }
+  } else if (contentType.includes('multipart/form-data')) {
+    // legacy: small PDFs sent inline (subject to Vercel 4.5MB body limit)
+    const formData = await request.formData()
+    file = formData.get('pdf') as File | null
+    const listingIdRaw = formData.get('listing_id')
+    listingId = typeof listingIdRaw === 'string' && listingIdRaw.trim() !== '' ? listingIdRaw : null
+    if (!file) {
+      return NextResponse.json({ error: 'No PDF provided' }, { status: 400 })
+    }
+  } else {
+    return NextResponse.json({ error: 'Expected JSON or multipart/form-data' }, { status: 400 })
   }
 
   let payload: OMPayload
   try {
-    payload = await parseOmPdf(file)
+    if (storagePath) {
+      const { data: blob, error } = await supabase.storage.from('om-uploads').download(storagePath)
+      if (error || !blob) {
+        return NextResponse.json({ error: `Storage download failed: ${error?.message ?? 'no blob'}` }, { status: 500 })
+      }
+      const bytes = await blob.arrayBuffer()
+      const base64 = Buffer.from(bytes).toString('base64')
+      payload = await parseOmFromBase64(base64)
+    } else if (file) {
+      payload = await parseOmPdfFile(file)
+    } else {
+      return NextResponse.json({ error: 'No PDF provided' }, { status: 400 })
+    }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Parse failed'
     return NextResponse.json({ error: `Parse failed: ${msg}` }, { status: 500 })
@@ -86,7 +119,7 @@ export async function POST(request: NextRequest) {
         listing_id: result.listingId,
         property_id: result.propertyId,
         augment_type: 'om_create',
-        raw_text: `[OM PDF: ${file.name}, ${file.size} bytes]`,
+        raw_text: `[OM PDF: ${file?.name ?? storageFileName ?? 'unknown'}, ${file?.size ?? storageFileSize ?? 0} bytes${storagePath ? `, storage:${storagePath}` : ''}]`,
         parsed_payload: payload as Database['public']['Tables']['augmentation_log']['Insert']['parsed_payload'],
         fields_changed: { mode: 'create', existing_listings_for_property: result.existingListingsForProperty } as Database['public']['Tables']['augmentation_log']['Insert']['fields_changed'],
         created_by: user.id,
@@ -114,7 +147,7 @@ export async function POST(request: NextRequest) {
       listing_id: listingId,
       property_id: null,
       augment_type: 'om',
-      raw_text: `[OM PDF: ${file.name}, ${file.size} bytes]`,
+      raw_text: `[OM PDF: ${file?.name ?? storageFileName ?? 'unknown'}, ${file?.size ?? storageFileSize ?? 0} bytes${storagePath ? `, storage:${storagePath}` : ''}]`,
       parsed_payload: payload as Database['public']['Tables']['augmentation_log']['Insert']['parsed_payload'],
       fields_changed: fieldsChanged as Database['public']['Tables']['augmentation_log']['Insert']['fields_changed'],
       created_by: user.id,
