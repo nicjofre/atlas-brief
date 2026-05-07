@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { persistDeal } from '@/lib/db/upsert'
 import type { ParsedDeal } from '@/lib/db/parsed-deal'
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 const client = new Anthropic()
 

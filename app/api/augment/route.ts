@@ -13,7 +13,7 @@ import {
   type FieldsChanged,
 } from '@/lib/db/augment-merge'
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 const client = new Anthropic()
 

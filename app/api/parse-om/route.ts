@@ -10,7 +10,7 @@ import {
   type OMPayload,
 } from '@/lib/db/om-merge'
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 const client = new Anthropic()
 
