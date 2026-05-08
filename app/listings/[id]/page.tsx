@@ -181,16 +181,13 @@ export default async function ListingDetailPage({
         </div>
 
         {heroSignedUrl && (
-          <div
-            style={{
-              width: '100%',
-              height: 360,
-              background: `url(${heroSignedUrl}) center/cover no-repeat`,
-              borderRadius: 4,
-              marginBottom: 24,
-            }}
-            aria-label="Listing hero photo"
-          />
+          <div style={{ width: '100%', marginBottom: 24, borderRadius: 4, overflow: 'hidden', background: '#111' }}>
+            <img
+              src={heroSignedUrl}
+              alt="Listing hero photo"
+              style={{ width: '100%', height: 'auto', maxHeight: 520, display: 'block', objectFit: 'contain', margin: '0 auto' }}
+            />
+          </div>
         )}
 
         <StatsBar listing={listing} property={p} headlinePrice={headlinePrice} />
@@ -680,15 +677,13 @@ function NotesTab({ p, transit, airports, secondaryAssets }: {
         <Section title="Listing Photos">
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(visiblePhotos.length, 3)}, 1fr)`, gap: 16 }}>
             {visiblePhotos.map((a, i) => (
-              <div
-                key={i}
-                style={{
-                  height: 200,
-                  background: `url(${a.signedUrl}) center/cover no-repeat`,
-                  borderRadius: 4,
-                }}
-                aria-label={`Listing photo ${i + 1}`}
-              />
+              <div key={i} style={{ background: '#f5f5f5', borderRadius: 4, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src={a.signedUrl ?? ''}
+                  alt={`Listing photo ${i + 1}`}
+                  style={{ maxWidth: '100%', maxHeight: 280, height: 'auto', display: 'block' }}
+                />
+              </div>
             ))}
           </div>
         </Section>

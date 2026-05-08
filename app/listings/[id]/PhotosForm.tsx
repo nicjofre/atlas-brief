@@ -188,11 +188,12 @@ function PhotoSlot({
           height,
           border: `2px dashed ${dragging ? '#9A6B3F' : '#ddd'}`,
           borderRadius: 4,
-          background: slot.current?.signedUrl ? `url(${slot.current.signedUrl}) center/cover no-repeat` : '#fff',
+          background: slot.current?.signedUrl ? '#f5f5f5' : '#fff',
           cursor: busy ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
           opacity: busy ? 0.5 : 1,
         }}
       >
@@ -203,7 +204,13 @@ function PhotoSlot({
           style={{ display: 'none' }}
           onChange={e => pickFile(e.target.files?.[0])}
         />
-        {!slot.current?.signedUrl && (
+        {slot.current?.signedUrl ? (
+          <img
+            src={slot.current.signedUrl}
+            alt={slot.label}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+          />
+        ) : (
           <div style={{ fontSize: 12, color: '#666' }}>{busy ? 'Uploading…' : 'Drag image here or click'}</div>
         )}
       </div>
