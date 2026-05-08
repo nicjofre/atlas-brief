@@ -4,25 +4,42 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-type AugmentType = 'contacts' | 'public_record' | 'loan' | 'om' | 'sale_comp'
-
-const TYPE_LABELS: Record<AugmentType, string> = {
-  contacts: 'Contacts tab',
-  public_record: 'Public Record tab',
-  loan: 'Loan tab',
-  om: 'Broker OM PDF',
-  sale_comp: 'Sales Comp page',
-}
-
-const TYPE_HINTS: Record<AugmentType, string> = {
-  contacts: 'Paste the entire Contacts tab. Captures listing/buyer brokers, property manager, recorded owner, true owner.',
-  public_record: 'Paste the entire Public Record tab. Captures owner mailing, subdivision, legal description, transaction history (sales + loans), 5-year assessment history.',
-  loan: 'Paste the Loan tab. Enriches existing loan events with maturity date, data source (CMBS/Research), loan classification.',
-  om: 'Upload a broker Offering Memorandum PDF. Captures CAP/GRM split (current vs market), marketing quotes, in-unit features, expense breakdown, and richer broker contact info.',
-  sale_comp: 'Paste the entire CoStar Sales Comp page (sold-deal detail). Captures true buyer/seller, hold period, sale notes narrative, initial ask vs sale price, buyer activity history, both brokers.',
-}
-
 type FieldsChanged = Record<string, { from: unknown; to: unknown }>
+
+type SourceKey = 'contacts' | 'public_record' | 'loan' | 'sale_comp' | 'om'
+
+const SECTIONS: { key: SourceKey; label: string; hint: string; isPdf: boolean }[] = [
+  {
+    key: 'contacts',
+    label: 'Contacts tab',
+    hint: 'Paste the entire Contacts tab. Captures listing/buyer brokers, property manager, recorded owner, true owner.',
+    isPdf: false,
+  },
+  {
+    key: 'public_record',
+    label: 'Public Record tab',
+    hint: 'Paste the entire Public Record tab. Captures owner mailing, subdivision, legal description, transaction history, 5-year assessment history.',
+    isPdf: false,
+  },
+  {
+    key: 'loan',
+    label: 'Loan tab',
+    hint: 'Paste the Loan tab. Enriches existing loan events with maturity date, data source (CMBS/Research), loan classification.',
+    isPdf: false,
+  },
+  {
+    key: 'sale_comp',
+    label: 'Sales Comp page',
+    hint: 'Paste the CoStar Sales Comp (sold-deal) page. Captures true buyer/seller, hold period, sale notes, initial ask, both brokers, buyer activity history.',
+    isPdf: false,
+  },
+  {
+    key: 'om',
+    label: 'Broker OM PDF',
+    hint: 'Upload a broker Offering Memorandum PDF. Captures CAP/GRM split, marketing quotes, in-unit features, expense breakdown, richer broker contact info.',
+    isPdf: true,
+  },
+]
 
 function formatValue(v: unknown): string {
   if (v == null) return '—'
@@ -34,46 +51,42 @@ function formatValue(v: unknown): string {
   return String(v)
 }
 
+type RunResult = {
+  key: SourceKey
+  status: 'ok' | 'error' | 'skipped'
+  error?: string
+  fields_changed?: FieldsChanged
+}
+
 export default function AugmentForm({ listingId }: { listingId: string }) {
   const router = useRouter()
   const supabase = createClient()
-  const [type, setType] = useState<AugmentType>('contacts')
-  const [text, setText] = useState('')
+  const [texts, setTexts] = useState<Record<Exclude<SourceKey, 'om'>, string>>({
+    contacts: '',
+    public_record: '',
+    loan: '',
+    sale_comp: '',
+  })
   const [omFile, setOmFile] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ fields_changed: FieldsChanged } | null>(null)
-  const [error, setError] = useState('')
+  const [running, setRunning] = useState<Set<SourceKey>>(new Set())
+  const [results, setResults] = useState<RunResult[] | null>(null)
 
-  async function handleSubmit() {
-    setLoading(true)
-    setError('')
-    setResult(null)
-    try {
-      let res: Response
-      if (type === 'sale_comp') {
-        res = await fetch('/api/parse-sale-comp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ listing_id: listingId, text }),
-        })
-      } else if (type === 'om') {
-        if (!omFile) return
-        // Upload to Supabase Storage first to bypass Vercel's 4.5MB body limit
+  const stagedCount =
+    Object.values(texts).filter(t => t.trim().length > 0).length + (omFile ? 1 : 0)
+
+  async function runOne(key: SourceKey): Promise<RunResult> {
+    if (key === 'om') {
+      if (!omFile) return { key, status: 'skipped' }
+      try {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          setError('Not signed in')
-          return
-        }
+        if (!user) return { key, status: 'error', error: 'Not signed in' }
         const safeName = omFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')
         const path = `${user.id}/${Date.now()}-${safeName}`
         const { error: uploadError } = await supabase.storage
           .from('om-uploads')
           .upload(path, omFile, { contentType: 'application/pdf', upsert: false })
-        if (uploadError) {
-          setError(`Upload failed: ${uploadError.message}`)
-          return
-        }
-        res = await fetch('/api/parse-om', {
+        if (uploadError) return { key, status: 'error', error: uploadError.message }
+        const res = await fetch('/api/parse-om', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -83,163 +96,237 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
             file_size: omFile.size,
           }),
         })
-      } else {
-        res = await fetch('/api/augment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ listing_id: listingId, type, text }),
-        })
+        const data = await res.json()
+        if (data.error) return { key, status: 'error', error: data.error }
+        return { key, status: 'ok', fields_changed: data.fields_changed ?? {} }
+      } catch (e) {
+        return { key, status: 'error', error: e instanceof Error ? e.message : 'Request failed' }
       }
+    }
+
+    const text = texts[key]
+    if (!text.trim()) return { key, status: 'skipped' }
+
+    try {
+      const url = key === 'sale_comp' ? '/api/parse-sale-comp' : '/api/augment'
+      const body =
+        key === 'sale_comp'
+          ? { listing_id: listingId, text }
+          : { listing_id: listingId, type: key, text }
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
       const data = await res.json()
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setResult({ fields_changed: data.fields_changed ?? {} })
-        setText('')
-        setOmFile(null)
-        router.refresh()
-      }
-    } catch {
-      setError('Request failed')
-    } finally {
-      setLoading(false)
+      if (data.error) return { key, status: 'error', error: data.error }
+      return { key, status: 'ok', fields_changed: data.fields_changed ?? {} }
+    } catch (e) {
+      return { key, status: 'error', error: e instanceof Error ? e.message : 'Request failed' }
     }
   }
 
-  const canSubmit = type === 'om' ? !!omFile : text.trim().length > 0
-  const changedKeys = result ? Object.keys(result.fields_changed) : []
+  async function handleParseAll() {
+    if (stagedCount === 0) return
+
+    const keys: SourceKey[] = []
+    for (const k of Object.keys(texts) as Exclude<SourceKey, 'om'>[]) {
+      if (texts[k].trim()) keys.push(k)
+    }
+    if (omFile) keys.push('om')
+
+    setRunning(new Set(keys))
+    setResults(null)
+
+    // Run in parallel
+    const settled = await Promise.all(keys.map(runOne))
+    setResults(settled)
+    setRunning(new Set())
+
+    // Clear staged inputs that succeeded
+    setTexts(prev => {
+      const next = { ...prev }
+      for (const r of settled) {
+        if (r.status === 'ok' && r.key !== 'om') {
+          next[r.key as Exclude<SourceKey, 'om'>] = ''
+        }
+      }
+      return next
+    })
+    if (settled.find(r => r.key === 'om' && r.status === 'ok')) {
+      setOmFile(null)
+    }
+
+    router.refresh()
+  }
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', marginBottom: 8 }}>Source</div>
-        <div style={{ display: 'flex', gap: 0, marginBottom: 8, borderBottom: '1px solid #ddd' }}>
-          {(Object.keys(TYPE_LABELS) as AugmentType[]).map(t => (
-            <button
-              key={t}
-              onClick={() => setType(t)}
-              style={{
-                padding: '8px 16px',
-                fontSize: 11,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                background: 'none',
-                border: 'none',
-                borderBottom: type === t ? '2px solid #111' : '2px solid transparent',
-                color: type === t ? '#111' : '#999',
-                cursor: 'pointer',
-                marginBottom: -1,
-              }}
-            >
-              {TYPE_LABELS[t]}
-            </button>
-          ))}
-        </div>
-        <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{TYPE_HINTS[type]}</div>
+      <div style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
+        Paste content into any of the sections below — leave others blank if you don&apos;t have them. Click <strong>Parse All</strong> to run them in parallel. Each field updates the listing with merge semantics.
       </div>
 
-      {type === 'om' ? (
-        <div
-          onClick={() => document.getElementById('augment-om-input')?.click()}
-          style={{
-            border: '2px dashed #ddd',
-            borderRadius: 4,
-            padding: '40px 24px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            background: omFile ? '#f9f9f9' : '#fff',
-          }}
-        >
-          <input
-            id="augment-om-input"
-            type="file"
-            accept="application/pdf"
-            style={{ display: 'none' }}
-            onChange={e => setOmFile(e.target.files?.[0] ?? null)}
-          />
-          {omFile ? (
-            <div>
-              <div style={{ fontSize: 13, color: '#111', marginBottom: 4 }}>{omFile.name}</div>
-              <div style={{ fontSize: 11, color: '#999' }}>
-                {(omFile.size / 1024).toFixed(0)} KB — click to replace
+      {SECTIONS.map(section => {
+        const isRunning = running.has(section.key)
+        const result = results?.find(r => r.key === section.key)
+        const hasInput =
+          section.isPdf
+            ? !!omFile
+            : (texts[section.key as Exclude<SourceKey, 'om'>] ?? '').trim().length > 0
+
+        return (
+          <div
+            key={section.key}
+            style={{
+              marginBottom: 24,
+              padding: 16,
+              background: '#fff',
+              border: '1px solid #eee',
+              borderRadius: 4,
+              opacity: isRunning ? 0.6 : 1,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F' }}>
+                {section.label}
               </div>
+              {result && (
+                <div style={{ fontSize: 11, color: result.status === 'ok' ? '#27ae60' : result.status === 'error' ? '#c0392b' : '#999' }}>
+                  {result.status === 'ok'
+                    ? `✓ ${Object.keys(result.fields_changed ?? {}).length} field${Object.keys(result.fields_changed ?? {}).length === 1 ? '' : 's'} updated`
+                    : result.status === 'error'
+                    ? `✗ ${result.error}`
+                    : 'skipped'}
+                </div>
+              )}
+              {isRunning && <div style={{ fontSize: 11, color: '#999' }}>parsing…</div>}
+              {!isRunning && !result && hasInput && (
+                <div style={{ fontSize: 11, color: '#5b87b5' }}>queued</div>
+              )}
             </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop OM PDF here</div>
-              <div style={{ fontSize: 11, color: '#999' }}>20-60s parse time depending on length</div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <textarea
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder={`Copy the full ${TYPE_LABELS[type]} content from CoStar and paste here...`}
-          rows={14}
-          style={{
-            width: '100%',
-            padding: 16,
-            border: '1px solid #ddd',
-            borderRadius: 4,
-            fontSize: 13,
-            background: '#fff',
-            color: '#111',
-            resize: 'vertical',
-            outline: 'none',
-            fontFamily: 'monospace',
-            boxSizing: 'border-box',
-          }}
-        />
-      )}
+            <div style={{ fontSize: 12, color: '#666', marginBottom: 12, lineHeight: 1.5 }}>{section.hint}</div>
+
+            {section.isPdf ? (
+              <div
+                onClick={() => document.getElementById('augment-om-input')?.click()}
+                style={{
+                  border: '2px dashed #ddd',
+                  borderRadius: 4,
+                  padding: '24px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  background: omFile ? '#f9f9f9' : '#fff',
+                }}
+              >
+                <input
+                  id="augment-om-input"
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: 'none' }}
+                  onChange={e => setOmFile(e.target.files?.[0] ?? null)}
+                />
+                {omFile ? (
+                  <div>
+                    <div style={{ fontSize: 13, color: '#111', marginBottom: 4 }}>{omFile.name}</div>
+                    <div style={{ fontSize: 11, color: '#999' }}>
+                      {(omFile.size / 1024).toFixed(0)} KB — click to replace
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: '#666' }}>Drop OM PDF here</div>
+                )}
+              </div>
+            ) : (
+              <textarea
+                value={texts[section.key as Exclude<SourceKey, 'om'>]}
+                onChange={e =>
+                  setTexts(prev => ({ ...prev, [section.key as Exclude<SourceKey, 'om'>]: e.target.value }))
+                }
+                placeholder="Paste tab content here..."
+                rows={8}
+                style={{
+                  width: '100%',
+                  padding: 12,
+                  border: '1px solid #ddd',
+                  borderRadius: 4,
+                  fontSize: 13,
+                  background: '#fff',
+                  color: '#111',
+                  resize: 'vertical',
+                  outline: 'none',
+                  fontFamily: 'monospace',
+                  boxSizing: 'border-box',
+                }}
+              />
+            )}
+          </div>
+        )
+      })}
 
       <button
-        onClick={handleSubmit}
-        disabled={loading || !canSubmit}
+        onClick={handleParseAll}
+        disabled={running.size > 0 || stagedCount === 0}
         style={{
-          marginTop: 12,
           padding: '12px 28px',
           background: '#111',
           color: '#fff',
           border: 'none',
           borderRadius: 4,
           fontSize: 13,
-          cursor: loading || !canSubmit ? 'not-allowed' : 'pointer',
-          opacity: loading || !canSubmit ? 0.6 : 1,
+          cursor: running.size > 0 || stagedCount === 0 ? 'not-allowed' : 'pointer',
+          opacity: running.size > 0 || stagedCount === 0 ? 0.6 : 1,
         }}
       >
-        {loading ? (type === 'om' ? 'Parsing OM (~30s)...' : 'Parsing...') : 'Apply'}
+        {running.size > 0
+          ? `Parsing ${running.size}…`
+          : stagedCount === 0
+          ? 'Parse All'
+          : `Parse All (${stagedCount})`}
       </button>
 
-      {error && <div style={{ marginTop: 12, color: '#c0392b', fontSize: 13 }}>{error}</div>}
-
-      {result && (
+      {results && results.some(r => r.status === 'ok') && (
         <div style={{ marginTop: 24, padding: 16, background: '#fff', border: '1px solid #ddd', borderRadius: 4 }}>
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', marginBottom: 12 }}>
-            {changedKeys.length === 0 ? 'No changes' : `${changedKeys.length} field${changedKeys.length === 1 ? '' : 's'} updated`}
+            Combined diff
           </div>
-          {changedKeys.length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #eee', color: '#9A6B3F', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  <th style={{ textAlign: 'left', padding: '6px 12px 6px 0' }}>Field</th>
-                  <th style={{ textAlign: 'left', padding: '6px 12px' }}>Before</th>
-                  <th style={{ textAlign: 'left', padding: '6px 0' }}>After</th>
-                </tr>
-              </thead>
-              <tbody>
-                {changedKeys.map(k => (
-                  <tr key={k} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                    <td style={{ padding: '8px 12px 8px 0', fontFamily: 'monospace', color: '#111' }}>{k}</td>
-                    <td style={{ padding: '8px 12px', color: '#999' }}>{formatValue(result.fields_changed[k].from)}</td>
-                    <td style={{ padding: '8px 0', color: '#111' }}>{formatValue(result.fields_changed[k].to)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <DiffTable results={results.filter(r => r.status === 'ok')} />
         </div>
       )}
     </div>
+  )
+}
+
+function DiffTable({ results }: { results: RunResult[] }) {
+  type Row = { source: string; field: string; from: unknown; to: unknown }
+  const rows: Row[] = []
+  for (const r of results) {
+    for (const [field, change] of Object.entries(r.fields_changed ?? {})) {
+      rows.push({ source: r.key, field, from: change.from, to: change.to })
+    }
+  }
+  if (rows.length === 0) {
+    return <div style={{ fontSize: 12, color: '#999' }}>No fields changed.</div>
+  }
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+      <thead>
+        <tr style={{ borderBottom: '1px solid #eee', color: '#9A6B3F', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
+          <th style={{ textAlign: 'left', padding: '6px 12px 6px 0' }}>Source</th>
+          <th style={{ textAlign: 'left', padding: '6px 12px' }}>Field</th>
+          <th style={{ textAlign: 'left', padding: '6px 12px' }}>Before</th>
+          <th style={{ textAlign: 'left', padding: '6px 0' }}>After</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i} style={{ borderBottom: '1px solid #f5f5f5' }}>
+            <td style={{ padding: '8px 12px 8px 0', fontSize: 11, color: '#9A6B3F', letterSpacing: 1, textTransform: 'uppercase' }}>{r.source}</td>
+            <td style={{ padding: '8px 12px', fontFamily: 'monospace', color: '#111' }}>{r.field}</td>
+            <td style={{ padding: '8px 12px', color: '#999' }}>{formatValue(r.from)}</td>
+            <td style={{ padding: '8px 0', color: '#111' }}>{formatValue(r.to)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
