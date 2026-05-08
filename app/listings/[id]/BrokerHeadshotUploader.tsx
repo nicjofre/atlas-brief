@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { uploadPropertyAsset } from '@/lib/upload-image'
@@ -20,6 +20,29 @@ export default function BrokerHeadshotUploader({
   const supabase = createClient()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [active, setActive] = useState(false)
+
+  useEffect(() => {
+    if (!active) return
+    function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            e.preventDefault()
+            void handleFile(file)
+            return
+          }
+        }
+      }
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active])
 
   async function handleFile(file: File) {
     setBusy(true)
@@ -70,10 +93,14 @@ export default function BrokerHeadshotUploader({
   return (
     <div style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <div
-        onClick={() => !busy && document.getElementById(inputId)?.click()}
+        onClick={() => {
+          setActive(true)
+          if (!busy) document.getElementById(inputId)?.click()
+        }}
         onDragOver={e => e.preventDefault()}
         onDrop={e => {
           e.preventDefault()
+          setActive(true)
           const f = e.dataTransfer.files[0]
           if (f) handleFile(f)
         }}
@@ -81,7 +108,7 @@ export default function BrokerHeadshotUploader({
           width: 64,
           height: 64,
           borderRadius: '50%',
-          border: '2px dashed #ddd',
+          border: `2px dashed ${active ? '#9A6B3F' : '#ddd'}`,
           background: currentSignedUrl ? `url(${currentSignedUrl}) center/cover no-repeat` : '#f9f9f9',
           cursor: busy ? 'not-allowed' : 'pointer',
           display: 'flex',
@@ -112,7 +139,7 @@ export default function BrokerHeadshotUploader({
           Headshot
         </div>
         <div style={{ fontSize: 11, color: '#666', lineHeight: 1.5 }}>
-          {currentSignedUrl ? `Photo of ${brokerName ?? 'broker'}.` : 'Drag a headshot onto the circle, or click to choose.'}
+          {currentSignedUrl ? `Photo of ${brokerName ?? 'broker'}.` : 'Drag, click, or click then ⌘V/Ctrl+V to paste.'}
         </div>
         {currentPath && (
           <button

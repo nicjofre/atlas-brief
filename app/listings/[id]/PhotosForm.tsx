@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { uploadPropertyAsset } from '@/lib/upload-image'
@@ -27,6 +27,7 @@ export default function PhotosForm({
   const supabase = createClient()
   const [busy, setBusy] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [activeSlot, setActiveSlot] = useState<number>(0)  // last-clicked slot, paste targets this
 
   const slots: Slot[] = [
     { index: 0, label: 'Hero', pathPrefix: `listing/${listingId}/hero`, current: hero },
@@ -37,6 +38,28 @@ export default function PhotosForm({
       current: secondaries[i] ?? null,
     })),
   ]
+
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            e.preventDefault()
+            const target = slots[activeSlot] ?? slots[0]
+            void handleFile(target, file)
+            return
+          }
+        }
+      }
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlot, listingId])
 
   async function handleFile(slot: Slot, file: File) {
     setBusy(slot.index)
@@ -130,15 +153,15 @@ export default function PhotosForm({
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, marginBottom: 24 }}>
         {/* Hero slot — full width */}
-        <PhotoSlot slot={slots[0]} busy={busy === 0} onFile={f => handleFile(slots[0], f)} onDelete={() => handleDelete(slots[0])} large />
+        <PhotoSlot slot={slots[0]} busy={busy === 0} active={activeSlot === 0} onFocus={() => setActiveSlot(0)} onFile={f => handleFile(slots[0], f)} onDelete={() => handleDelete(slots[0])} large />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {slots.slice(1).map(s => (
-          <PhotoSlot key={s.index} slot={s} busy={busy === s.index} onFile={f => handleFile(s, f)} onDelete={() => handleDelete(s)} />
+          <PhotoSlot key={s.index} slot={s} busy={busy === s.index} active={activeSlot === s.index} onFocus={() => setActiveSlot(s.index)} onFile={f => handleFile(s, f)} onDelete={() => handleDelete(s)} />
         ))}
       </div>
       <div style={{ marginTop: 16, fontSize: 11, color: '#999', lineHeight: 1.6 }}>
-        Images are resized to 1600px wide JPEGs in the browser before upload, so big originals are fine.
+        Drag, click, or click a slot then ⌘V/Ctrl+V to paste. Images are resized to 1600px wide JPEGs in the browser before upload.
       </div>
     </div>
   )
@@ -147,14 +170,18 @@ export default function PhotosForm({
 function PhotoSlot({
   slot,
   busy,
+  active,
   onFile,
   onDelete,
+  onFocus,
   large,
 }: {
   slot: Slot
   busy: boolean
+  active: boolean
   onFile: (file: File) => void
   onDelete: () => void
+  onFocus: () => void
   large?: boolean
 }) {
   const [dragging, setDragging] = useState(false)
@@ -168,8 +195,8 @@ function PhotoSlot({
 
   return (
     <div>
-      <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', marginBottom: 6 }}>
-        {slot.label}
+      <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: active ? '#111' : '#9A6B3F', marginBottom: 6 }}>
+        {slot.label}{active ? ' · paste-target' : ''}
       </div>
       <div
         onDragOver={e => {
@@ -180,13 +207,17 @@ function PhotoSlot({
         onDrop={e => {
           e.preventDefault()
           setDragging(false)
+          onFocus()
           pickFile(e.dataTransfer.files[0])
         }}
-        onClick={() => document.getElementById(inputId)?.click()}
+        onClick={() => {
+          onFocus()
+          document.getElementById(inputId)?.click()
+        }}
         style={{
           position: 'relative',
           height,
-          border: `2px dashed ${dragging ? '#9A6B3F' : '#ddd'}`,
+          border: `2px dashed ${dragging || active ? '#9A6B3F' : '#ddd'}`,
           borderRadius: 4,
           background: slot.current?.signedUrl ? '#f5f5f5' : '#fff',
           cursor: busy ? 'not-allowed' : 'pointer',
@@ -211,7 +242,7 @@ function PhotoSlot({
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
           />
         ) : (
-          <div style={{ fontSize: 12, color: '#666' }}>{busy ? 'Uploading…' : 'Drag image here or click'}</div>
+          <div style={{ fontSize: 12, color: '#666' }}>{busy ? 'Uploading…' : 'Drag, click, or paste'}</div>
         )}
       </div>
       {slot.current && (
