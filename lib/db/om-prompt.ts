@@ -57,19 +57,8 @@ Return ONLY valid JSON in this exact shape. Use null for any field not found. Do
       "units": number,
       "avg_sf": number,
       "current_avg_rent": number,
-      "market_avg_rent": number
-    }
-  ],
-  "rent_roll": [
-    {
-      "unit_number": string,
-      "unit_type": string,
-      "unit_size": number,
-      "status": string,
-      "current_rent": number,
-      "scheduled_rent": number,
-      "market_rent": number,
-      "notes": string
+      "market_avg_rent": number,
+      "vacant_count": number
     }
   ],
   "in_unit_features": [string],
@@ -106,7 +95,7 @@ Return ONLY valid JSON in this exact shape. Use null for any field not found. Do
 
 Critical instructions:
 
-1. SUBJECT PROPERTY ONLY. Many OMs include "Sales Comparables" or "Apartment Comparables" tables with data on nearby properties. Do NOT extract those into property/listing/unit_mix/rent_roll. Only extract data about the property being marketed for sale.
+1. SUBJECT PROPERTY ONLY. Many OMs include "Sales Comparables" or "Apartment Comparables" tables with data on nearby properties. Do NOT extract those into property/listing/unit_mix. Only extract data about the property being marketed for sale.
 
 2. CURRENT vs MARKET. OMs typically show financials in two or three columns: Current (in-place), Year 1 (proforma after light intervention), and Market (stabilized). For each financial field, capture both Current and Market. Ignore Year 1 unless that's the only column shown.
 
@@ -120,18 +109,18 @@ Critical instructions:
 
 7. OM_HIGHLIGHTS. Short pitch phrases that appear ONCE on the cover or section dividers (e.g., "An 88 Unit Mixed-Use Value Add Opportunity Located in Downtown Los Angeles", "A Premier 132-Unit Multifamily Opportunity in Los Angeles' Dynamic Miracle Mile Submarket"). Different from marketing_quotes which are the longer Investment Highlights bullets.
 
-8. UNIT_MIX. Aggregate by bedroom type (e.g., "Studio", "1+1", "1+2", "2+1", "2+2", "2+2.5", "3+2"). Pull from the financial summary's unit mix table or rent roll summary, not from individual rent roll rows.
+8. UNIT_MIX. Aggregate by bedroom type (e.g., "Studio", "1+1", "1+2", "2+1", "2+2", "2+2.5", "3+2"). Pull from the financial summary's unit mix table. If a rent roll exists, count vacant units per type and put it in vacant_count; otherwise leave vacant_count null.
 
-9. RENT_ROLL. Per-unit rows. Status values: "Occupied", "Vacant", "Manager", "Maintenance", "Owner". The notes column may contain things like "Owners Unit To Be Delivered Vacant" or "Vacant: 2/19/26" — preserve verbatim.
+9. IN_UNIT_FEATURES. From The Offering / Investment Highlights / Premium In-Unit Finishes sections — extract phrases like "high ceilings", "polished concrete floors", "stainless steel appliances", "in-unit laundry hookups", "vaulted ceilings in upper floors", "private balconies with city views", "Nest smart thermostats", "fireplaces". One per array element.
 
-10. IN_UNIT_FEATURES. From The Offering / Investment Highlights / Premium In-Unit Finishes sections — extract phrases like "high ceilings", "polished concrete floors", "stainless steel appliances", "in-unit laundry hookups", "vaulted ceilings in upper floors", "private balconies with city views", "Nest smart thermostats", "fireplaces". One per array element.
+10. PHOTOS. For each photo on the page, capture { caption, page, role }. Caption is the visible label if present (e.g., "PERCH LA", "PALM COURT APARTMENTS"), or a 3-5 word description if no caption. Role: "exterior" (building from outside), "unit" (interior of an apartment), "amenity" (pool/gym/lounge), "aerial" (drone shot), "common_area" (lobby/hallway), "neighborhood_landmark" (nearby building like a museum or stadium — NOT the subject property). Skip plain location maps, broker logos, disclaimer pages.
 
-11. PHOTOS. For each photo on the page, capture { caption, page, role }. Caption is the visible label if present (e.g., "PERCH LA", "PALM COURT APARTMENTS"), or a 3-5 word description if no caption. Role: "exterior" (building from outside), "unit" (interior of an apartment), "amenity" (pool/gym/lounge), "aerial" (drone shot), "common_area" (lobby/hallway), "neighborhood_landmark" (nearby building like a museum or stadium — NOT the subject property). Skip plain location maps, broker logos, disclaimer pages.
+11. EXPENSE_BREAKDOWN. From the Annualized Expenses / Operating Expenses table. Each line item (Real Estate Taxes, Insurance, Utilities, Maintenance, Payroll, etc.) becomes one entry. Use the Current column for "current" and the Market or stabilized column for "market".
 
-12. EXPENSE_BREAKDOWN. From the Annualized Expenses / Operating Expenses table. Each line item (Real Estate Taxes, Insurance, Utilities, Maintenance, Payroll, etc.) becomes one entry. Use the Current column for "current" and the Market or stabilized column for "market".
+12. NUMBERS. All numeric fields are numbers, not strings. "$8.89M" → 8890000. "5.21%" → 5.21. "1,512 SF" → 1512.
 
-13. NUMBERS. All numeric fields are numbers, not strings. "$8.89M" → 8890000. "5.21%" → 5.21. "1,512 SF" → 1512.
+13. AB 1482 / RSO. If the OM mentions rent control (AB 1482, RSO, Rent Stabilization Ordinance), capture the relevant phrase in value_add_notes (e.g., "Subject to AB 1482, capping annual increases at 5% plus CPI up to 10%").
 
-14. AB 1482 / RSO. If the OM mentions rent control (AB 1482, RSO, Rent Stabilization Ordinance), capture the relevant phrase in value_add_notes (e.g., "Subject to AB 1482, capping annual increases at 5% plus CPI up to 10%").
+14. PROPERTY CLASS. If the OM explicitly says "Class A property", "Class B", or "Class C", capture it. If it just describes the property (e.g., "luxury", "historic", "value-add"), leave property_class null. Do not infer from age or amenities.
 
 Return only valid JSON, no explanation, no markdown fences.`

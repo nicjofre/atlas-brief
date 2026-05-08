@@ -94,16 +94,7 @@ export type OMPayload = {
     avg_sf?: number | null
     current_avg_rent?: number | null
     market_avg_rent?: number | null
-  }[] | null
-  rent_roll?: {
-    unit_number?: string | null
-    unit_type?: string | null
-    unit_size?: number | null
-    status?: string | null
-    current_rent?: number | null
-    scheduled_rent?: number | null
-    market_rent?: number | null
-    notes?: string | null
+    vacant_count?: number | null
   }[] | null
   in_unit_features?: string[] | null
   marketing_quotes?: { label?: string | null; body?: string | null }[] | null
@@ -254,7 +245,6 @@ function omToListingFields(om: OMPayload, brokerId: string | null): ListingInser
     implied_gross_annual_current: l.scheduled_gross_income_current ?? derived.implied_gross_annual_current,
     implied_gross_annual_market: l.scheduled_gross_income_market ?? null,
     unit_mix: om.unit_mix ?? null,
-    rent_roll: om.rent_roll ?? null,
     in_unit_features: om.in_unit_features ?? null,
     marketing_quotes: om.marketing_quotes ?? null,
     om_highlights: om.om_highlights ?? null,
@@ -407,7 +397,7 @@ export async function augmentListingFromOm(
     'noi_current', 'expense_ratio', 'price_per_unit', 'price_per_sf',
     'implied_monthly_rent_current', 'implied_monthly_rent_market',
     'implied_gross_annual_current', 'implied_gross_annual_market',
-    'unit_mix', 'rent_roll', 'in_unit_features', 'marketing_quotes',
+    'unit_mix', 'in_unit_features', 'marketing_quotes',
     'om_highlights', 'photos',
     'last_om_parsed_at',
   ] as const
