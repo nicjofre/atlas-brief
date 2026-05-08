@@ -810,8 +810,8 @@ function PageShell({ children }: { children: React.ReactNode }) {
         <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
           Atlas <em>Brief</em>
         </Link>
-        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>The Tape</Link>
-        <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Parse</Link>
+        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
+        <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
       </div>
       {children}
     </div>
@@ -821,7 +821,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 function BreadcrumbBack() {
   return (
     <div style={{ marginBottom: 16 }}>
-      <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', textDecoration: 'none' }}>← The Tape</Link>
+      <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', textDecoration: 'none' }}>← Database</Link>
     </div>
   )
 }

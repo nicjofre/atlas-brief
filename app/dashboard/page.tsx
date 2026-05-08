@@ -298,7 +298,7 @@ export default function DashboardPage() {
       if (listingId) {
         if (data.existing_listings_for_property && data.existing_listings_for_property > 1) {
           setWarning(
-            `This property already has ${data.existing_listings_for_property - 1} other listing(s). New listing created — open The Tape to review.`
+            `This property already has ${data.existing_listings_for_property - 1} other listing(s). New listing created — open the Database to review.`
           )
         }
         router.push(`/listings/${listingId}`)
@@ -329,8 +329,8 @@ export default function DashboardPage() {
       <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 24 }}>
           <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>Atlas <em>Brief</em></Link>
-          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>The Tape</Link>
-          <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Parse</Link>
+          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
+          <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Input</Link>
         </div>
         <button onClick={handleSignOut} style={{ fontSize: 13, color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
       </div>
@@ -387,10 +387,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: 11, color: '#999' }}>{(pdfFile.size / 1024).toFixed(0)} KB — click to replace</div>
                 </div>
               ) : (
-                <div>
-                  <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop CoStar PDF report here</div>
-                  <div style={{ fontSize: 11, color: '#999' }}>Property Summary export</div>
-                </div>
+                <div style={{ fontSize: 14, color: '#666' }}>Drop CoStar PDF report here</div>
               )}
             </div>
           ) : mode === 'om' ? (
@@ -418,10 +415,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: 11, color: '#999' }}>{(omFile.size / 1024).toFixed(0)} KB — click to replace</div>
                 </div>
               ) : (
-                <div>
-                  <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Drop broker Offering Memorandum here</div>
-                  <div style={{ fontSize: 11, color: '#999' }}>Marcus &amp; Millichap, CBRE, Northmarq, Berkadia, Lyon Stahl, etc.</div>
-                </div>
+                <div style={{ fontSize: 14, color: '#666' }}>Drop broker Offering Memorandum here</div>
               )}
             </div>
           ) : mode === 'sale_comp' ? (
