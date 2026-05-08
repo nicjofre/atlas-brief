@@ -151,11 +151,19 @@ export type Database = {
           ab1482_applicable: boolean | null
           bid_ask_delta: number | null
           borrower: string | null
+          buyer_activity_acquisitions: number | null
+          buyer_activity_dispositions: number | null
           buyer_broker_id: string | null
+          buyer_contact: string | null
+          buyer_origin: string | null
+          buyer_phone: string | null
+          buyer_secondary_type: string | null
+          buyer_type: string | null
           cap_rate_current: number | null
           cap_rate_current_source: string | null
           cap_rate_market: number | null
           cap_rate_market_source: string | null
+          comp_status: string | null
           created_at: string
           created_by: string | null
           expense_ratio: number | null
@@ -164,12 +172,14 @@ export type Database = {
           grm_market: number | null
           grm_market_source: string | null
           hero_photo_index: number | null
+          hold_period_months: number | null
           id: string
           implied_gross_annual_current: number | null
           implied_gross_annual_market: number | null
           implied_monthly_rent_current: number | null
           implied_monthly_rent_market: number | null
           in_unit_features: string[] | null
+          initial_ask_price: number | null
           last_om_parsed_at: string | null
           lender: string | null
           list_date: string | null
@@ -184,16 +194,30 @@ export type Database = {
           noi_current: number | null
           om_highlights: string[] | null
           photos: Json | null
+          price_per_acre_land: number | null
           price_per_sf: number | null
+          price_per_sf_land: number | null
           price_per_unit: number | null
+          price_status: string | null
           property_id: string
+          recorded_buyer: string | null
+          recorded_seller: string | null
+          recording_date: string | null
           rent_roll: Json | null
           rso_applicable: boolean | null
           sale_date: string | null
+          sale_notes: string | null
           sale_price: number | null
           sale_type: string | null
+          seller_contact: string | null
+          seller_phone: string | null
+          seller_secondary_type: string | null
+          seller_type: string | null
           status: string | null
           t12: Json | null
+          transfer_tax: number | null
+          true_buyer: string | null
+          true_seller: string | null
           ula_tax_estimate: number | null
           ula_threshold_status: string | null
           unit_mix: Json | null
@@ -204,11 +228,19 @@ export type Database = {
           ab1482_applicable?: boolean | null
           bid_ask_delta?: number | null
           borrower?: string | null
+          buyer_activity_acquisitions?: number | null
+          buyer_activity_dispositions?: number | null
           buyer_broker_id?: string | null
+          buyer_contact?: string | null
+          buyer_origin?: string | null
+          buyer_phone?: string | null
+          buyer_secondary_type?: string | null
+          buyer_type?: string | null
           cap_rate_current?: number | null
           cap_rate_current_source?: string | null
           cap_rate_market?: number | null
           cap_rate_market_source?: string | null
+          comp_status?: string | null
           created_at?: string
           created_by?: string | null
           expense_ratio?: number | null
@@ -217,12 +249,14 @@ export type Database = {
           grm_market?: number | null
           grm_market_source?: string | null
           hero_photo_index?: number | null
+          hold_period_months?: number | null
           id?: string
           implied_gross_annual_current?: number | null
           implied_gross_annual_market?: number | null
           implied_monthly_rent_current?: number | null
           implied_monthly_rent_market?: number | null
           in_unit_features?: string[] | null
+          initial_ask_price?: number | null
           last_om_parsed_at?: string | null
           lender?: string | null
           list_date?: string | null
@@ -237,16 +271,30 @@ export type Database = {
           noi_current?: number | null
           om_highlights?: string[] | null
           photos?: Json | null
+          price_per_acre_land?: number | null
           price_per_sf?: number | null
+          price_per_sf_land?: number | null
           price_per_unit?: number | null
+          price_status?: string | null
           property_id: string
+          recorded_buyer?: string | null
+          recorded_seller?: string | null
+          recording_date?: string | null
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
+          sale_notes?: string | null
           sale_price?: number | null
           sale_type?: string | null
+          seller_contact?: string | null
+          seller_phone?: string | null
+          seller_secondary_type?: string | null
+          seller_type?: string | null
           status?: string | null
           t12?: Json | null
+          transfer_tax?: number | null
+          true_buyer?: string | null
+          true_seller?: string | null
           ula_tax_estimate?: number | null
           ula_threshold_status?: string | null
           unit_mix?: Json | null
@@ -257,11 +305,19 @@ export type Database = {
           ab1482_applicable?: boolean | null
           bid_ask_delta?: number | null
           borrower?: string | null
+          buyer_activity_acquisitions?: number | null
+          buyer_activity_dispositions?: number | null
           buyer_broker_id?: string | null
+          buyer_contact?: string | null
+          buyer_origin?: string | null
+          buyer_phone?: string | null
+          buyer_secondary_type?: string | null
+          buyer_type?: string | null
           cap_rate_current?: number | null
           cap_rate_current_source?: string | null
           cap_rate_market?: number | null
           cap_rate_market_source?: string | null
+          comp_status?: string | null
           created_at?: string
           created_by?: string | null
           expense_ratio?: number | null
@@ -270,12 +326,14 @@ export type Database = {
           grm_market?: number | null
           grm_market_source?: string | null
           hero_photo_index?: number | null
+          hold_period_months?: number | null
           id?: string
           implied_gross_annual_current?: number | null
           implied_gross_annual_market?: number | null
           implied_monthly_rent_current?: number | null
           implied_monthly_rent_market?: number | null
           in_unit_features?: string[] | null
+          initial_ask_price?: number | null
           last_om_parsed_at?: string | null
           lender?: string | null
           list_date?: string | null
@@ -290,16 +348,30 @@ export type Database = {
           noi_current?: number | null
           om_highlights?: string[] | null
           photos?: Json | null
+          price_per_acre_land?: number | null
           price_per_sf?: number | null
+          price_per_sf_land?: number | null
           price_per_unit?: number | null
+          price_status?: string | null
           property_id?: string
+          recorded_buyer?: string | null
+          recorded_seller?: string | null
+          recording_date?: string | null
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
+          sale_notes?: string | null
           sale_price?: number | null
           sale_type?: string | null
+          seller_contact?: string | null
+          seller_phone?: string | null
+          seller_secondary_type?: string | null
+          seller_type?: string | null
           status?: string | null
           t12?: Json | null
+          transfer_tax?: number | null
+          true_buyer?: string | null
+          true_seller?: string | null
           ula_tax_estimate?: number | null
           ula_threshold_status?: string | null
           unit_mix?: Json | null

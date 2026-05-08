@@ -184,7 +184,7 @@ export default async function ListingDetailPage({
           <SummaryTab listing={listing} p={p} unitMix={unitMix} />
         )}
         {tab === 'public_record' && (
-          <PublicRecordTab p={p} transactions={transactions} assessmentHistory={assessmentHistory} demo1={demo1} demo3={demo3} />
+          <PublicRecordTab listing={listing} p={p} transactions={transactions} assessmentHistory={assessmentHistory} demo1={demo1} demo3={demo3} />
         )}
         {tab === 'contacts' && (
           <ContactsTab lb={lb} bb={bb} p={p} />
@@ -345,12 +345,14 @@ function SummaryTab({
 }
 
 function PublicRecordTab({
+  listing,
   p,
   transactions,
   assessmentHistory,
   demo1,
   demo3,
 }: {
+  listing: Record<string, unknown>
   p: Record<string, unknown> | null
   transactions: TransactionRow[] | null
   assessmentHistory: AssessmentRow[] | null
@@ -382,6 +384,9 @@ function PublicRecordTab({
           <Field label="Zoning" value={plain(p?.zoning as string | null)} />
         </Section>
       </Grid>
+
+      {/* Sale Detail (Sales Comp augmentation) */}
+      <SaleDetailSection listing={listing} />
 
       {sales.length > 0 ? (
         <Section title="Sale History">
@@ -813,6 +818,77 @@ function AugmentNote({ text }: { text: string }) {
       <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#5b87b5', marginBottom: 4 }}>Augment Pending</div>
       {text}
     </div>
+  )
+}
+
+function SaleDetailSection({ listing }: { listing: Record<string, unknown> }) {
+  const l = listing
+  const hasAny =
+    l.sale_notes != null ||
+    l.true_buyer != null ||
+    l.true_seller != null ||
+    l.recorded_buyer != null ||
+    l.recorded_seller != null ||
+    l.hold_period_months != null ||
+    l.initial_ask_price != null ||
+    l.buyer_activity_acquisitions != null
+
+  if (!hasAny) {
+    return (
+      <Section title="Sale Detail">
+        <AugmentNote text="Paste a CoStar Sales Comp page via Augment to capture true buyer/seller, hold period, sale notes narrative, initial ask price, and buyer activity history." />
+      </Section>
+    )
+  }
+
+  return (
+    <Section title="Sale Detail">
+      <Grid>
+        <div>
+          <Field label="Initial Ask Price" value={dollars(l.initial_ask_price as number | null)} />
+          <Field label="Sale Price" value={dollars(l.sale_price as number | null)} />
+          <Field label="Bid/Ask Delta" value={dollars(l.bid_ask_delta as number | null)} hint="derived" />
+          <Field label="Hold Period" value={l.hold_period_months != null ? `${l.hold_period_months} months` : '—'} />
+          <Field label="Recording Date" value={date(l.recording_date as string | null)} />
+          <Field label="Transfer Tax" value={dollars(l.transfer_tax as number | null)} />
+          <Field label="Price Status" value={plain(l.price_status as string | null)} />
+          <Field label="Comp Status" value={plain(l.comp_status as string | null)} />
+        </div>
+        <div>
+          <Field label="$/Acre Land" value={dollars(l.price_per_acre_land as number | null)} />
+          <Field label="$/SF Land" value={dollars(l.price_per_sf_land as number | null)} />
+        </div>
+      </Grid>
+
+      <Grid>
+        <Section title="Buyer">
+          <Field label="True Buyer" value={plain(l.true_buyer as string | null)} />
+          <Field label="Recorded Buyer" value={plain(l.recorded_buyer as string | null)} />
+          <Field label="Type" value={plain(l.buyer_type as string | null)} />
+          <Field label="Secondary Type" value={plain(l.buyer_secondary_type as string | null)} />
+          <Field label="Origin" value={plain(l.buyer_origin as string | null)} />
+          <Field label="Contact" value={plain(l.buyer_contact as string | null)} />
+          <Field label="Phone" value={plain(l.buyer_phone as string | null)} />
+          <Field label="5y Acquisitions" value={dollars(l.buyer_activity_acquisitions as number | null)} />
+          <Field label="5y Dispositions" value={dollars(l.buyer_activity_dispositions as number | null)} />
+        </Section>
+
+        <Section title="Seller">
+          <Field label="True Seller" value={plain(l.true_seller as string | null)} />
+          <Field label="Recorded Seller" value={plain(l.recorded_seller as string | null)} />
+          <Field label="Type" value={plain(l.seller_type as string | null)} />
+          <Field label="Secondary Type" value={plain(l.seller_secondary_type as string | null)} />
+          <Field label="Contact" value={plain(l.seller_contact as string | null)} />
+          <Field label="Phone" value={plain(l.seller_phone as string | null)} />
+        </Section>
+      </Grid>
+
+      {l.sale_notes ? (
+        <Section title="Sale Notes">
+          <div style={{ fontSize: 14, color: '#444', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{String(l.sale_notes)}</div>
+        </Section>
+      ) : null}
+    </Section>
   )
 }
 

@@ -4,20 +4,22 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-type AugmentType = 'contacts' | 'public_record' | 'loan' | 'om'
+type AugmentType = 'contacts' | 'public_record' | 'loan' | 'om' | 'sale_comp'
 
 const TYPE_LABELS: Record<AugmentType, string> = {
   contacts: 'Contacts tab',
   public_record: 'Public Record tab',
   loan: 'Loan tab',
   om: 'Broker OM PDF',
+  sale_comp: 'Sales Comp page',
 }
 
 const TYPE_HINTS: Record<AugmentType, string> = {
   contacts: 'Paste the entire Contacts tab. Captures listing/buyer brokers, property manager, recorded owner, true owner.',
   public_record: 'Paste the entire Public Record tab. Captures owner mailing, subdivision, legal description, transaction history (sales + loans), 5-year assessment history.',
   loan: 'Paste the Loan tab. Enriches existing loan events with maturity date, data source (CMBS/Research), loan classification.',
-  om: 'Upload a broker Offering Memorandum PDF. Captures CAP/GRM split (current vs market), marketing quotes, in-unit features, rent roll, expense breakdown, and richer broker contact info.',
+  om: 'Upload a broker Offering Memorandum PDF. Captures CAP/GRM split (current vs market), marketing quotes, in-unit features, expense breakdown, and richer broker contact info.',
+  sale_comp: 'Paste the entire CoStar Sales Comp page (sold-deal detail). Captures true buyer/seller, hold period, sale notes narrative, initial ask vs sale price, buyer activity history, both brokers.',
 }
 
 type FieldsChanged = Record<string, { from: unknown; to: unknown }>
@@ -48,7 +50,13 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
     setResult(null)
     try {
       let res: Response
-      if (type === 'om') {
+      if (type === 'sale_comp') {
+        res = await fetch('/api/parse-sale-comp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: listingId, text }),
+        })
+      } else if (type === 'om') {
         if (!omFile) return
         // Upload to Supabase Storage first to bypass Vercel's 4.5MB body limit
         const { data: { user } } = await supabase.auth.getUser()
@@ -176,6 +184,7 @@ export default function AugmentForm({ listingId }: { listingId: string }) {
             borderRadius: 4,
             fontSize: 13,
             background: '#fff',
+            color: '#111',
             resize: 'vertical',
             outline: 'none',
             fontFamily: 'monospace',
