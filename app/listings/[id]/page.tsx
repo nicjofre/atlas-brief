@@ -5,6 +5,7 @@ import { compactDollars, dollars, num, pct, plain, date } from '@/lib/format'
 import AugmentForm from './AugmentForm'
 import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
+import SignOutButton from '@/app/SignOutButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -806,12 +807,15 @@ function StatsBar({ listing, property: p, headlinePrice }: {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', background: '#fff', display: 'flex', alignItems: 'baseline', gap: 24 }}>
-        <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
-          Atlas <em>Brief</em>
-        </Link>
-        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
-        <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
+      <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 24 }}>
+          <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
+            Atlas <em>Brief</em>
+          </Link>
+          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
+          <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
+        </div>
+        <SignOutButton />
       </div>
       {children}
     </div>

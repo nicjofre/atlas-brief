@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import SignOutButton from '@/app/SignOutButton'
 
 type SaleHistoryRow = {
   date: string | null
@@ -324,7 +325,7 @@ export default function DashboardPage() {
           <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
           <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Input</Link>
         </div>
-        <button onClick={handleSignOut} style={{ fontSize: 13, color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
+        <SignOutButton />
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>

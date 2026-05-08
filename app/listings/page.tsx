@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { compactDollars, date, num, pct } from '@/lib/format'
+import SignOutButton from '@/app/SignOutButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -136,6 +137,7 @@ function Header() {
         <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
         <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
       </div>
+      <SignOutButton />
     </div>
   )
 }
