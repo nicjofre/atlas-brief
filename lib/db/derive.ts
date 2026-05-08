@@ -176,3 +176,133 @@ export function omSources(args: {
     grm_market_source: args.grm_market != null ? 'proforma' : null,
   }
 }
+
+// ============================================================
+// Display-side derived helpers
+// ============================================================
+
+/** Single label combining RSO + AB1482 booleans into one human-readable status. */
+export function rentRegulationLabel(args: {
+  rso_applicable: boolean | null
+  ab1482_applicable: boolean | null
+}): 'RSO' | 'AB 1482 Only' | 'Exempt' | null {
+  if (args.rso_applicable === true) return 'RSO'
+  if (args.ab1482_applicable === true) return 'AB 1482 Only'
+  if (args.rso_applicable === false && args.ab1482_applicable === false) return 'Exempt'
+  return null
+}
+
+/** Parking spaces per residential unit. */
+export function parkingRatio(args: {
+  parking_count: number | null
+  unit_count: number | null
+}): number | null {
+  if (args.parking_count == null || args.unit_count == null || args.unit_count <= 0) return null
+  return args.parking_count / args.unit_count
+}
+
+/** Days from list_date to sale_date (sold) or to today (for_sale). */
+export function daysOnMarket(args: {
+  list_date: string | null
+  sale_date: string | null
+  status: string | null
+}): number | null {
+  if (!args.list_date) return null
+  const list = new Date(args.list_date).getTime()
+  if (isNaN(list)) return null
+  const end = args.sale_date
+    ? new Date(args.sale_date).getTime()
+    : args.status === 'for_sale'
+    ? Date.now()
+    : NaN
+  if (isNaN(end)) return null
+  const days = Math.round((end - list) / (1000 * 60 * 60 * 24))
+  return days < 0 ? 0 : days
+}
+
+/** Aggregate rent spread / loss-to-lease across the unit_mix. */
+export type RentSpread = {
+  total_current_monthly: number | null
+  total_market_monthly: number | null
+  loss_to_lease_monthly: number | null
+  loss_to_lease_pct: number | null
+  total_units_with_rent: number
+}
+type UnitMixRow = {
+  units?: number | null
+  current_avg_rent?: number | null
+  market_avg_rent?: number | null
+}
+export function rentSpread(unitMix: unknown): RentSpread | null {
+  if (!Array.isArray(unitMix) || unitMix.length === 0) return null
+  let totalCurrent = 0
+  let totalMarket = 0
+  let totalUnits = 0
+  let hasAny = false
+  for (const row of unitMix as UnitMixRow[]) {
+    const units = row.units ?? 0
+    const cur = row.current_avg_rent ?? null
+    const mkt = row.market_avg_rent ?? null
+    if (units > 0 && cur != null && mkt != null) {
+      totalCurrent += units * cur
+      totalMarket += units * mkt
+      totalUnits += units
+      hasAny = true
+    }
+  }
+  if (!hasAny || totalUnits === 0) return null
+  const lossToLease = totalMarket - totalCurrent
+  const pct = totalMarket > 0 ? (lossToLease / totalMarket) * 100 : null
+  return {
+    total_current_monthly: totalCurrent,
+    total_market_monthly: totalMarket,
+    loss_to_lease_monthly: lossToLease,
+    loss_to_lease_pct: pct,
+    total_units_with_rent: totalUnits,
+  }
+}
+
+/** Most recent sale event in transaction_history that pre-dates the current listing's sale_date. */
+export type PriorSale = {
+  date: string | null
+  price: number | null
+  buyer: string | null
+  seller: string | null
+  hold_period_years: number | null
+}
+type TransactionHistoryRow = {
+  type?: string | null
+  date?: string | null
+  price?: number | null
+  buyer?: string | null
+  seller?: string | null
+  buyers?: string[] | null
+  sellers?: string[] | null
+}
+export function priorSale(args: {
+  transaction_history: unknown
+  current_sale_date: string | null
+}): PriorSale | null {
+  if (!Array.isArray(args.transaction_history) || args.transaction_history.length === 0) return null
+  const sales = (args.transaction_history as TransactionHistoryRow[])
+    .filter(r => r.type === 'sale' && r.date)
+    .filter(r => !args.current_sale_date || r.date! < args.current_sale_date)
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+  if (sales.length === 0) return null
+  const top = sales[0]
+  let holdPeriodYears: number | null = null
+  if (args.current_sale_date && top.date) {
+    const a = new Date(top.date).getTime()
+    const b = new Date(args.current_sale_date).getTime()
+    if (!isNaN(a) && !isNaN(b)) {
+      holdPeriodYears = Math.round(((b - a) / (1000 * 60 * 60 * 24 * 365.25)) * 10) / 10
+    }
+  }
+  return {
+    date: top.date ?? null,
+    price: top.price ?? null,
+    buyer: top.buyer ?? ((top.buyers ?? []).join('; ') || null),
+    seller: top.seller ?? ((top.sellers ?? []).join('; ') || null),
+    hold_period_years: holdPeriodYears,
+  }
+}

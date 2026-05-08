@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { compactDollars, dollars, num, pct, plain, date } from '@/lib/format'
+import { rentRegulationLabel, parkingRatio, daysOnMarket, rentSpread, priorSale } from '@/lib/db/derive'
 import AugmentForm from './AugmentForm'
 import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
@@ -295,6 +296,14 @@ function SummaryTab({
           <Field label="Bid/Ask Delta" value={dollars(l.bid_ask_delta as number | null)} hint="derived" />
           <Field label="Sale Date" value={date(l.sale_date as string | null)} />
           <Field label="List Date" value={date(l.list_date as string | null)} />
+          {(() => {
+            const dom = daysOnMarket({
+              list_date: l.list_date as string | null,
+              sale_date: l.sale_date as string | null,
+              status: l.status as string | null,
+            })
+            return <Field label="Days on Market" value={dom != null ? `${dom} days` : '—'} hint="derived" />
+          })()}
           <Field label="Sale Type" value={plain(l.sale_type as string | null)} />
           <Field label="Price / Unit" value={dollars(l.price_per_unit as number | null)} />
           <Field label="Price / SF" value={dollars(l.price_per_sf as number | null)} />
@@ -309,13 +318,32 @@ function SummaryTab({
           <Field label="Implied Gross Annual" value={dollars(l.implied_gross_annual_current as number | null)} hint="derived" />
           <Field label="Implied Monthly Rent / Unit" value={dollars(l.implied_monthly_rent_current as number | null)} hint="derived" />
           <Field label="Expense Ratio" value={pct(l.expense_ratio as number | null)} hint={l.expense_ratio == null ? 'om-pending' : undefined} />
+          {(() => {
+            const spread = rentSpread(l.unit_mix)
+            if (!spread || spread.loss_to_lease_monthly == null) return null
+            const pctLabel = spread.loss_to_lease_pct != null ? ` (${spread.loss_to_lease_pct.toFixed(1)}%)` : ''
+            return (
+              <Field
+                label="Loss to Lease (Monthly)"
+                value={`${dollars(spread.loss_to_lease_monthly)}${pctLabel}`}
+                hint="derived"
+              />
+            )
+          })()}
         </Section>
       </Grid>
 
       <Section title="Regulatory">
         <Grid>
           <div>
-            <Field label="RSO Applicable" value={plain(l.rso_applicable as boolean | null)} hint="derived from year built" />
+            {(() => {
+              const label = rentRegulationLabel({
+                rso_applicable: l.rso_applicable as boolean | null,
+                ab1482_applicable: l.ab1482_applicable as boolean | null,
+              })
+              return <Field label="Rent Regulation" value={plain(label)} hint="derived from year built" />
+            })()}
+            <Field label="RSO Applicable" value={plain(l.rso_applicable as boolean | null)} hint="derived" />
             <Field label="AB 1482 Applicable" value={plain(l.ab1482_applicable as boolean | null)} hint="derived" />
           </div>
           <div>
@@ -349,6 +377,13 @@ function SummaryTab({
           <Field label="APN / Parcel" value={plain(p?.apn as string | null)} />
           <Field label="Parking Type" value={plain(p?.parking_type as string | null)} />
           <Field label="Parking Count" value={plain(p?.parking_count as number | null)} />
+          {(() => {
+            const ratio = parkingRatio({
+              parking_count: p?.parking_count as number | null,
+              unit_count: p?.unit_count as number | null,
+            })
+            return <Field label="Parking Ratio" value={ratio != null ? `${ratio.toFixed(2)} / unit` : '—'} hint="derived" />
+          })()}
         </Section>
       </Grid>
 
@@ -437,7 +472,7 @@ function PublicRecordTab({
       </Grid>
 
       {/* Sale Detail (Sales Comp augmentation) */}
-      <SaleDetailSection listing={listing} />
+      <SaleDetailSection listing={listing} transactions={transactions} />
 
       {sales.length > 0 ? (
         <Section title="Sale History">
@@ -917,8 +952,12 @@ function AugmentNote({ text }: { text: string }) {
   )
 }
 
-function SaleDetailSection({ listing }: { listing: Record<string, unknown> }) {
+function SaleDetailSection({ listing, transactions }: { listing: Record<string, unknown>; transactions: TransactionRow[] | null }) {
   const l = listing
+  const prior = priorSale({
+    transaction_history: transactions,
+    current_sale_date: (l.sale_date as string | null) ?? null,
+  })
   const hasAny =
     l.sale_notes != null ||
     l.true_buyer != null ||
@@ -927,7 +966,8 @@ function SaleDetailSection({ listing }: { listing: Record<string, unknown> }) {
     l.recorded_seller != null ||
     l.hold_period_months != null ||
     l.initial_ask_price != null ||
-    l.buyer_activity_acquisitions != null
+    l.buyer_activity_acquisitions != null ||
+    prior != null
 
   if (!hasAny) {
     return (
@@ -978,6 +1018,24 @@ function SaleDetailSection({ listing }: { listing: Record<string, unknown> }) {
           <Field label="Phone" value={plain(l.seller_phone as string | null)} />
         </Section>
       </Grid>
+
+      {prior ? (
+        <Section title="Prior Sale">
+          <Grid>
+            <div>
+              <Field label="Date" value={date(prior.date)} hint="derived" />
+              <Field label="Price" value={dollars(prior.price)} hint="derived" />
+            </div>
+            <div>
+              <Field label="Buyer" value={plain(prior.buyer)} hint="derived" />
+              <Field label="Seller" value={plain(prior.seller)} hint="derived" />
+              {prior.hold_period_years != null && (
+                <Field label="Hold Period" value={`${prior.hold_period_years} years`} hint="derived" />
+              )}
+            </div>
+          </Grid>
+        </Section>
+      ) : null}
 
       {l.sale_notes ? (
         <Section title="Sale Notes">
