@@ -3,6 +3,8 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { compactDollars, dollars, num, pct, plain, date } from '@/lib/format'
 import AugmentForm from './AugmentForm'
+import PhotosForm from './PhotosForm'
+import BrokerHeadshotUploader from './BrokerHeadshotUploader'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,13 +86,14 @@ function sourceHint(source: SourceQualifier): string | undefined {
   return source
 }
 
-type Tab = 'summary' | 'public_record' | 'contacts' | 'loan' | 'notes' | 'augment'
+type Tab = 'summary' | 'public_record' | 'contacts' | 'loan' | 'notes' | 'photos' | 'augment'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'summary', label: 'Summary' },
   { id: 'public_record', label: 'Public Record' },
   { id: 'contacts', label: 'Brokers & Contacts' },
   { id: 'loan', label: 'Loan' },
   { id: 'notes', label: 'Notes' },
+  { id: 'photos', label: 'Photos' },
   { id: 'augment', label: 'Augment' },
 ]
 
@@ -132,6 +135,27 @@ export default async function ListingDetailPage({
   const transactions = (p?.transaction_history as TransactionRow[] | null) ?? null
   const assessmentHistory = (p?.assessment_history as AssessmentRow[] | null) ?? null
   const unitMix = (listing.unit_mix as UnitMixRow[] | null) ?? null
+
+  // Generate signed URLs for stored images (1 hour expiry)
+  async function signPath(path: string | null | undefined): Promise<string | null> {
+    if (!path) return null
+    const { data } = await supabase.storage.from('property-assets').createSignedUrl(path, 3600)
+    return data?.signedUrl ?? null
+  }
+  const heroPath = (listing.hero_photo_url as string | null) ?? null
+  const photoUrls = ((listing.photo_urls as string[] | null) ?? []).filter(p => p && p.length > 0)
+  const lbHeadshotPath = (lb?.headshot_url as string | null) ?? null
+  const bbHeadshotPath = (bb?.headshot_url as string | null) ?? null
+
+  const [heroSignedUrl, secondarySignedUrls, lbHeadshotSignedUrl, bbHeadshotSignedUrl] = await Promise.all([
+    signPath(heroPath),
+    Promise.all(photoUrls.map(p => signPath(p))),
+    signPath(lbHeadshotPath),
+    signPath(bbHeadshotPath),
+  ])
+
+  const heroAsset = heroPath ? { path: heroPath, signedUrl: heroSignedUrl } : null
+  const secondaryAssets = photoUrls.map((p, i) => ({ path: p, signedUrl: secondarySignedUrls[i] ?? null }))
   const demo1 = (p?.demographics_1mi as Demographics) ?? null
   const demo3 = (p?.demographics_3mi as Demographics) ?? null
   const transit = (p?.transit_stations as TransitRow[] | null) ?? null
@@ -155,6 +179,19 @@ export default async function ListingDetailPage({
           {p?.submarket && <span> · {p.submarket}</span>}
           {p?.market && p.market !== p.submarket && <span> · {p.market}</span>}
         </div>
+
+        {heroSignedUrl && (
+          <div
+            style={{
+              width: '100%',
+              height: 360,
+              background: `url(${heroSignedUrl}) center/cover no-repeat`,
+              borderRadius: 4,
+              marginBottom: 24,
+            }}
+            aria-label="Listing hero photo"
+          />
+        )}
 
         <StatsBar listing={listing} property={p} headlinePrice={headlinePrice} />
 
@@ -187,13 +224,29 @@ export default async function ListingDetailPage({
           <PublicRecordTab listing={listing} p={p} transactions={transactions} assessmentHistory={assessmentHistory} demo1={demo1} demo3={demo3} />
         )}
         {tab === 'contacts' && (
-          <ContactsTab lb={lb} bb={bb} p={p} />
+          <ContactsTab
+            lb={lb}
+            bb={bb}
+            p={p}
+            lbHeadshotSignedUrl={lbHeadshotSignedUrl}
+            bbHeadshotSignedUrl={bbHeadshotSignedUrl}
+            lbHeadshotPath={lbHeadshotPath}
+            bbHeadshotPath={bbHeadshotPath}
+          />
         )}
         {tab === 'loan' && (
           <LoanTab listing={listing} transactions={transactions} />
         )}
         {tab === 'notes' && (
-          <NotesTab p={p} transit={transit} airports={airports} />
+          <NotesTab p={p} transit={transit} airports={airports} secondaryAssets={secondaryAssets} />
+        )}
+        {tab === 'photos' && (
+          <Section title="Listing Photos">
+            <div style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
+              The hero image appears at the top of the listing detail and on the public article. Add up to 3 secondary photos for inline figures.
+            </div>
+            <PhotosForm listingId={listing.id} hero={heroAsset} secondaries={secondaryAssets} />
+          </Section>
         )}
         {tab === 'augment' && (
           <div>
@@ -484,10 +537,22 @@ function PublicRecordTab({
   )
 }
 
-function ContactsTab({ lb, bb, p }: {
+function ContactsTab({
+  lb,
+  bb,
+  p,
+  lbHeadshotSignedUrl,
+  bbHeadshotSignedUrl,
+  lbHeadshotPath,
+  bbHeadshotPath,
+}: {
   lb: Record<string, unknown> | null
   bb: Record<string, unknown> | null
   p: Record<string, unknown> | null
+  lbHeadshotSignedUrl: string | null
+  bbHeadshotSignedUrl: string | null
+  lbHeadshotPath: string | null
+  bbHeadshotPath: string | null
 }) {
   return (
     <div>
@@ -495,6 +560,12 @@ function ContactsTab({ lb, bb, p }: {
         <Section title="Listing Broker">
           {lb ? (
             <>
+              <BrokerHeadshotUploader
+                brokerId={lb.id as string}
+                brokerName={(lb.name as string | null) ?? null}
+                currentSignedUrl={lbHeadshotSignedUrl}
+                currentPath={lbHeadshotPath}
+              />
               <Field label="Name" value={plain(lb.name as string | null)} />
               <Field label="Title" value={plain(lb.title as string | null)} />
               <Field label="Firm" value={plain(lb.firm as string | null)} />
@@ -512,6 +583,12 @@ function ContactsTab({ lb, bb, p }: {
         <Section title="Buyer Broker">
           {bb ? (
             <>
+              <BrokerHeadshotUploader
+                brokerId={bb.id as string}
+                brokerName={(bb.name as string | null) ?? null}
+                currentSignedUrl={bbHeadshotSignedUrl}
+                currentPath={bbHeadshotPath}
+              />
               <Field label="Name" value={plain(bb.name as string | null)} />
               <Field label="Firm" value={plain(bb.firm as string | null)} />
               <Field label="Phone" value={plain(bb.phone as string | null)} />
@@ -590,13 +667,33 @@ function LoanTab({ listing, transactions }: {
   )
 }
 
-function NotesTab({ p, transit, airports }: {
+function NotesTab({ p, transit, airports, secondaryAssets }: {
   p: Record<string, unknown> | null
   transit: TransitRow[] | null
   airports: AirportRow[] | null
+  secondaryAssets: { path: string; signedUrl: string | null }[]
 }) {
+  const visiblePhotos = secondaryAssets.filter(a => a.signedUrl)
   return (
     <div>
+      {visiblePhotos.length > 0 && (
+        <Section title="Listing Photos">
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(visiblePhotos.length, 3)}, 1fr)`, gap: 16 }}>
+            {visiblePhotos.map((a, i) => (
+              <div
+                key={i}
+                style={{
+                  height: 200,
+                  background: `url(${a.signedUrl}) center/cover no-repeat`,
+                  borderRadius: 4,
+                }}
+                aria-label={`Listing photo ${i + 1}`}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
+
       {p?.building_notes ? (
         <Section title="Building Notes">
           <div style={{ fontSize: 14, color: '#444', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{String(p.building_notes)}</div>

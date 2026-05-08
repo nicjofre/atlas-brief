@@ -172,6 +172,7 @@ export type Database = {
           grm_market: number | null
           grm_market_source: string | null
           hero_photo_index: number | null
+          hero_photo_url: string | null
           hold_period_months: number | null
           id: string
           implied_gross_annual_current: number | null
@@ -193,6 +194,7 @@ export type Database = {
           marketing_quotes: Json | null
           noi_current: number | null
           om_highlights: string[] | null
+          photo_urls: string[] | null
           photos: Json | null
           price_per_acre_land: number | null
           price_per_sf: number | null
@@ -249,6 +251,7 @@ export type Database = {
           grm_market?: number | null
           grm_market_source?: string | null
           hero_photo_index?: number | null
+          hero_photo_url?: string | null
           hold_period_months?: number | null
           id?: string
           implied_gross_annual_current?: number | null
@@ -270,6 +273,7 @@ export type Database = {
           marketing_quotes?: Json | null
           noi_current?: number | null
           om_highlights?: string[] | null
+          photo_urls?: string[] | null
           photos?: Json | null
           price_per_acre_land?: number | null
           price_per_sf?: number | null
@@ -326,6 +330,7 @@ export type Database = {
           grm_market?: number | null
           grm_market_source?: string | null
           hero_photo_index?: number | null
+          hero_photo_url?: string | null
           hold_period_months?: number | null
           id?: string
           implied_gross_annual_current?: number | null
@@ -347,6 +352,7 @@ export type Database = {
           marketing_quotes?: Json | null
           noi_current?: number | null
           om_highlights?: string[] | null
+          photo_urls?: string[] | null
           photos?: Json | null
           price_per_acre_land?: number | null
           price_per_sf?: number | null
