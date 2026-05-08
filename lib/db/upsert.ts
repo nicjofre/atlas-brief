@@ -237,14 +237,50 @@ export async function upsertBrokerFromDeal(db: DB, deal: ParsedDeal): Promise<st
   return data.id
 }
 
+async function upsertBuyerBrokerFromDeal(db: DB, deal: ParsedDeal): Promise<string | null> {
+  const name = nullIfEmpty(deal.buyer_broker_name)
+  const email = nullIfEmpty(deal.buyer_broker_email)?.toLowerCase() ?? null
+  const dre = nullIfEmpty(deal.buyer_broker_license)
+  const firm = nullIfEmpty(deal.buyer_broker_firm)
+  if (!name && !email && !dre) return null
+
+  if (email) {
+    const { data } = await db.from('brokers').select('id').eq('email', email).maybeSingle()
+    if (data) return data.id
+  }
+  if (dre) {
+    const { data } = await db.from('brokers').select('id').eq('dre_license', dre).maybeSingle()
+    if (data) return data.id
+  }
+  if (name && firm) {
+    const { data } = await db.from('brokers').select('id').ilike('name', name).ilike('firm', firm).maybeSingle()
+    if (data) return data.id
+  }
+
+  const { data, error } = await db
+    .from('brokers')
+    .insert({
+      name,
+      firm,
+      phone: nullIfEmpty(deal.buyer_broker_phone),
+      cell: nullIfEmpty(deal.buyer_broker_cell),
+      email,
+      dre_license: dre,
+    })
+    .select('id')
+    .single()
+  if (error) throw error
+  return data.id
+}
+
 export async function createListing(
   db: DB,
-  args: { propertyId: string; brokerId: string | null; deal: ParsedDeal }
+  args: { propertyId: string; brokerId: string | null; buyerBrokerId: string | null; deal: ParsedDeal }
 ): Promise<string> {
-  const { propertyId, brokerId, deal } = args
+  const { propertyId, brokerId, buyerBrokerId, deal } = args
   const derived = deriveListingFields({
     year_built: deal.year_built,
-    list_price: deal.list_price,
+    list_price: deal.list_price ?? deal.initial_ask_price,
     sale_price: deal.sale_price,
     grm: deal.grm,
     unit_count: deal.unit_count,
@@ -257,8 +293,9 @@ export async function createListing(
   const insert: ListingInsert = {
     property_id: propertyId,
     listing_broker_id: brokerId,
+    buyer_broker_id: buyerBrokerId,
     status: deal.status,
-    list_price: deal.list_price,
+    list_price: deal.list_price ?? deal.initial_ask_price,
     sale_price: deal.sale_price,
     sale_date: deal.sale_date,
     sale_type: nullIfEmpty(deal.sale_type),
@@ -279,6 +316,32 @@ export async function createListing(
     unit_mix: deal.unit_mix,
     unit_mix_updated: deal.unit_mix_updated,
 
+    // Sales Comp fields (set when present, null when from a Property Summary)
+    recorded_buyer: nullIfEmpty(deal.recorded_buyer),
+    true_buyer: nullIfEmpty(deal.true_buyer),
+    buyer_contact: nullIfEmpty(deal.buyer_contact),
+    buyer_phone: nullIfEmpty(deal.buyer_phone),
+    buyer_origin: nullIfEmpty(deal.buyer_origin),
+    buyer_type: nullIfEmpty(deal.buyer_type),
+    buyer_secondary_type: nullIfEmpty(deal.buyer_secondary_type),
+    buyer_activity_acquisitions: deal.buyer_activity_acquisitions,
+    buyer_activity_dispositions: deal.buyer_activity_dispositions,
+    recorded_seller: nullIfEmpty(deal.recorded_seller),
+    true_seller: nullIfEmpty(deal.true_seller),
+    seller_contact: nullIfEmpty(deal.seller_contact),
+    seller_phone: nullIfEmpty(deal.seller_phone),
+    seller_type: nullIfEmpty(deal.seller_type),
+    seller_secondary_type: nullIfEmpty(deal.seller_secondary_type),
+    hold_period_months: deal.hold_period_months,
+    sale_notes: nullIfEmpty(deal.sale_notes),
+    initial_ask_price: deal.initial_ask_price,
+    price_status: nullIfEmpty(deal.price_status),
+    recording_date: deal.recording_date,
+    transfer_tax: deal.transfer_tax,
+    comp_status: nullIfEmpty(deal.comp_status),
+    price_per_acre_land: deal.price_per_acre_land,
+    price_per_sf_land: deal.price_per_sf_land,
+
     last_om_parsed_at: null,
     ...derived,
   }
@@ -291,6 +354,7 @@ export async function createListing(
 export async function persistDeal(db: DB, deal: ParsedDeal) {
   const propertyId = await upsertProperty(db, deal)
   const brokerId = await upsertBrokerFromDeal(db, deal)
-  const listingId = await createListing(db, { propertyId, brokerId, deal })
-  return { propertyId, brokerId, listingId }
+  const buyerBrokerId = await upsertBuyerBrokerFromDeal(db, deal)
+  const listingId = await createListing(db, { propertyId, brokerId, buyerBrokerId, deal })
+  return { propertyId, brokerId, buyerBrokerId, listingId }
 }

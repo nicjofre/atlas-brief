@@ -123,6 +123,38 @@ const SYSTEM_PROMPT = `You are a commercial real estate data parser for CoStar r
   "broker_license": string,
   "mls_number": string,
 
+  "recorded_buyer": string,
+  "true_buyer": string,
+  "buyer_contact": string,
+  "buyer_phone": string,
+  "buyer_origin": string,
+  "buyer_type": string,
+  "buyer_secondary_type": string,
+  "buyer_activity_acquisitions": number,
+  "buyer_activity_dispositions": number,
+  "recorded_seller": string,
+  "true_seller": string,
+  "seller_contact": string,
+  "seller_phone": string,
+  "seller_type": string,
+  "seller_secondary_type": string,
+  "hold_period_months": number,
+  "sale_notes": string,
+  "initial_ask_price": number,
+  "price_status": string,
+  "recording_date": string,
+  "transfer_tax": number,
+  "comp_status": string,
+  "price_per_acre_land": number,
+  "price_per_sf_land": number,
+
+  "buyer_broker_name": string,
+  "buyer_broker_firm": string,
+  "buyer_broker_phone": string,
+  "buyer_broker_cell": string,
+  "buyer_broker_email": string,
+  "buyer_broker_license": string,
+
   "assessed_total": number,
   "assessed_improvements": number,
   "assessed_land": number,
@@ -162,6 +194,22 @@ Notes:
 - Building notes: capture the editorial narrative paragraphs.
 - Amenities: list of strings like ["Kitchen", "Views", "Oven"].
 - If a year_renovated isn't shown, leave null.
+
+This parser handles BOTH formats: a Property Summary export (typical CoStar property page) AND a Sales Comp page (sold-deal detail). Many fields appear in both; some are specific to one. Leave null for any field not present.
+
+Sales Comp specific notes:
+- recorded_buyer / true_buyer: the LLC on the deed vs. the actual operating entity. Capture both when shown.
+- buyer_contact / buyer_phone: a named human associated with the buyer entity, with their phone.
+- buyer_origin / buyer_type / buyer_secondary_type: e.g., "United States", "National", "Private", "Developer - Regional".
+- buyer_activity_acquisitions / dispositions: parse the "Activity (Last 5 Yrs)" line. "$450.1M (Acquisitions) / $156M (Dispositions)" → acquisitions = 450100000, dispositions = 156000000.
+- Same shape for seller fields.
+- hold_period_months: "8 Months" → 8. "2 Years 3 Months" → 27.
+- sale_notes: the verbatim narrative paragraph at the bottom (often labeled "Sale Notes"). Preserve verbatim — David quotes from these.
+- initial_ask_price: shown directly or in the sale_notes narrative ("with an initial asking price of $2,995,000").
+- recording_date: distinct from sale_date (recordation may be days later).
+- transfer_tax: ULA or other recording tax fee.
+- price_status / comp_status: CoStar metadata like "Confirmed", "Research Complete", "Unconfirmed".
+- buyer_broker_*: when the page shows a separate Buyer Broker section (Sales Comp pages do; Property Summary pages don't). Same shape as broker_name/firm/etc but for the buyer side.
 
 Return only valid JSON, no explanation or markdown.`
 

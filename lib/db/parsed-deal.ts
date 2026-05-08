@@ -153,6 +153,40 @@ export type ParsedDeal = {
   broker_license: string | null
   mls_number: string | null
 
+  // Sales Comp / sold-deal fields (populated when parsing a Sales Comp page)
+  recorded_buyer: string | null
+  true_buyer: string | null
+  buyer_contact: string | null
+  buyer_phone: string | null
+  buyer_origin: string | null
+  buyer_type: string | null
+  buyer_secondary_type: string | null
+  buyer_activity_acquisitions: number | null
+  buyer_activity_dispositions: number | null
+  recorded_seller: string | null
+  true_seller: string | null
+  seller_contact: string | null
+  seller_phone: string | null
+  seller_type: string | null
+  seller_secondary_type: string | null
+  hold_period_months: number | null
+  sale_notes: string | null
+  initial_ask_price: number | null
+  price_status: string | null
+  recording_date: string | null
+  transfer_tax: number | null
+  comp_status: string | null
+  price_per_acre_land: number | null
+  price_per_sf_land: number | null
+
+  // Buyer broker (separate from listing broker)
+  buyer_broker_name: string | null
+  buyer_broker_firm: string | null
+  buyer_broker_phone: string | null
+  buyer_broker_cell: string | null
+  buyer_broker_email: string | null
+  buyer_broker_license: string | null
+
   assessed_total: number | null
   assessed_improvements: number | null
   assessed_land: number | null

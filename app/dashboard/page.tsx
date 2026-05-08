@@ -227,9 +227,8 @@ function Stars({ n }: { n: number | null }) {
 }
 
 export default function DashboardPage() {
-  const [mode, setMode] = useState<'text' | 'pdf' | 'om' | 'sale_comp'>('pdf')
+  const [mode, setMode] = useState<'text' | 'pdf' | 'om'>('text')
   const [text, setText] = useState('')
-  const [saleCompText, setSaleCompText] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [omFile, setOmFile] = useState<File | null>(null)
   const [deal, setDeal] = useState<Deal | null>(null)
@@ -271,12 +270,6 @@ export default function DashboardPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ path, file_name: omFile.name, file_size: omFile.size }),
-        })
-      } else if (mode === 'sale_comp' && saleCompText.trim()) {
-        res = await fetch('/api/parse-sale-comp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: saleCompText }),
         })
       } else if (mode === 'pdf' && pdfFile) {
         const formData = new FormData()
@@ -320,7 +313,6 @@ export default function DashboardPage() {
   const canParse =
     mode === 'om' ? !!omFile :
     mode === 'pdf' ? !!pdfFile :
-    mode === 'sale_comp' ? !!saleCompText.trim() :
     !!text.trim()
   const headlinePrice = deal?.list_price || deal?.sale_price
 
@@ -340,7 +332,7 @@ export default function DashboardPage() {
         {/* Input */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '1px solid #ddd' }}>
-            {(['pdf', 'om', 'sale_comp', 'text'] as const).map(m => (
+            {(['text', 'pdf', 'om'] as const).map(m => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
@@ -357,7 +349,7 @@ export default function DashboardPage() {
                   marginBottom: -1,
                 }}
               >
-                {m === 'pdf' ? 'CoStar PDF' : m === 'om' ? 'Broker OM PDF' : m === 'sale_comp' ? 'Sales Comp' : 'Paste Text'}
+                {m === 'text' ? 'CoStar Text' : m === 'pdf' ? 'CoStar PDF' : 'Broker OM PDF'}
               </button>
             ))}
           </div>
@@ -418,20 +410,12 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 14, color: '#666' }}>Drop broker Offering Memorandum here</div>
               )}
             </div>
-          ) : mode === 'sale_comp' ? (
-            <textarea
-              value={saleCompText}
-              onChange={e => setSaleCompText(e.target.value)}
-              placeholder="Paste the entire CoStar Sales Comp page (the sold-deal detail page with Buyer / Seller / Transaction Details / Sale Notes)..."
-              rows={14}
-              style={{ width: '100%', padding: 16, border: '1px solid #ddd', borderRadius: 4, fontSize: 13, background: '#fff', color: '#111', resize: 'vertical', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }}
-            />
           ) : (
             <textarea
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder="Paste CoStar listing or export data here..."
-              rows={10}
+              placeholder="Paste a CoStar Property Summary or Sales Comp page here. The parser detects which format and extracts both for-sale and sold-deal fields."
+              rows={14}
               style={{ width: '100%', padding: 16, border: '1px solid #ddd', borderRadius: 4, fontSize: 14, background: '#fff', color: '#111', resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
             />
           )}
