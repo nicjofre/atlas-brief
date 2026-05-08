@@ -148,7 +148,7 @@ export type CapGrmSources = {
 
 // CoStar parser: sold listings have at-close numbers; for-sale are broker-stated
 export function costarSources(args: {
-  status: 'for_sale' | 'sold' | 'off_market' | null
+  status: 'for_sale' | 'sold' | 'off_market' | 'under_construction' | null
   cap_rate: number | null
   grm: number | null
 }): CapGrmSources {

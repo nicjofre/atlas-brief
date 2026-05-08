@@ -87,7 +87,9 @@ export type ParsedDeal = {
   zoning: string | null
   apn: string | null
 
-  status: 'for_sale' | 'sold' | 'off_market' | null
+  status: 'for_sale' | 'sold' | 'off_market' | 'under_construction' | null
+  expected_delivery_date: string | null
+  expected_delivery_note: string | null
   list_price: number | null
   sale_price: number | null
   price_per_unit: number | null

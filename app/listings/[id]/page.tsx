@@ -171,6 +171,11 @@ export default async function ListingDetailPage({
         {/* always-visible header */}
         <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <StatusPill status={listing.status} />
+          {listing.status === 'under_construction' && (listing.expected_delivery_date || listing.expected_delivery_note) && (
+            <span style={{ fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', color: '#8B6914', background: '#FFF8E7', padding: '4px 8px', borderRadius: 2, border: '1px solid #e8d49a' }}>
+              Delivers {listing.expected_delivery_note ?? formatDeliveryMonth(listing.expected_delivery_date as string | null)}
+            </span>
+          )}
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: '#111', margin: 0 }}>
             {p?.street_address ?? 'Unknown Property'}
           </h1>
@@ -296,6 +301,18 @@ function SummaryTab({
           <Field label="Bid/Ask Delta" value={dollars(l.bid_ask_delta as number | null)} hint="derived" />
           <Field label="Sale Date" value={date(l.sale_date as string | null)} />
           <Field label="List Date" value={date(l.list_date as string | null)} />
+          {l.status === 'under_construction' && (
+            <Field
+              label="Expected Delivery"
+              value={
+                l.expected_delivery_note
+                  ? String(l.expected_delivery_note)
+                  : l.expected_delivery_date
+                  ? formatDeliveryMonth(l.expected_delivery_date as string | null)
+                  : '—'
+              }
+            />
+          )}
           {(() => {
             const dom = daysOnMarket({
               list_date: l.list_date as string | null,
@@ -922,10 +939,25 @@ function DataTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
   )
 }
 
+function formatDeliveryMonth(s: string | null): string {
+  if (!s) return '—'
+  const d = new Date(s)
+  if (isNaN(d.getTime())) return s
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+}
+
 function StatusPill({ status }: { status: string | null }) {
   if (!status) return <span style={{ color: '#bbb' }}>—</span>
-  const bg = status === 'sold' ? '#c0392b' : status === 'for_sale' ? '#27ae60' : '#7f8c8d'
-  const label = status === 'sold' ? 'Sold' : status === 'for_sale' ? 'For Sale' : 'Off Market'
+  const bg =
+    status === 'sold' ? '#c0392b' :
+    status === 'for_sale' ? '#27ae60' :
+    status === 'under_construction' ? '#d68910' :
+    '#7f8c8d'
+  const label =
+    status === 'sold' ? 'Sold' :
+    status === 'for_sale' ? 'For Sale' :
+    status === 'under_construction' ? 'Under Construction' :
+    'Off Market'
   return (
     <span style={{ padding: '4px 10px', borderRadius: 2, fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', background: bg, color: '#fff' }}>
       {label}

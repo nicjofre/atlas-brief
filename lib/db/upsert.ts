@@ -295,6 +295,8 @@ export async function createListing(
     listing_broker_id: brokerId,
     buyer_broker_id: buyerBrokerId,
     status: deal.status,
+    expected_delivery_date: deal.expected_delivery_date,
+    expected_delivery_note: nullIfEmpty(deal.expected_delivery_note),
     list_price: deal.list_price ?? deal.initial_ask_price,
     sale_price: deal.sale_price,
     sale_date: deal.sale_date,

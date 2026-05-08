@@ -21,6 +21,8 @@ export default async function ListingsPage() {
       sale_price,
       sale_date,
       list_date,
+      expected_delivery_date,
+      expected_delivery_note,
       cap_rate_current,
       grm_current,
       price_per_unit,
@@ -111,7 +113,15 @@ export default async function ListingsPage() {
                     <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>{compactDollars(headlinePrice)}</td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>{compactDollars(r.price_per_unit)}</td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>{pct(r.cap_rate_current)}</td>
-                    <td style={{ padding: '12px 16px', color: '#666', fontSize: 12 }}>{date(headlineDate)}</td>
+                    <td style={{ padding: '12px 16px', color: '#666', fontSize: 12 }}>
+                      {r.status === 'under_construction' && (r.expected_delivery_date || r.expected_delivery_note) ? (
+                        <span style={{ color: '#8B6914' }}>
+                          Delivers {r.expected_delivery_note ?? date(r.expected_delivery_date)}
+                        </span>
+                      ) : (
+                        date(headlineDate)
+                      )}
+                    </td>
                     <td style={{ padding: '12px 16px', color: '#666', fontSize: 12 }}>
                       {b?.name ?? '—'}
                       {b?.firm && <div style={{ fontSize: 11, color: '#999' }}>{b.firm}</div>}
@@ -144,8 +154,16 @@ function Header() {
 
 function StatusPill({ status }: { status: string | null }) {
   if (!status) return <span style={{ color: '#bbb' }}>—</span>
-  const bg = status === 'sold' ? '#c0392b' : status === 'for_sale' ? '#27ae60' : '#7f8c8d'
-  const label = status === 'sold' ? 'Sold' : status === 'for_sale' ? 'For Sale' : 'Off Market'
+  const bg =
+    status === 'sold' ? '#c0392b' :
+    status === 'for_sale' ? '#27ae60' :
+    status === 'under_construction' ? '#d68910' :
+    '#7f8c8d'
+  const label =
+    status === 'sold' ? 'Sold' :
+    status === 'for_sale' ? 'For Sale' :
+    status === 'under_construction' ? 'Under Construction' :
+    'Off Market'
   return (
     <span style={{ padding: '3px 8px', borderRadius: 2, fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', background: bg, color: '#fff' }}>
       {label}

@@ -166,6 +166,8 @@ export type Database = {
           comp_status: string | null
           created_at: string
           created_by: string | null
+          expected_delivery_date: string | null
+          expected_delivery_note: string | null
           expense_ratio: number | null
           grm_current: number | null
           grm_current_source: string | null
@@ -245,6 +247,8 @@ export type Database = {
           comp_status?: string | null
           created_at?: string
           created_by?: string | null
+          expected_delivery_date?: string | null
+          expected_delivery_note?: string | null
           expense_ratio?: number | null
           grm_current?: number | null
           grm_current_source?: string | null
@@ -324,6 +328,8 @@ export type Database = {
           comp_status?: string | null
           created_at?: string
           created_by?: string | null
+          expected_delivery_date?: string | null
+          expected_delivery_note?: string | null
           expense_ratio?: number | null
           grm_current?: number | null
           grm_current_source?: string | null

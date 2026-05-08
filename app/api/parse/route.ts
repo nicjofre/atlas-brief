@@ -53,7 +53,9 @@ const SYSTEM_PROMPT = `You are a commercial real estate data parser for CoStar r
   "zoning": string,
   "apn": string,
 
-  "status": "for_sale" | "sold" | "off_market",
+  "status": "for_sale" | "sold" | "off_market" | "under_construction",
+  "expected_delivery_date": string,
+  "expected_delivery_note": string,
   "list_price": number,
   "sale_price": number,
   "price_per_unit": number,
@@ -190,6 +192,9 @@ Notes:
 - For "Taxes $X/Unit (YEAR)", set tax_per_unit, tax_year, and compute annual_tax = tax_per_unit * unit_count.
 - "Pedestrian Friendly", "Cycling Friendly", "Car Friendly", "Transit Friendly" map to pedestrian_score/cycling_score/car_score/transit_score (numeric only, drop the descriptive label).
 - For unit_mix, each row is a bedroom type. Use "Studio", "1", "2", "3" etc as bed_type.
+- Status: use 'under_construction' if the page indicates the property is being built / has not yet delivered (look for "Under Construction", "Proposed", "Delivery", "Expected Delivery", a future "RBA Date", or similar). Use 'sold' for closed comps; 'for_sale' for active listings; 'off_market' otherwise.
+- expected_delivery_date: if the page shows a delivery date, return ISO YYYY-MM-DD. Convert "Dec 2027" -> "2027-12-01"; "Q4 2027" -> "2027-12-01" (last month of quarter); "2027" alone -> "2027-01-01". Set null if not present.
+- expected_delivery_note: the verbatim phrase as shown on CoStar (e.g. "Dec 2027", "Q4 2027", "Pending"). Useful when the date alone loses nuance.
 - Sale highlights: capture the bullet points as a single string with line breaks.
 - Building notes: capture the editorial narrative paragraphs.
 - Amenities: list of strings like ["Kitchen", "Views", "Oven"].
