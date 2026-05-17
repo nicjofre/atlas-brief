@@ -37,9 +37,17 @@ export function deriveListingFields(input: {
   price_per_unit: number | null
   price_per_sf: number | null
 }): DerivedListingFields {
+  // RSO applies to multifamily built on or before Oct 1, 1978 (LA city).
+  // AB 1482 applies to most rental housing built at least 15 years ago,
+  // unless RSO already covers it. Buildings less than 15 years old are
+  // generally Exempt from both (the AB 1482 carve-out for new construction).
   const yearBuilt = input.year_built
+  const currentYear = new Date().getFullYear()
   const rsoApplicable = yearBuilt != null ? yearBuilt <= 1978 : null
-  const ab1482Applicable = yearBuilt != null ? !rsoApplicable : null
+  const ab1482Applicable =
+    yearBuilt != null
+      ? yearBuilt > 1978 && currentYear - yearBuilt >= 15
+      : null
 
   const refPrice = input.sale_price ?? input.list_price
 
