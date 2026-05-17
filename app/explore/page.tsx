@@ -11,11 +11,19 @@ export default async function ExplorePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: savedReports } = await supabase
+  const { data: savedReportsRaw } = await supabase
     .from('saved_reports')
-    .select('id, name, question, sql, created_at')
+    .select('id, name, question, sql, viz, created_at')
     .order('created_at', { ascending: false })
     .limit(50)
+  const savedReports = (savedReportsRaw ?? []).map(r => ({
+    id: r.id,
+    name: r.name,
+    question: r.question,
+    sql: r.sql,
+    viz: r.viz as { type: 'bar' | 'line' | 'kpi' | 'table'; x?: string | null; y?: string | null } | null,
+    created_at: r.created_at,
+  }))
 
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
@@ -26,7 +34,7 @@ export default async function ExplorePage() {
             Explore
           </h1>
         </div>
-        <ExploreClient savedReports={savedReports ?? []} />
+        <ExploreClient savedReports={savedReports} />
       </div>
     </div>
   )

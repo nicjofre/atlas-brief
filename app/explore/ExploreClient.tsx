@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ExploreChart, { type VizConfig } from './ExploreChart'
 
 type Row = Record<string, unknown>
 
@@ -11,6 +12,7 @@ type SavedReport = {
   name: string
   question: string
   sql: string
+  viz: VizConfig | null
   created_at: string
 }
 
@@ -18,8 +20,18 @@ type AskResult = {
   sql: string
   explanation: string
   rows: Row[]
+  viz: VizConfig | null
   error?: string
 }
+
+type Pane = 'chart' | 'table' | 'sql'
+
+const CHART_TYPES: { value: VizConfig['type']; label: string }[] = [
+  { value: 'bar', label: 'Bar' },
+  { value: 'line', label: 'Line' },
+  { value: 'kpi', label: 'KPI' },
+  { value: 'table', label: 'Table only' },
+]
 
 export default function ExploreClient({ savedReports }: { savedReports: SavedReport[] }) {
   const router = useRouter()
@@ -28,12 +40,22 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
   const [question, setQuestion] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AskResult | null>(null)
-  const [showSql, setShowSql] = useState(false)
+  const [pane, setPane] = useState<Pane>('chart')
+  const [vizOverride, setVizOverride] = useState<VizConfig | null>(null)
   const [savedName, setSavedName] = useState('')
   const [saving, setSaving] = useState(false)
   const [savedConfirm, setSavedConfirm] = useState(false)
 
-  async function ask(q: string, presetSql?: string, presetExplanation?: string) {
+  // When result changes, reset override + pick the right default pane.
+  useEffect(() => {
+    if (!result) return
+    setVizOverride(null)
+    setSavedConfirm(false)
+    const vizType = result.viz?.type ?? 'table'
+    setPane(vizType === 'table' ? 'table' : 'chart')
+  }, [result])
+
+  async function ask(q: string, presetSql?: string, presetExplanation?: string, presetViz?: VizConfig | null) {
     setLoading(true)
     setSavedConfirm(false)
     try {
@@ -44,6 +66,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
           question: q,
           sql: presetSql ?? null,
           explanation: presetExplanation ?? null,
+          viz: presetViz ?? null,
         }),
       })
       const data = await res.json()
@@ -51,6 +74,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
         sql: data.sql ?? '',
         explanation: data.explanation ?? '',
         rows: data.rows ?? [],
+        viz: data.viz ?? null,
         error: data.error,
       })
     } catch (e) {
@@ -58,12 +82,15 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
         sql: '',
         explanation: '',
         rows: [],
+        viz: null,
         error: e instanceof Error ? e.message : 'Request failed',
       })
     } finally {
       setLoading(false)
     }
   }
+
+  const effectiveViz: VizConfig = vizOverride ?? result?.viz ?? { type: 'table' }
 
   async function handleSave() {
     if (!result || !savedName.trim()) return
@@ -74,6 +101,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
         name: savedName.trim(),
         question,
         sql: result.sql,
+        viz: effectiveViz,
         created_by: user?.id ?? null,
       })
       if (insErr) throw new Error(insErr.message)
@@ -95,7 +123,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
 
   function runSaved(r: SavedReport) {
     setQuestion(r.question)
-    void ask(r.question, r.sql)
+    void ask(r.question, r.sql, undefined, r.viz)
   }
 
   function downloadCsv() {
@@ -120,7 +148,10 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
     URL.revokeObjectURL(url)
   }
 
-  const headers = result && result.rows.length > 0 ? Object.keys(result.rows[0]) : []
+  const tableHeaders = result && result.rows.length > 0 ? Object.keys(result.rows[0]) : []
+  const numericCols = result && result.rows.length > 0
+    ? Object.keys(result.rows[0]).filter(k => typeof result.rows[0][k] === 'number')
+    : []
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 32 }}>
@@ -133,11 +164,9 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
               value={question}
               onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => {
-                if (e.key === 'Enter' && question.trim() && !loading) {
-                  void ask(question.trim())
-                }
+                if (e.key === 'Enter' && question.trim() && !loading) void ask(question.trim())
               }}
-              placeholder="e.g. Sold deals in NoHo over the last 12 months under $5M"
+              placeholder="e.g. Average price per door by submarket"
               style={{
                 flex: 1,
                 padding: '12px 16px',
@@ -163,7 +192,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
                 opacity: loading || !question.trim() ? 0.6 : 1,
               }}
             >
-              {loading ? 'Thinking...' : 'Ask'}
+              {loading ? 'Thinking…' : 'Ask'}
             </button>
           </div>
         </div>
@@ -174,47 +203,103 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
               <div style={{ fontSize: 13, color: '#444', marginBottom: 12, fontStyle: 'italic' }}>{result.explanation}</div>
             )}
 
-            <div style={{ marginBottom: 12 }}>
-              <button
-                onClick={() => setShowSql(s => !s)}
-                style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
-                {showSql ? '▾ Hide SQL' : '▸ Show SQL'}
-              </button>
-              {showSql && (
-                <pre style={{ marginTop: 8, padding: 12, background: '#f5f5f5', border: '1px solid #eee', borderRadius: 4, fontSize: 11, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
-                  {result.sql}
-                </pre>
-              )}
-            </div>
-
             {result.error ? (
-              <div style={{ padding: 12, background: '#fee', color: '#c0392b', borderRadius: 4, fontSize: 13 }}>{result.error}</div>
-            ) : result.rows.length === 0 ? (
-              <div style={{ padding: 24, color: '#999', fontSize: 13, textAlign: 'center', background: '#fff', border: '1px solid #eee', borderRadius: 4 }}>
-                No rows matched.
+              <div style={{ padding: 12, background: '#fee', color: '#c0392b', borderRadius: 4, fontSize: 13 }}>
+                {result.error}
+                <div style={{ marginTop: 8 }}>
+                  <button onClick={() => setPane('sql')} style={{ fontSize: 11, color: '#9A6B3F', background: 'none', border: '1px solid #9A6B3F', borderRadius: 2, padding: '4px 8px', cursor: 'pointer' }}>
+                    Show SQL
+                  </button>
+                </div>
               </div>
             ) : (
-              <div style={{ overflow: 'auto', background: '#fff', border: '1px solid #eee', borderRadius: 4 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #111', color: '#9A6B3F', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
-                      {headers.map(h => (
-                        <th key={h} style={{ textAlign: 'left', padding: '10px 12px', whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {result.rows.map((row, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        {headers.map(h => (
-                          <td key={h} style={{ padding: '8px 12px', color: '#111', verticalAlign: 'top' }}>{formatCell(row[h])}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* tabs */}
+                <div style={{ display: 'flex', gap: 0, marginBottom: 12, borderBottom: '1px solid #ddd' }}>
+                  {(['chart', 'table', 'sql'] as Pane[]).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setPane(p)}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: 11,
+                        letterSpacing: 2,
+                        textTransform: 'uppercase',
+                        background: 'none',
+                        border: 'none',
+                        borderBottom: pane === p ? '2px solid #111' : '2px solid transparent',
+                        color: pane === p ? '#111' : '#999',
+                        cursor: 'pointer',
+                        marginBottom: -1,
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+
+                {pane === 'chart' && (
+                  <div>
+                    {/* viz overrides */}
+                    {result.rows.length > 0 && tableHeaders.length > 0 && (
+                      <div style={{ display: 'flex', gap: 12, marginBottom: 8, flexWrap: 'wrap', fontSize: 11 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#666' }}>
+                          Type
+                          <select
+                            value={effectiveViz.type}
+                            onChange={e => setVizOverride({ ...effectiveViz, type: e.target.value as VizConfig['type'] })}
+                            style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #ddd', borderRadius: 2, color: '#111', background: '#fff' }}
+                          >
+                            {CHART_TYPES.map(t => (
+                              <option key={t.value} value={t.value}>{t.label}</option>
+                            ))}
+                          </select>
+                        </label>
+                        {effectiveViz.type !== 'kpi' && effectiveViz.type !== 'table' && (
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#666' }}>
+                            X
+                            <select
+                              value={effectiveViz.x ?? ''}
+                              onChange={e => setVizOverride({ ...effectiveViz, x: e.target.value })}
+                              style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #ddd', borderRadius: 2, color: '#111', background: '#fff' }}
+                            >
+                              {tableHeaders.map(h => (
+                                <option key={h} value={h}>{h}</option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+                        {effectiveViz.type !== 'table' && (
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#666' }}>
+                            Y
+                            <select
+                              value={effectiveViz.y ?? ''}
+                              onChange={e => setVizOverride({ ...effectiveViz, y: e.target.value })}
+                              style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #ddd', borderRadius: 2, color: '#111', background: '#fff' }}
+                            >
+                              {(numericCols.length > 0 ? numericCols : tableHeaders).map(h => (
+                                <option key={h} value={h}>{h}</option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+                      </div>
+                    )}
+
+                    {effectiveViz.type === 'table'
+                      ? <ResultsTable rows={result.rows} />
+                      : <ExploreChart rows={result.rows} viz={effectiveViz} />}
+                  </div>
+                )}
+
+                {pane === 'table' && <ResultsTable rows={result.rows} />}
+
+                {pane === 'sql' && (
+                  <pre style={{ padding: 12, background: '#f5f5f5', border: '1px solid #eee', borderRadius: 4, fontSize: 11, overflow: 'auto', whiteSpace: 'pre-wrap', color: '#111' }}>
+                    {result.sql}
+                  </pre>
+                )}
+              </>
             )}
 
             {!result.error && result.rows.length > 0 && (
@@ -239,7 +324,7 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
                   disabled={saving || !savedName.trim()}
                   style={{ padding: '4px 10px', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: '#fff', background: '#111', border: 'none', borderRadius: 2, cursor: saving || !savedName.trim() ? 'not-allowed' : 'pointer', opacity: saving || !savedName.trim() ? 0.6 : 1 }}
                 >
-                  {saving ? 'Saving...' : 'Save as Report'}
+                  {saving ? 'Saving…' : 'Save as Report'}
                 </button>
                 {savedConfirm && <span style={{ fontSize: 11, color: '#27ae60' }}>✓ Saved</span>}
               </div>
@@ -251,11 +336,11 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
           <div style={{ marginTop: 24, padding: 16, background: '#fff', border: '1px solid #eee', borderRadius: 4, fontSize: 13, color: '#666', lineHeight: 1.6 }}>
             <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', marginBottom: 8 }}>Try asking</div>
             {[
-              'Sold deals in NoHo in the last 12 months under $5M',
-              'Average $/door for sold 1960s buildings in Hollywood',
+              'Average price per door by submarket',
+              'Sales volume by quarter over the last two years',
               'Brokers who have sold more than 3 deals in the last year',
               'Under construction projects delivering before Q4 2027',
-              'Properties where current rent is more than 15% below market',
+              'Average CAP rate for sold deals in NoHo',
             ].map(q => (
               <div
                 key={q}
@@ -300,6 +385,39 @@ export default function ExploreClient({ savedReports }: { savedReports: SavedRep
           </div>
         )}
       </aside>
+    </div>
+  )
+}
+
+function ResultsTable({ rows }: { rows: Row[] }) {
+  if (rows.length === 0) {
+    return (
+      <div style={{ padding: 24, color: '#999', fontSize: 13, textAlign: 'center', background: '#fff', border: '1px solid #eee', borderRadius: 4 }}>
+        No rows matched.
+      </div>
+    )
+  }
+  const headers = Object.keys(rows[0])
+  return (
+    <div style={{ overflow: 'auto', background: '#fff', border: '1px solid #eee', borderRadius: 4 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead>
+          <tr style={{ borderBottom: '2px solid #111', color: '#9A6B3F', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
+            {headers.map(h => (
+              <th key={h} style={{ textAlign: 'left', padding: '10px 12px', whiteSpace: 'nowrap' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+              {headers.map(h => (
+                <td key={h} style={{ padding: '8px 12px', color: '#111', verticalAlign: 'top' }}>{formatCell(row[h])}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

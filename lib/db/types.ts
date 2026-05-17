@@ -765,6 +765,7 @@ export type Database = {
           question: string
           sql: string
           updated_at: string
+          viz: Json | null
         }
         Insert: {
           created_at?: string
@@ -774,6 +775,7 @@ export type Database = {
           question: string
           sql: string
           updated_at?: string
+          viz?: Json | null
         }
         Update: {
           created_at?: string
@@ -783,6 +785,7 @@ export type Database = {
           question?: string
           sql?: string
           updated_at?: string
+          viz?: Json | null
         }
         Relationships: []
       }

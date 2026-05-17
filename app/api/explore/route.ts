@@ -11,7 +11,8 @@ function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim()
 }
 
-type AskResponse = { sql: string; explanation: string }
+type Viz = { type: 'bar' | 'line' | 'kpi' | 'table'; x?: string | null; y?: string | null }
+type AskResponse = { sql: string; explanation: string; viz?: Viz }
 
 async function translateToSql(question: string): Promise<AskResponse> {
   const response = await client.messages.create({
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
   const question = typeof body.question === 'string' ? body.question.trim() : ''
   const explicitSql = typeof body.sql === 'string' ? body.sql.trim() : ''
   const explicitExplanation = typeof body.explanation === 'string' ? body.explanation.trim() : ''
+  const explicitViz = (body.viz && typeof body.viz === 'object' ? body.viz : null) as Viz | null
 
   if (!question && !explicitSql) {
     return NextResponse.json({ error: 'Missing question or sql' }, { status: 400 })
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest) {
 
   let sql = explicitSql
   let explanation = explicitExplanation
+  let viz: Viz | null = explicitViz
 
   // If no SQL provided, translate question via Claude.
   if (!sql) {
@@ -53,6 +56,7 @@ export async function POST(request: NextRequest) {
       const t = await translateToSql(question)
       sql = t.sql
       explanation = t.explanation
+      viz = t.viz ?? null
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Translation failed'
       return NextResponse.json({ error: `Translation failed: ${msg}` }, { status: 500 })
@@ -63,12 +67,12 @@ export async function POST(request: NextRequest) {
   try {
     const { data, error } = await supabase.rpc('explore_query', { query_text: sql })
     if (error) {
-      return NextResponse.json({ sql, explanation, error: error.message, rows: [] }, { status: 200 })
+      return NextResponse.json({ sql, explanation, viz, error: error.message, rows: [] }, { status: 200 })
     }
     const rows = Array.isArray(data) ? data : []
-    return NextResponse.json({ sql, explanation, rows })
+    return NextResponse.json({ sql, explanation, viz, rows })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Query failed'
-    return NextResponse.json({ sql, explanation, error: msg, rows: [] }, { status: 200 })
+    return NextResponse.json({ sql, explanation, viz, error: msg, rows: [] }, { status: 200 })
   }
 }
