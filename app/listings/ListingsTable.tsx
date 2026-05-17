@@ -41,13 +41,9 @@ type View = 'active' | 'trash'
 export default function ListingsTable({
   rows,
   view,
-  activeCount,
-  trashCount,
 }: {
   rows: Row[]
   view: View
-  activeCount: number
-  trashCount: number
 }) {
   const router = useRouter()
   const supabase = createClient()
@@ -114,7 +110,7 @@ export default function ListingsTable({
             marginBottom: -1,
           }}
         >
-          Active ({activeCount})
+          Database
         </Link>
         <Link
           href="/listings?view=trash"
@@ -129,7 +125,7 @@ export default function ListingsTable({
             marginBottom: -1,
           }}
         >
-          Trash ({trashCount})
+          Trash
         </Link>
       </div>
 

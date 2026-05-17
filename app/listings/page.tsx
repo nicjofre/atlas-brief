@@ -50,25 +50,10 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
     .order('created_at', { ascending: false })
     .limit(200)
 
-  const filteredQuery =
+  const { data: rows, error } =
     view === 'active'
-      ? rowsQuery.is('deleted_at', null)
-      : rowsQuery.not('deleted_at', 'is', null)
-
-  const activeCountQuery = supabase
-    .from('listings')
-    .select('id', { count: 'exact', head: true })
-    .is('deleted_at', null)
-  const trashCountQuery = supabase
-    .from('listings')
-    .select('id', { count: 'exact', head: true })
-    .not('deleted_at', 'is', null)
-
-  const [{ data: rows, error }, { count: activeCount }, { count: trashCount }] = await Promise.all([
-    filteredQuery,
-    activeCountQuery,
-    trashCountQuery,
-  ])
+      ? await rowsQuery.is('deleted_at', null)
+      : await rowsQuery.not('deleted_at', 'is', null)
 
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
@@ -90,12 +75,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
           </div>
         )}
 
-        <ListingsTable
-          rows={rows ?? []}
-          view={view}
-          activeCount={activeCount ?? 0}
-          trashCount={trashCount ?? 0}
-        />
+        <ListingsTable rows={rows ?? []} view={view} />
       </div>
     </div>
   )
