@@ -756,12 +756,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          question: string
+          sql: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          question: string
+          sql: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          question?: string
+          sql?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      explore_query: { Args: { query_text: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

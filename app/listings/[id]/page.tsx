@@ -894,6 +894,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
             Atlas <em>Brief</em>
           </Link>
           <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
+          <Link href="/explore" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Explore</Link>
           <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
         </div>
         <SignOutButton />

@@ -88,7 +88,8 @@ function Header() {
         <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
           Atlas <em>Brief</em>
         </Link>
-        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
+        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Database</Link>
+        <Link href="/explore" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Explore</Link>
         <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
       </div>
       <SignOutButton />
