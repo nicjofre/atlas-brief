@@ -189,11 +189,18 @@ export function omSources(args: {
 // Display-side derived helpers
 // ============================================================
 
-/** Single label combining RSO + AB1482 booleans into one human-readable status. */
+export type RentRegulation = 'RSO' | 'AB 1482 Only' | 'Exempt'
+
+/** Single label combining RSO + AB1482 booleans into one human-readable status.
+ *  A manual override always wins over the derived value. */
 export function rentRegulationLabel(args: {
   rso_applicable: boolean | null
   ab1482_applicable: boolean | null
-}): 'RSO' | 'AB 1482 Only' | 'Exempt' | null {
+  override?: string | null
+}): RentRegulation | null {
+  if (args.override === 'RSO' || args.override === 'AB 1482 Only' || args.override === 'Exempt') {
+    return args.override
+  }
   if (args.rso_applicable === true) return 'RSO'
   if (args.ab1482_applicable === true) return 'AB 1482 Only'
   if (args.rso_applicable === false && args.ab1482_applicable === false) return 'Exempt'

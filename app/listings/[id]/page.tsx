@@ -7,6 +7,7 @@ import AugmentForm from './AugmentForm'
 import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
 import DeleteListingButton from './DeleteListingButton'
+import RentRegulationOverride from './RentRegulationOverride'
 import SignOutButton from '@/app/SignOutButton'
 
 export const dynamic = 'force-dynamic'
@@ -364,11 +365,29 @@ function SummaryTab({
         <Grid>
           <div>
             {(() => {
-              const label = rentRegulationLabel({
+              const derived = rentRegulationLabel({
                 rso_applicable: l.rso_applicable as boolean | null,
                 ab1482_applicable: l.ab1482_applicable as boolean | null,
               })
-              return <Field label="Rent Regulation" value={plain(label)} hint="derived from year built" />
+              const effective = rentRegulationLabel({
+                rso_applicable: l.rso_applicable as boolean | null,
+                ab1482_applicable: l.ab1482_applicable as boolean | null,
+                override: l.rent_regulation_override as string | null,
+              })
+              return (
+                <>
+                  <Field
+                    label="Rent Regulation"
+                    value={plain(effective)}
+                    hint={l.rent_regulation_override ? 'manual override' : 'derived from year built'}
+                  />
+                  <RentRegulationOverride
+                    listingId={l.id as string}
+                    currentOverride={(l.rent_regulation_override as string | null) ?? null}
+                    derivedLabel={derived}
+                  />
+                </>
+              )
             })()}
             <Field label="RSO Applicable" value={plain(l.rso_applicable as boolean | null)} hint="derived" />
             <Field label="AB 1482 Applicable" value={plain(l.ab1482_applicable as boolean | null)} hint="derived" />

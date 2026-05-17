@@ -209,6 +209,7 @@ export type Database = {
           recorded_buyer: string | null
           recorded_seller: string | null
           recording_date: string | null
+          rent_regulation_override: string | null
           rent_roll: Json | null
           rso_applicable: boolean | null
           sale_date: string | null
@@ -292,6 +293,7 @@ export type Database = {
           recorded_buyer?: string | null
           recorded_seller?: string | null
           recording_date?: string | null
+          rent_regulation_override?: string | null
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
@@ -375,6 +377,7 @@ export type Database = {
           recorded_buyer?: string | null
           recorded_seller?: string | null
           recording_date?: string | null
+          rent_regulation_override?: string | null
           rent_roll?: Json | null
           rso_applicable?: boolean | null
           sale_date?: string | null
