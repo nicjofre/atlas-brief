@@ -2,6 +2,10 @@
 
 ## Notes for future work
 
+### Always filter soft-deleted listings
+
+Any dashboard, analytics view, aggregate query, comp table, or article-generation pipeline that reads from `listings` MUST filter `WHERE deleted_at IS NULL` by default. Deleted entries stay in the database for historical record but are excluded from every default view. Only opt in to including deleted rows when the use case explicitly requires historical/audit visibility.
+
 ### When AI article drafting is built
 
 The article generator must handle `under_construction` listings as a first-class case, not just a fallback to "for_sale". Specifically:

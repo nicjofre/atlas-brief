@@ -6,6 +6,7 @@ import { rentRegulationLabel, parkingRatio, daysOnMarket, rentSpread, priorSale 
 import AugmentForm from './AugmentForm'
 import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
+import DeleteListingButton from './DeleteListingButton'
 import SignOutButton from '@/app/SignOutButton'
 
 export const dynamic = 'force-dynamic'
@@ -166,7 +167,16 @@ export default async function ListingDetailPage({
   return (
     <PageShell>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
-        <BreadcrumbBack />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', textDecoration: 'none' }}>← Database</Link>
+          {!listing.deleted_at && <DeleteListingButton listingId={listing.id} />}
+        </div>
+
+        {listing.deleted_at && (
+          <div style={{ padding: 12, background: '#fee', border: '1px solid #fcc', borderRadius: 4, color: '#c0392b', fontSize: 13, marginBottom: 16 }}>
+            This listing is in Trash. It is excluded from the database and any analytics. Restore from the Trash tab in the Database to bring it back.
+          </div>
+        )}
 
         {/* always-visible header */}
         <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -870,14 +880,6 @@ function PageShell({ children }: { children: React.ReactNode }) {
         <SignOutButton />
       </div>
       {children}
-    </div>
-  )
-}
-
-function BreadcrumbBack() {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', textDecoration: 'none' }}>← Database</Link>
     </div>
   )
 }
