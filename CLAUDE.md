@@ -2,9 +2,9 @@
 
 ## Notes for future work
 
-### Always filter soft-deleted listings
+### Always filter soft-deleted listings — use the `listings_active` view
 
-Any dashboard, analytics view, aggregate query, comp table, or article-generation pipeline that reads from `listings` MUST filter `WHERE deleted_at IS NULL` by default. Deleted entries stay in the database for historical record but are excluded from every default view. Only opt in to including deleted rows when the use case explicitly requires historical/audit visibility.
+Any dashboard, analytics view, aggregate query, comp table, or article-generation pipeline that reads listings MUST use the **`listings_active`** view, not the raw `listings` table. The view bakes in `WHERE deleted_at IS NULL` so it's impossible to forget. Only query `listings` directly when you specifically need deleted rows (e.g., the Trash UI, audit/history use cases).
 
 ### When AI article drafting is built
 

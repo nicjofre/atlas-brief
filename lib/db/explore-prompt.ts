@@ -20,7 +20,8 @@ properties (the physical building)
   flood_zone text, in_sfha boolean
   building_notes text, sale_highlights text, capital_improvements text, value_add_notes text
 
-listings (a deal event for a property — sold, for sale, under construction)
+listings_active (a deal event for a property — sold, for sale, under construction)
+  This is a VIEW that automatically excludes soft-deleted rows. ALWAYS use listings_active. NEVER query the raw listings table directly.
   id uuid, property_id uuid -> properties.id, created_at timestamptz
   status text  -- 'for_sale', 'sold', 'off_market', 'under_construction'
   list_price numeric, sale_price numeric, initial_ask_price numeric
@@ -44,17 +45,16 @@ listings (a deal event for a property — sold, for sale, under construction)
   hold_period_months int, sale_notes text
   loan_amount numeric, lender text, loan_origination_date date, loan_maturity_date date
   unit_mix jsonb  -- [{ bed_type, units, avg_sf, current_avg_rent, market_avg_rent, vacant_count }, ...]
-  deleted_at timestamptz, deleted_by uuid
 
 brokers (deduplicated by email / dre_license / name+firm)
   id uuid, name text, title text, firm text
   phone text, cell text, email text, dre_license text, office_address text
 
 CRITICAL RULES:
-1. ALWAYS filter soft-deleted listings: WHERE listings.deleted_at IS NULL
-2. Join listings -> properties via listings.property_id = properties.id
-3. Join listings -> broker as listing_brokers: listings.listing_broker_id = brokers.id
-4. Join listings -> broker as buyer_brokers: listings.buyer_broker_id = brokers.id (use a separate alias)
+1. ALWAYS query listings_active (the view), NEVER listings directly. The view already filters out soft-deleted rows.
+2. Join listings_active -> properties via listings_active.property_id = properties.id
+3. Join listings_active -> broker as listing_brokers: listings_active.listing_broker_id = brokers.id
+4. Join listings_active -> broker as buyer_brokers: listings_active.buyer_broker_id = brokers.id (use a separate alias)
 5. Money is numeric, no $ sign. Percentages are numbers (5.5 means 5.5%, not 0.055).
 6. For "active": status = 'for_sale'. For sold: status = 'sold'. For under construction: status = 'under_construction'.
 7. Use ILIKE for case-insensitive text matches on submarket/neighborhood/city.
@@ -82,21 +82,21 @@ VIZ HINT RULES:
 EXAMPLES:
 
 Question: "Sold deals in NoHo in the last 12 months under $5M"
-{"sql":"SELECT p.street_address, p.city, p.zip, l.sale_date, l.sale_price, l.price_per_unit, l.cap_rate_current, p.year_built, p.unit_count FROM listings l JOIN properties p ON p.id = l.property_id WHERE l.deleted_at IS NULL AND l.status = 'sold' AND p.submarket ILIKE '%NoHo%' AND l.sale_date >= CURRENT_DATE - INTERVAL '12 months' AND l.sale_price < 5000000 ORDER BY l.sale_date DESC","explanation":"Sold multifamily deals in NoHo over the last 12 months priced below $5M, newest first.","viz":{"type":"table","x":null,"y":null}}
+{"sql":"SELECT p.street_address, p.city, p.zip, l.sale_date, l.sale_price, l.price_per_unit, l.cap_rate_current, p.year_built, p.unit_count FROM listings_active l JOIN properties p ON p.id = l.property_id WHERE l.status = 'sold' AND p.submarket ILIKE '%NoHo%' AND l.sale_date >= CURRENT_DATE - INTERVAL '12 months' AND l.sale_price < 5000000 ORDER BY l.sale_date DESC","explanation":"Sold multifamily deals in NoHo over the last 12 months priced below $5M, newest first.","viz":{"type":"table","x":null,"y":null}}
 
 Question: "Average $/door for sold 1960s-vintage buildings in Hollywood"
-{"sql":"SELECT ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door, COUNT(*) AS deal_count, ROUND(AVG(l.cap_rate_current), 2) AS avg_cap FROM listings l JOIN properties p ON p.id = l.property_id WHERE l.deleted_at IS NULL AND l.status = 'sold' AND p.submarket ILIKE '%Hollywood%' AND p.year_built BETWEEN 1960 AND 1969","explanation":"Average price per door and cap rate for sold 1960s Hollywood multifamily buildings.","viz":{"type":"kpi","x":null,"y":"avg_price_per_door"}}
+{"sql":"SELECT ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door, COUNT(*) AS deal_count, ROUND(AVG(l.cap_rate_current), 2) AS avg_cap FROM listings_active l JOIN properties p ON p.id = l.property_id WHERE l.status = 'sold' AND p.submarket ILIKE '%Hollywood%' AND p.year_built BETWEEN 1960 AND 1969","explanation":"Average price per door and cap rate for sold 1960s Hollywood multifamily buildings.","viz":{"type":"kpi","x":null,"y":"avg_price_per_door"}}
 
 Question: "Brokers who have sold more than 3 deals in the last 12 months"
-{"sql":"SELECT b.name, b.firm, COUNT(*) AS deal_count, SUM(l.sale_price) AS total_volume, ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door FROM listings l JOIN brokers b ON b.id = l.listing_broker_id WHERE l.deleted_at IS NULL AND l.status = 'sold' AND l.sale_date >= CURRENT_DATE - INTERVAL '12 months' GROUP BY b.id, b.name, b.firm HAVING COUNT(*) > 3 ORDER BY deal_count DESC","explanation":"Listing brokers with more than 3 closed sales in the last 12 months, sorted by deal count.","viz":{"type":"bar","x":"name","y":"deal_count"}}
+{"sql":"SELECT b.name, b.firm, COUNT(*) AS deal_count, SUM(l.sale_price) AS total_volume, ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door FROM listings_active l JOIN brokers b ON b.id = l.listing_broker_id WHERE l.status = 'sold' AND l.sale_date >= CURRENT_DATE - INTERVAL '12 months' GROUP BY b.id, b.name, b.firm HAVING COUNT(*) > 3 ORDER BY deal_count DESC","explanation":"Listing brokers with more than 3 closed sales in the last 12 months, sorted by deal count.","viz":{"type":"bar","x":"name","y":"deal_count"}}
 
 Question: "Sales volume by quarter over the last two years"
-{"sql":"SELECT date_trunc('quarter', l.sale_date)::date AS quarter, COUNT(*) AS deal_count, SUM(l.sale_price) AS total_volume FROM listings l WHERE l.deleted_at IS NULL AND l.status = 'sold' AND l.sale_date >= CURRENT_DATE - INTERVAL '24 months' GROUP BY 1 ORDER BY 1 ASC","explanation":"Total deal count and sale volume bucketed by calendar quarter over the last two years.","viz":{"type":"line","x":"quarter","y":"total_volume"}}
+{"sql":"SELECT date_trunc('quarter', l.sale_date)::date AS quarter, COUNT(*) AS deal_count, SUM(l.sale_price) AS total_volume FROM listings_active l WHERE l.status = 'sold' AND l.sale_date >= CURRENT_DATE - INTERVAL '24 months' GROUP BY 1 ORDER BY 1 ASC","explanation":"Total deal count and sale volume bucketed by calendar quarter over the last two years.","viz":{"type":"line","x":"quarter","y":"total_volume"}}
 
 Question: "Average price per door by submarket"
-{"sql":"SELECT p.submarket, COUNT(*) AS deal_count, ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door FROM listings l JOIN properties p ON p.id = l.property_id WHERE l.deleted_at IS NULL AND l.status = 'sold' AND p.submarket IS NOT NULL GROUP BY p.submarket HAVING COUNT(*) >= 2 ORDER BY avg_price_per_door DESC","explanation":"Average price per door per submarket for sold deals (submarkets with at least 2 deals).","viz":{"type":"bar","x":"submarket","y":"avg_price_per_door"}}
+{"sql":"SELECT p.submarket, COUNT(*) AS deal_count, ROUND(AVG(l.price_per_unit), 0) AS avg_price_per_door FROM listings_active l JOIN properties p ON p.id = l.property_id WHERE l.status = 'sold' AND p.submarket IS NOT NULL GROUP BY p.submarket HAVING COUNT(*) >= 2 ORDER BY avg_price_per_door DESC","explanation":"Average price per door per submarket for sold deals (submarkets with at least 2 deals).","viz":{"type":"bar","x":"submarket","y":"avg_price_per_door"}}
 
 Question: "Under construction projects delivering before Q4 2027"
-{"sql":"SELECT p.street_address, p.city, p.submarket, p.unit_count, l.expected_delivery_date, l.expected_delivery_note FROM listings l JOIN properties p ON p.id = l.property_id WHERE l.deleted_at IS NULL AND l.status = 'under_construction' AND l.expected_delivery_date < '2027-10-01' ORDER BY l.expected_delivery_date ASC","explanation":"All tracked under-construction multifamily projects scheduled to deliver before Q4 2027, soonest first.","viz":{"type":"table","x":null,"y":null}}
+{"sql":"SELECT p.street_address, p.city, p.submarket, p.unit_count, l.expected_delivery_date, l.expected_delivery_note FROM listings_active l JOIN properties p ON p.id = l.property_id WHERE l.status = 'under_construction' AND l.expected_delivery_date < '2027-10-01' ORDER BY l.expected_delivery_date ASC","explanation":"All tracked under-construction multifamily projects scheduled to deliver before Q4 2027, soonest first.","viz":{"type":"table","x":null,"y":null}}
 
 Return only the JSON object, nothing else.`
