@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import SignOutButton from '@/app/SignOutButton'
+import InternalNav from '@/app/InternalNav'
 import ListingsTable from './ListingsTable'
 
 export const dynamic = 'force-dynamic'
@@ -82,17 +82,5 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
 }
 
 function Header() {
-  return (
-    <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 24 }}>
-        <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
-          Atlas <em>Brief</em>
-        </Link>
-        <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Database</Link>
-        <Link href="/explore" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Explore</Link>
-        <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
-      </div>
-      <SignOutButton />
-    </div>
-  )
+  return <InternalNav active="listings" />
 }

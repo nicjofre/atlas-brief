@@ -8,7 +8,8 @@ import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
 import DeleteListingButton from './DeleteListingButton'
 import RentRegulationOverride from './RentRegulationOverride'
-import SignOutButton from '@/app/SignOutButton'
+import DraftArticleButton from './DraftArticleButton'
+import InternalNav from '@/app/InternalNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,6 +132,17 @@ export default async function ListingDetailPage({
   }
   if (!listing) notFound()
 
+  // Surface the existing (non-trashed) article so the header can show "edit
+  // draft" vs "draft article" vs "edit published" buttons. Trashed articles
+  // are ignored — the partial unique index lets a new draft coexist with
+  // them.
+  const { data: existingArticle } = await supabase
+    .from('articles')
+    .select('id, status, slug')
+    .eq('listing_id', id)
+    .is('deleted_at', null)
+    .maybeSingle()
+
   const p = listing.property
   const lb = listing.listing_broker
   const bb = listing.buyer_broker
@@ -168,9 +180,17 @@ export default async function ListingDetailPage({
   return (
     <PageShell>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 16 }}>
           <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#9A6B3F', textDecoration: 'none' }}>← Database</Link>
-          {!listing.deleted_at && <DeleteListingButton listingId={listing.id} />}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {!listing.deleted_at && (
+              <DraftArticleButton
+                listingId={listing.id}
+                existing={existingArticle ? { id: existingArticle.id, status: existingArticle.status, slug: existingArticle.slug } : null}
+              />
+            )}
+            {!listing.deleted_at && <DeleteListingButton listingId={listing.id} />}
+          </div>
         </div>
 
         {listing.deleted_at && (
@@ -888,17 +908,7 @@ function StatsBar({ listing, property: p, headlinePrice }: {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 24 }}>
-          <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>
-            Atlas <em>Brief</em>
-          </Link>
-          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
-          <Link href="/explore" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Explore</Link>
-          <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Input</Link>
-        </div>
-        <SignOutButton />
-      </div>
+      <InternalNav active="listings" />
       {children}
     </div>
   )

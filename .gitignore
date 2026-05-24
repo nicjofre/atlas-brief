@@ -44,3 +44,11 @@ next-env.d.ts
 # local tool artifacts
 .claude/
 .playwright-mcp/
+
+# dev/debug artifacts at project root (kept locally, not committed)
+/*.png
+/costar-*-b64.txt
+
+# reference material downloaded from David's prototype site (kept locally as
+# design source-of-truth; not needed in the deployed app)
+/docs/atlas-brief-prototype/

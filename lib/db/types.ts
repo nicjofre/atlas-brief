@@ -12,8 +12,138 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      articles: {
+        Row: {
+          ai_draft: Json | null
+          body_html: string | null
+          body_md: string | null
+          byline_html: string | null
+          cat_label: string | null
+          created_at: string
+          created_by: string | null
+          david_reactions: Json | null
+          deal_stats_html: string | null
+          deck: string | null
+          deleted_at: string | null
+          entry_num: number
+          excerpt: string | null
+          headline: string
+          hero_caption: string | null
+          hero_photo_url: string | null
+          id: string
+          listing_id: string
+          published_at: string | null
+          section_slug: string
+          slug: string
+          status: string
+          status_tag: string | null
+          takeaways: Json | null
+          takeaways_subhead: string | null
+          tape_tier: number | null
+          updated_at: string
+        }
+        Insert: {
+          ai_draft?: Json | null
+          body_html?: string | null
+          body_md?: string | null
+          byline_html?: string | null
+          cat_label?: string | null
+          created_at?: string
+          created_by?: string | null
+          david_reactions?: Json | null
+          deal_stats_html?: string | null
+          deck?: string | null
+          deleted_at?: string | null
+          entry_num: number
+          excerpt?: string | null
+          headline: string
+          hero_caption?: string | null
+          hero_photo_url?: string | null
+          id?: string
+          listing_id: string
+          published_at?: string | null
+          section_slug: string
+          slug: string
+          status?: string
+          status_tag?: string | null
+          takeaways?: Json | null
+          takeaways_subhead?: string | null
+          tape_tier?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ai_draft?: Json | null
+          body_html?: string | null
+          body_md?: string | null
+          byline_html?: string | null
+          cat_label?: string | null
+          created_at?: string
+          created_by?: string | null
+          david_reactions?: Json | null
+          deal_stats_html?: string | null
+          deck?: string | null
+          deleted_at?: string | null
+          entry_num?: number
+          excerpt?: string | null
+          headline?: string
+          hero_caption?: string | null
+          hero_photo_url?: string | null
+          id?: string
+          listing_id?: string
+          published_at?: string | null
+          section_slug?: string
+          slug?: string
+          status?: string
+          status_tag?: string | null
+          takeaways?: Json | null
+          takeaways_subhead?: string | null
+          tape_tier?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "articles_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings_active"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       augmentation_log: {
         Row: {
           augment_type: string
@@ -54,6 +184,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "augmentation_log_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings_active"
             referencedColumns: ["id"]
           },
           {
@@ -423,6 +560,48 @@ export type Database = {
           },
         ]
       }
+      prompts: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          sort_order: number
+          surface: string
+          updated_at: string
+          updated_by: string | null
+          version_history: Json
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          sort_order?: number
+          surface?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_history?: Json
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          sort_order?: number
+          surface?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_history?: Json
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           airports: Json | null
@@ -791,7 +970,367 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      articles_active: {
+        Row: {
+          body_md: string | null
+          created_at: string | null
+          created_by: string | null
+          deck: string | null
+          deleted_at: string | null
+          entry_num: number | null
+          excerpt: string | null
+          headline: string | null
+          hero_caption: string | null
+          id: string | null
+          listing_id: string | null
+          published_at: string | null
+          section_slug: string | null
+          slug: string | null
+          status: string | null
+          status_tag: string | null
+          takeaways: Json | null
+          takeaways_subhead: string | null
+          tape_tier: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          body_md?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deck?: string | null
+          deleted_at?: string | null
+          entry_num?: number | null
+          excerpt?: string | null
+          headline?: string | null
+          hero_caption?: string | null
+          id?: string | null
+          listing_id?: string | null
+          published_at?: string | null
+          section_slug?: string | null
+          slug?: string | null
+          status?: string | null
+          status_tag?: string | null
+          takeaways?: Json | null
+          takeaways_subhead?: string | null
+          tape_tier?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          body_md?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deck?: string | null
+          deleted_at?: string | null
+          entry_num?: number | null
+          excerpt?: string | null
+          headline?: string | null
+          hero_caption?: string | null
+          id?: string | null
+          listing_id?: string | null
+          published_at?: string | null
+          section_slug?: string | null
+          slug?: string | null
+          status?: string | null
+          status_tag?: string | null
+          takeaways?: Json | null
+          takeaways_subhead?: string | null
+          tape_tier?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "articles_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings_active"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listings_active: {
+        Row: {
+          ab1482_applicable: boolean | null
+          bid_ask_delta: number | null
+          borrower: string | null
+          buyer_activity_acquisitions: number | null
+          buyer_activity_dispositions: number | null
+          buyer_broker_id: string | null
+          buyer_contact: string | null
+          buyer_origin: string | null
+          buyer_phone: string | null
+          buyer_secondary_type: string | null
+          buyer_type: string | null
+          cap_rate_current: number | null
+          cap_rate_current_source: string | null
+          cap_rate_market: number | null
+          cap_rate_market_source: string | null
+          comp_status: string | null
+          created_at: string | null
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          expected_delivery_date: string | null
+          expected_delivery_note: string | null
+          expense_ratio: number | null
+          grm_current: number | null
+          grm_current_source: string | null
+          grm_market: number | null
+          grm_market_source: string | null
+          hero_photo_index: number | null
+          hero_photo_url: string | null
+          hold_period_months: number | null
+          id: string | null
+          implied_gross_annual_current: number | null
+          implied_gross_annual_market: number | null
+          implied_monthly_rent_current: number | null
+          implied_monthly_rent_market: number | null
+          in_unit_features: string[] | null
+          initial_ask_price: number | null
+          last_om_parsed_at: string | null
+          lender: string | null
+          list_date: string | null
+          list_price: number | null
+          listing_broker_id: string | null
+          loan_amount: number | null
+          loan_doc_number: string | null
+          loan_maturity_date: string | null
+          loan_origination_date: string | null
+          loan_type: string | null
+          marketing_quotes: Json | null
+          noi_current: number | null
+          om_highlights: string[] | null
+          photo_urls: string[] | null
+          photos: Json | null
+          price_per_acre_land: number | null
+          price_per_sf: number | null
+          price_per_sf_land: number | null
+          price_per_unit: number | null
+          price_status: string | null
+          property_id: string | null
+          recorded_buyer: string | null
+          recorded_seller: string | null
+          recording_date: string | null
+          rent_regulation_override: string | null
+          rent_roll: Json | null
+          rso_applicable: boolean | null
+          sale_date: string | null
+          sale_notes: string | null
+          sale_price: number | null
+          sale_type: string | null
+          seller_contact: string | null
+          seller_phone: string | null
+          seller_secondary_type: string | null
+          seller_type: string | null
+          status: string | null
+          t12: Json | null
+          transfer_tax: number | null
+          true_buyer: string | null
+          true_seller: string | null
+          ula_tax_estimate: number | null
+          ula_threshold_status: string | null
+          unit_mix: Json | null
+          unit_mix_updated: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ab1482_applicable?: boolean | null
+          bid_ask_delta?: number | null
+          borrower?: string | null
+          buyer_activity_acquisitions?: number | null
+          buyer_activity_dispositions?: number | null
+          buyer_broker_id?: string | null
+          buyer_contact?: string | null
+          buyer_origin?: string | null
+          buyer_phone?: string | null
+          buyer_secondary_type?: string | null
+          buyer_type?: string | null
+          cap_rate_current?: number | null
+          cap_rate_current_source?: string | null
+          cap_rate_market?: number | null
+          cap_rate_market_source?: string | null
+          comp_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          expected_delivery_date?: string | null
+          expected_delivery_note?: string | null
+          expense_ratio?: number | null
+          grm_current?: number | null
+          grm_current_source?: string | null
+          grm_market?: number | null
+          grm_market_source?: string | null
+          hero_photo_index?: number | null
+          hero_photo_url?: string | null
+          hold_period_months?: number | null
+          id?: string | null
+          implied_gross_annual_current?: number | null
+          implied_gross_annual_market?: number | null
+          implied_monthly_rent_current?: number | null
+          implied_monthly_rent_market?: number | null
+          in_unit_features?: string[] | null
+          initial_ask_price?: number | null
+          last_om_parsed_at?: string | null
+          lender?: string | null
+          list_date?: string | null
+          list_price?: number | null
+          listing_broker_id?: string | null
+          loan_amount?: number | null
+          loan_doc_number?: string | null
+          loan_maturity_date?: string | null
+          loan_origination_date?: string | null
+          loan_type?: string | null
+          marketing_quotes?: Json | null
+          noi_current?: number | null
+          om_highlights?: string[] | null
+          photo_urls?: string[] | null
+          photos?: Json | null
+          price_per_acre_land?: number | null
+          price_per_sf?: number | null
+          price_per_sf_land?: number | null
+          price_per_unit?: number | null
+          price_status?: string | null
+          property_id?: string | null
+          recorded_buyer?: string | null
+          recorded_seller?: string | null
+          recording_date?: string | null
+          rent_regulation_override?: string | null
+          rent_roll?: Json | null
+          rso_applicable?: boolean | null
+          sale_date?: string | null
+          sale_notes?: string | null
+          sale_price?: number | null
+          sale_type?: string | null
+          seller_contact?: string | null
+          seller_phone?: string | null
+          seller_secondary_type?: string | null
+          seller_type?: string | null
+          status?: string | null
+          t12?: Json | null
+          transfer_tax?: number | null
+          true_buyer?: string | null
+          true_seller?: string | null
+          ula_tax_estimate?: number | null
+          ula_threshold_status?: string | null
+          unit_mix?: Json | null
+          unit_mix_updated?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ab1482_applicable?: boolean | null
+          bid_ask_delta?: number | null
+          borrower?: string | null
+          buyer_activity_acquisitions?: number | null
+          buyer_activity_dispositions?: number | null
+          buyer_broker_id?: string | null
+          buyer_contact?: string | null
+          buyer_origin?: string | null
+          buyer_phone?: string | null
+          buyer_secondary_type?: string | null
+          buyer_type?: string | null
+          cap_rate_current?: number | null
+          cap_rate_current_source?: string | null
+          cap_rate_market?: number | null
+          cap_rate_market_source?: string | null
+          comp_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          expected_delivery_date?: string | null
+          expected_delivery_note?: string | null
+          expense_ratio?: number | null
+          grm_current?: number | null
+          grm_current_source?: string | null
+          grm_market?: number | null
+          grm_market_source?: string | null
+          hero_photo_index?: number | null
+          hero_photo_url?: string | null
+          hold_period_months?: number | null
+          id?: string | null
+          implied_gross_annual_current?: number | null
+          implied_gross_annual_market?: number | null
+          implied_monthly_rent_current?: number | null
+          implied_monthly_rent_market?: number | null
+          in_unit_features?: string[] | null
+          initial_ask_price?: number | null
+          last_om_parsed_at?: string | null
+          lender?: string | null
+          list_date?: string | null
+          list_price?: number | null
+          listing_broker_id?: string | null
+          loan_amount?: number | null
+          loan_doc_number?: string | null
+          loan_maturity_date?: string | null
+          loan_origination_date?: string | null
+          loan_type?: string | null
+          marketing_quotes?: Json | null
+          noi_current?: number | null
+          om_highlights?: string[] | null
+          photo_urls?: string[] | null
+          photos?: Json | null
+          price_per_acre_land?: number | null
+          price_per_sf?: number | null
+          price_per_sf_land?: number | null
+          price_per_unit?: number | null
+          price_status?: string | null
+          property_id?: string | null
+          recorded_buyer?: string | null
+          recorded_seller?: string | null
+          recording_date?: string | null
+          rent_regulation_override?: string | null
+          rent_roll?: Json | null
+          rso_applicable?: boolean | null
+          sale_date?: string | null
+          sale_notes?: string | null
+          sale_price?: number | null
+          sale_type?: string | null
+          seller_contact?: string | null
+          seller_phone?: string | null
+          seller_secondary_type?: string | null
+          seller_type?: string | null
+          status?: string | null
+          t12?: Json | null
+          transfer_tax?: number | null
+          true_buyer?: string | null
+          true_seller?: string | null
+          ula_tax_estimate?: number | null
+          ula_threshold_status?: string | null
+          unit_mix?: Json | null
+          unit_mix_updated?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_buyer_broker_id_fkey"
+            columns: ["buyer_broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_listing_broker_id_fkey"
+            columns: ["listing_broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       explore_query: { Args: { query_text: string }; Returns: Json }
@@ -923,6 +1462,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

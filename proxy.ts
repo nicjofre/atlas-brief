@@ -1,7 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+// Routes anyone can read without a session. Everything else requires auth.
+const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact']
+const PUBLIC_EXACT = new Set(['/'])
+
+function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_EXACT.has(pathname)) return true
+  return PUBLIC_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
+}
+
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -22,12 +31,13 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
 
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+  if (!user && !pathname.startsWith('/login') && !isPublicPath(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && request.nextUrl.pathname === '/login') {
+  if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -35,5 +45,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|favicon-32.png|apple-touch-icon.png|images/).*)',
+  ],
 }

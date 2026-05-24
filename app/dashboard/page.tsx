@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import SignOutButton from '@/app/SignOutButton'
+import InternalNav from '@/app/InternalNav'
 
 type SaleHistoryRow = {
   date: string | null
@@ -319,15 +319,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ background: '#FAFAF8', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ borderBottom: '1px solid #ddd', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 24 }}>
-          <Link href="/listings" style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontStyle: 'italic', color: '#111', textDecoration: 'none' }}>Atlas <em>Brief</em></Link>
-          <Link href="/listings" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Database</Link>
-          <Link href="/explore" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#666', textDecoration: 'none' }}>Explore</Link>
-          <Link href="/dashboard" style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#111', textDecoration: 'none', borderBottom: '2px solid #111', paddingBottom: 2 }}>Input</Link>
-        </div>
-        <SignOutButton />
-      </div>
+      <InternalNav active="dashboard" />
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>
 

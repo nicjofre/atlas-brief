@@ -79,3 +79,4 @@ export async function getSignedAssetUrl(db: DB, path: string, expiresIn = 60 * 6
   if (error || !data) return null
   return data.signedUrl
 }
+
