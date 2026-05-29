@@ -7,46 +7,21 @@ export const maxDuration = 300
 
 // The structural output contract sits in code (not in an editable prompt row)
 // because the article editor depends on it being parseable. David edits the
-// voice/policy via /admin/prompts; we control the JSON shape.
+// voice/policy via /admin/prompts; we control the structure via tool schemas
+// (see SLICE_TOOLS below). This prompt section covers the semantic conventions
+// the model must follow inside string values — class names, placeholder
+// formats, em-dash prohibition, etc.
 const OUTPUT_FORMAT_PROMPT = `
 ## [output_format]
 
-You MUST return a single JSON object matching this exact shape. Return ONLY the JSON, no surrounding prose or markdown fences.
+You will be asked to call a specific tool (emit_tape_1, emit_tape_2, emit_tape_3, or emit_meta) for each slice of the article. The tool input_schema enforces structure. This section documents the semantic conventions that apply inside string values.
 
-\`\`\`
-{
-  "gaps": [string, ...],
-  "tier_recommendation": { "tier": 1|2|3, "reason": string },
-  "angles": [string, ...],   // 3-5 deal-specific questions for David to react to
-  "tape_1": {
-    "text": string  // the full Tape 1 one-liner, including the Atlas read line
-  },
-  "tape_2": {
-    "headline": string,        // "[ATLAS HEADLINE]" if it should be David-filled, else actual text
-    "deck": string,
-    "body_html": string        // <p>...</p>, no headings needed at this tier
-  },
-  "tape_3": {
-    "headline": string,         // "[ATLAS HEADLINE]" (always — David fills)
-    "deck": string,
-    "status_tag": string,       // e.g. "Sold, Just Closed" or "For Sale · Just Listed"
-    "hero_caption": string,     // "FIG. 00, address ... Listing photo via ..."
-    "takeaways_subhead": string,
-    "takeaways": [{ "bold": string, "text": string }, ...],
-    "deal_stats_html": string,  // inner HTML for the .stats-grid div (one .stat per metric)
-    "body_html": string,        // full prose body with <h2 id="...">section</h2>, <p>, optional .table-fig and .speculation blocks. Embed [ATLAS READ: hint] placeholders at 3-4 natural points.
-    "byline_html": string       // inner HTML for the .byl div, e.g. 4 <div><b>Label</b>Value</div> items
-  },
-  "broker_outreach_email": string
-}
-\`\`\`
-
-CRITICAL conventions inside the JSON:
+CRITICAL conventions:
 - HTML strings should use the same class names David's prototype uses: .table-fig, .speculation, .brokers (with .broker-col, .broker-name, .broker-firm, .broker-meta), <h2 id="kebab-case"> for body sections.
 - Headlines that use the *italic* convention should embed asterisks: "Address: N Doors at *$306K a Unit.*"
 - Placeholders David must fill stay as literal bracketed strings: [ATLAS HEADLINE], [ATLAS READ: short hint of what goes here], [BROKER TAG NOTE], [TRADE RANGE: $X.XM-$Y.YM, $Zk-$Wk/door].
 - NEVER use em-dashes (—). Use commas, periods, or parentheses.
-- Status tag should reflect the deal state ("Sold, Just Closed", "For Sale · Just Listed", etc.)
+- status_tag should reflect the deal state ("Sold, Just Closed", "For Sale · Just Listed", etc.)
 - deal_stats_html MUST use the 3-div structure shown below. Do NOT use <b>label</b>value. Do NOT use a <table>. Keep it to 8-12 stats. Each stat needs k (label), v (the big value), and s (a small sub-label clarifying the figure).
 
   EXAMPLE deal_stats_html (literally — copy this structure):
@@ -61,6 +36,135 @@ CRITICAL conventions inside the JSON:
     * "Anything to call out about the broker themselves?"
   Pick angles that map to the placeholders ([TRADE RANGE], [ATLAS HEADLINE], [ATLAS READ:], [BROKER TAG NOTE]) and to the controversy moves you applied in Tape 3.
 `.trim()
+
+// Tool schemas drive structured output — Claude is required to produce JSON
+// matching the input_schema, which eliminates the class of bugs where HTML
+// quotes inside body_html broke JSON.parse on raw text output.
+//
+// All 4 tools are declared on every call so the tool list (and therefore the
+// prompt-cache prefix) is identical across the parallel calls; tool_choice
+// picks which one the model must use for each slice.
+const SLICE_TOOLS: Anthropic.Tool[] = [
+  {
+    name: 'emit_tape_1',
+    description: 'Emit the Tape 1 slice — the 50-word one-liner per tape_1_template.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description: 'The full Tape 1 one-liner, including the Atlas read line.',
+        },
+      },
+      required: ['text'],
+    },
+  },
+  {
+    name: 'emit_tape_2',
+    description: 'Emit the Tape 2 slice — the 250-word short per tape_2_template.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        headline: {
+          type: 'string',
+          description: '"[ATLAS HEADLINE]" if David should fill, else actual text.',
+        },
+        deck: { type: 'string' },
+        body_html: {
+          type: 'string',
+          description: '<p>...</p> markup. No headings needed at this tier.',
+        },
+      },
+      required: ['headline', 'deck', 'body_html'],
+    },
+  },
+  {
+    name: 'emit_tape_3',
+    description: 'Emit the Tape 3 slice — the 1,000-1,200 word brief per tape_3_template.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        headline: { type: 'string', description: '"[ATLAS HEADLINE]" (always — David fills).' },
+        deck: { type: 'string' },
+        status_tag: {
+          type: 'string',
+          description: 'e.g. "Sold, Just Closed" or "For Sale · Just Listed".',
+        },
+        hero_caption: {
+          type: 'string',
+          description: '"FIG. 00, address ... Listing photo via ...".',
+        },
+        takeaways_subhead: { type: 'string' },
+        takeaways: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              bold: { type: 'string' },
+              text: { type: 'string' },
+            },
+            required: ['bold', 'text'],
+          },
+        },
+        deal_stats_html: {
+          type: 'string',
+          description:
+            'Inner HTML for .stats-grid — one <div class="stat"><div class="k">Label</div><div class="v">Value</div><div class="s">sub</div></div> per metric. 8-12 stats. No <table>.',
+        },
+        body_html: {
+          type: 'string',
+          description:
+            'Full prose body with <h2 id="kebab-case">section</h2>, <p>, optional .table-fig and .speculation blocks. Embed [ATLAS READ: hint] placeholders at 3-4 natural points.',
+        },
+        byline_html: {
+          type: 'string',
+          description:
+            'Inner HTML for the .byl div — 3-4 <div><b>Label</b>Value</div> rows (Published, Status/Read time, Dateline). Do NOT include the "David Safai · Editor · Publisher" row.',
+        },
+      },
+      required: [
+        'headline',
+        'deck',
+        'status_tag',
+        'hero_caption',
+        'takeaways_subhead',
+        'takeaways',
+        'deal_stats_html',
+        'body_html',
+        'byline_html',
+      ],
+    },
+  },
+  {
+    name: 'emit_meta',
+    description:
+      'Emit the meta slice — gaps, tier recommendation, David-reaction angles, and broker outreach email.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        gaps: { type: 'array', items: { type: 'string' } },
+        tier_recommendation: {
+          type: 'object',
+          properties: {
+            tier: { type: 'integer', enum: [1, 2, 3] },
+            reason: { type: 'string' },
+          },
+          required: ['tier', 'reason'],
+        },
+        angles: {
+          type: 'array',
+          description: '3-5 pointed questions per the output_format spec.',
+          items: { type: 'string' },
+        },
+        broker_outreach_email: {
+          type: 'string',
+          description: 'Per the broker_outreach_email prompt.',
+        },
+      },
+      required: ['gaps', 'tier_recommendation', 'angles', 'broker_outreach_email'],
+    },
+  },
+]
 
 type AIDraft = {
   gaps: string[]
@@ -265,47 +369,58 @@ ${listingJson}
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
   // Fire 4 parallel calls instead of one giant sequential call. Each call
-  // produces a smaller JSON slice; we recombine into the AIDraft shape after
-  // they all return. Wall time = max(4 calls) instead of sum(4 slices).
+  // produces a smaller slice; we recombine into the AIDraft shape after they
+  // all return. Wall time = max(4 calls) instead of sum(4 slices).
+  //
+  // tool_use forces the model to emit valid JSON matching SLICE_TOOLS'
+  // input_schema, which means body_html with HTML quotes can't break parsing.
+  // The full SLICE_TOOLS list goes on every call (so the cache prefix matches
+  // across all 4) and tool_choice picks which one the model must use.
   // System prompt is marked for ephemeral caching so the parallel calls share
-  // a cache write within the 5-minute TTL — repeat drafts within a session
-  // benefit too.
-  async function callSlice(instruction: string, maxTokens: number): Promise<unknown> {
+  // a cache write within the 5-minute TTL.
+  async function callSlice(toolName: string, instruction: string, maxTokens: number): Promise<unknown> {
     const resp = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
       system: [
         { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
       ],
+      tools: SLICE_TOOLS,
+      tool_choice: { type: 'tool', name: toolName },
       messages: [
         { role: 'user', content: listingPreamble + instruction },
       ],
     })
-    const text = resp.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map(b => b.text)
-      .join('')
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
-    return JSON.parse(cleaned)
+    const toolUse = resp.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === toolName
+    )
+    if (!toolUse) {
+      throw new Error(`expected tool_use(${toolName}) block, got stop_reason=${resp.stop_reason}`)
+    }
+    return toolUse.input
   }
 
   let tape1Raw: unknown, tape2Raw: unknown, tape3Raw: unknown, metaRaw: unknown
   try {
     [tape1Raw, tape2Raw, tape3Raw, metaRaw] = await Promise.all([
       callSlice(
-        'Return ONLY the tape_1 slice from output_format as a JSON object: `{ "text": string }`. The 50-word one-liner per the tape_1_template.',
+        'emit_tape_1',
+        'Call the emit_tape_1 tool with the 50-word one-liner per the tape_1_template.',
         1024
       ),
       callSlice(
-        'Return ONLY the tape_2 slice from output_format as a JSON object: `{ "headline": string, "deck": string, "body_html": string }`. The 250-word short per the tape_2_template.',
+        'emit_tape_2',
+        'Call the emit_tape_2 tool with the 250-word short per the tape_2_template.',
         2048
       ),
       callSlice(
-        'Return ONLY the tape_3 slice from output_format as a JSON object with these exact keys: headline, deck, status_tag, hero_caption, takeaways_subhead, takeaways (array of {bold,text}), deal_stats_html, body_html, byline_html. The 1,000-1,200 word brief per the tape_3_template.',
+        'emit_tape_3',
+        'Call the emit_tape_3 tool with the 1,000-1,200 word brief per the tape_3_template.',
         4096
       ),
       callSlice(
-        'Return ONLY a JSON object with these exact keys: gaps (string array), tier_recommendation ({ tier: 1|2|3, reason: string }), angles (3-5 pointed questions per the output_format spec), broker_outreach_email (string per the broker_outreach_email prompt). Do NOT include any tape_N fields.',
+        'emit_meta',
+        'Call the emit_meta tool. angles are 3-5 pointed questions per the output_format spec. Do NOT emit any tape_N content here.',
         2048
       ),
     ])
