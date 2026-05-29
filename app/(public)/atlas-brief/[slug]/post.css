@@ -32,7 +32,8 @@
 
 .art-body{padding:clamp(56px,7vw,96px) 0;border-bottom:1px solid var(--ink)}
 .body-grid{display:grid;grid-template-columns:220px minmax(0,680px) 1fr;gap:48px}
-.body-grid aside{position:sticky;top:88px;align-self:start}
+.body-grid aside{position:sticky;top:88px;align-self:start;grid-column:1}
+.body-grid > article{grid-column:2}
 .body-grid aside .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .body-grid aside ol{list-style:none;counter-reset:toc;padding:0;margin:0;border-top:var(--tick)}
 .body-grid aside li{counter-increment:toc;padding:10px 0;border-bottom:var(--tick-soft);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:grid;grid-template-columns:28px 1fr;gap:8px}
@@ -70,8 +71,8 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
 
 @media(max-width:1024px){
   .body-grid{grid-template-columns:1fr;gap:40px}
-  .body-grid aside{position:static;order:2}
-  .body-grid article{order:1}
+  .body-grid aside{position:static;order:2;grid-column:1}
+  .body-grid > article{order:1;grid-column:1}
 }
 
 .author{padding:clamp(48px,6vw,80px) 0;background:var(--bg-alt);border-bottom:1px solid var(--ink)}
