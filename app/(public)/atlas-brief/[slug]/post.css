@@ -75,7 +75,7 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
    Force each sub-card into a 2-column grid (image | text) so the layout
    reads as business cards instead of stacked div soup. */
 /* object-fit:contain so wide firm logos don't get cropped to a square. */
-.brokers img{display:block;width:auto;height:88px;max-width:132px;object-fit:contain;border:1px solid var(--rule);background:var(--bg);margin:0}
+.brokers img{display:block;width:auto;height:88px;max-width:132px;object-fit:contain;background:var(--bg);margin:0}
 
 /* Vertical separator between broker entries */
 .broker-name > div{padding:22px 0;border-top:1px dotted var(--rule)}
