@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import ArticleEditor, { type AIDraftShape } from './ArticleEditor'
 import ReactionPanel, { type ListingFacts } from './ReactionPanel'
 import InternalNav from '@/app/InternalNav'
+import StatusEditor from '@/app/listings/[id]/StatusEditor'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,6 +64,17 @@ export default async function ArticleEditPage(
               {[article.listing?.property?.city, article.listing?.property?.state].filter(Boolean).join(', ')}
               {' · '}Entry № {String(article.entry_num).padStart(2, '0')} in {article.section_slug}
             </div>
+            {article.listing_id && (
+              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#9A6B3F' }}>
+                  Badge
+                </span>
+                <StatusEditor
+                  listingId={article.listing_id as string}
+                  currentStatus={article.listing?.status ?? null}
+                />
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <Link
