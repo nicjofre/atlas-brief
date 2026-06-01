@@ -956,4 +956,13 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tape-entry .te-foot .badge {
+  font-size: 10px !important;
+  padding: 4px 10px !important;
+  letter-spacing: 0.18em !important;
 }

@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Footer from './Footer'
 import DispatchForm from './DispatchForm'
 import { getArticles } from '@/lib/db/articles'
-import { formatDateLong, placeLine, sectionStatusFoot } from '@/lib/db/article-render'
+import { formatDateLong, placeLine, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
 import './home.css'
 
 export const metadata: Metadata = {
@@ -69,7 +69,12 @@ export default async function HomePage() {
                   </h2>
                   <div className="te-place">{placeLine(p)}</div>
                   <p className="te-excerpt">{a.excerpt ?? a.deck}</p>
-                  <div className="te-foot">{sectionStatusFoot(a.cat_label, a.listing?.status)}</div>
+                  <div className="te-foot">
+                    <span>{a.cat_label ?? 'Broker Activity'}</span>
+                    <span className={`badge badge-${statusBadgeKey(a.listing?.status)}`}>
+                      {statusKicker(a.listing?.status)}
+                    </span>
+                  </div>
                 </div>
                 <Link
                   href={`/atlas-brief/${a.slug}`}
