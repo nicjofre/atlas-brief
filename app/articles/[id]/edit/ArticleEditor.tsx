@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { sanitizeBodyHtml } from '@/lib/db/sanitize-html'
 import HeroPhotoEditor from './HeroPhotoEditor'
 
 export type AIDraftShape = {
@@ -65,17 +66,19 @@ export default function ArticleEditor({
     setSaving(true)
     setError(null)
     try {
+      const clean = sanitizeDraft(draft)
       const { error: updErr } = await supabase
         .from('articles')
         .update({
-          ai_draft: draft as unknown as never,
+          ai_draft: clean as unknown as never,
           tape_tier: tier,
           slug,
-          headline: pickHeadline(draft, tier),
-          deck: pickDeck(draft, tier),
+          headline: pickHeadline(clean, tier),
+          deck: pickDeck(clean, tier),
         })
         .eq('id', articleId)
       if (updErr) throw new Error(updErr.message)
+      setDraft(clean)
       setJustSavedAt(Date.now())
       router.refresh()
     } catch (e) {
@@ -90,12 +93,13 @@ export default function ArticleEditor({
     setPublishing(true)
     setError(null)
     try {
-      const fields = projectTapeToColumns(draft, tier)
+      const clean = sanitizeDraft(draft)
+      const fields = projectTapeToColumns(clean, tier)
       const { error: updErr } = await supabase
         .from('articles')
         .update({
           ...fields,
-          ai_draft: draft as unknown as never,
+          ai_draft: clean as unknown as never,
           tape_tier: tier,
           slug,
           status: 'published',
@@ -103,6 +107,7 @@ export default function ArticleEditor({
         })
         .eq('id', articleId)
       if (updErr) throw new Error(updErr.message)
+      setDraft(clean)
       router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Publish failed')
@@ -1221,6 +1226,25 @@ function actionButtonStyle(variant: 'primary' | 'ghost' | 'disabled', busy: bool
   if (variant === 'primary') return { ...base, background: '#9A6B3F', color: '#fff' }
   if (variant === 'ghost') return { ...base, background: 'transparent', color: '#fff', border: '1px solid #444' }
   return { ...base, background: '#333', color: '#666' }
+}
+
+// Run sanitizeBodyHtml across every HTML-bearing field of the draft. Used on
+// save and publish so pasted CoStar/Crexi markup gets stripped of inline
+// styles and unknown class names before it hits the database.
+function sanitizeDraft(d: AIDraftShape): AIDraftShape {
+  const next: AIDraftShape = { ...d }
+  if (next.tape_2) {
+    next.tape_2 = { ...next.tape_2, body_html: sanitizeBodyHtml(next.tape_2.body_html) }
+  }
+  if (next.tape_3) {
+    next.tape_3 = {
+      ...next.tape_3,
+      body_html: sanitizeBodyHtml(next.tape_3.body_html),
+      deal_stats_html: sanitizeBodyHtml(next.tape_3.deal_stats_html),
+      byline_html: sanitizeBodyHtml(next.tape_3.byline_html),
+    }
+  }
+  return next
 }
 
 function blankTape3(): NonNullable<AIDraftShape['tape_3']> {
