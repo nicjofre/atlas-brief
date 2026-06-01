@@ -69,6 +69,17 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
 .broker-meta li{padding:2px 0}
 .broker-meta a{color:var(--ink)}
 
+/* Pasted CoStar broker cards land as deeply nested <div> chains inside
+   .broker-name. Constrain images to business-card scale, float them so
+   contact info flows beside, and re-style nested text to the post's
+   mono/muted meta typography so links read as the broker name. */
+.brokers img{float:left;width:auto;height:64px;max-width:96px;object-fit:cover;border:1px solid var(--rule);background:var(--bg);margin:0 14px 6px 0}
+.broker-name > div{clear:both;padding-top:16px;margin-top:16px;border-top:1px dotted var(--rule)}
+.broker-name > div:first-child{border-top:0;padding-top:0;margin-top:0}
+.broker-name div{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.04em;color:var(--muted);line-height:1.7;font-style:normal}
+.broker-name a{font-family:var(--serif);font-weight:500;font-size:18px;letter-spacing:-.01em;color:var(--ink);font-style:normal;border-bottom:1px solid var(--rule)}
+.broker-name a:hover{border-color:var(--accent)}
+
 @media(max-width:1024px){
   .body-grid{grid-template-columns:1fr;gap:40px}
   .body-grid aside{position:static;order:2;grid-column:1}
