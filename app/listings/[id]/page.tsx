@@ -8,6 +8,7 @@ import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
 import DeleteListingButton from './DeleteListingButton'
 import RentRegulationOverride from './RentRegulationOverride'
+import StatusEditor from './StatusEditor'
 import DraftArticleButton from './DraftArticleButton'
 import InternalNav from '@/app/InternalNav'
 
@@ -327,6 +328,7 @@ function SummaryTab({
       <Grid>
         <Section title="Sale">
           <Field label="Status" value={plain(l.status as string | null)} />
+          <StatusEditor listingId={l.id as string} currentStatus={l.status as string | null} />
           <Field label="List Price" value={dollars(l.list_price as number | null)} />
           <Field label="Sale Price" value={dollars(l.sale_price as number | null)} />
           <Field label="Bid/Ask Delta" value={dollars(l.bid_ask_delta as number | null)} hint="derived" />
