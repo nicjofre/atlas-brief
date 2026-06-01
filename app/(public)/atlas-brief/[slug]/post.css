@@ -74,14 +74,15 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
    two horizontal sub-cards: headshot+contact, then firm logo+address).
    Force each sub-card into a 2-column grid (image | text) so the layout
    reads as business cards instead of stacked div soup. */
-.brokers img{display:block;width:auto;height:64px;max-width:96px;object-fit:cover;border:1px solid var(--rule);background:var(--bg);margin:0}
+/* object-fit:contain so wide firm logos don't get cropped to a square. */
+.brokers img{display:block;width:auto;height:88px;max-width:132px;object-fit:contain;border:1px solid var(--rule);background:var(--bg);margin:0}
 
 /* Vertical separator between broker entries */
 .broker-name > div{padding:22px 0;border-top:1px dotted var(--rule)}
 .broker-name > div:first-child{border-top:0;padding-top:0}
 
 /* Each sub-card (broker contact OR firm) — image left, text right */
-.broker-name > div > div{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;margin-bottom:18px}
+.broker-name > div > div{display:grid;grid-template-columns:132px 1fr;gap:20px;align-items:start;margin-bottom:18px}
 .broker-name > div > div:last-child{margin-bottom:0}
 
 /* All nested text inside .broker-name renders as the post's mono meta */
