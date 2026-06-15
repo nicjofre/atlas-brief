@@ -178,11 +178,16 @@ export interface Page {
   layout?:
     | (
         | {
+            style?: ('about' | 'contact') | null;
             /**
              * Small label above the title, e.g. "§ About".
              */
             eyebrow?: string | null;
             title: string;
+            /**
+             * Optional line under the title (Contact style).
+             */
+            subtitle?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
@@ -244,6 +249,126 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'projects';
+          }
+        | {
+            inquiriesLabel?: string | null;
+            inquiries?:
+              | {
+                  heading?: string | null;
+                  body?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            sidebarLabel?: string | null;
+            name?: string | null;
+            /**
+             * e.g. Operator · Developer · GC
+             */
+            role?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            office?: string | null;
+            /**
+             * Small line under the license.
+             */
+            licenseStatus?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contactDetails';
+          }
+        | {
+            /**
+             * e.g. "§ Build · Owner-developer-GC practice".
+             */
+            eyebrow?: string | null;
+            title: string;
+            meta?:
+              | {
+                  label?: string | null;
+                  /**
+                   * One line per row.
+                   */
+                  lines?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            intro?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'buildHero';
+          }
+        | {
+            heading?: string | null;
+            /**
+             * Small line under the heading.
+             */
+            descriptor?: string | null;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'capabilities';
+          }
+        | {
+            /**
+             * e.g. "§ How we work".
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            items?:
+              | {
+                  /**
+                   * e.g. "Step · 01".
+                   */
+                  label?: string | null;
+                  title?: string | null;
+                  body?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'steps';
+          }
+        | {
+            label?: string | null;
+            heading?: string | null;
+            body?: string | null;
+            buttonText?: string | null;
+            /**
+             * e.g. mailto:David@AtlasHomePro.com
+             */
+            buttonHref?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
           }
       )[]
     | null;
@@ -382,8 +507,10 @@ export interface PagesSelect<T extends boolean = true> {
         hero?:
           | T
           | {
+              style?: T;
               eyebrow?: T;
               title?: T;
+              subtitle?: T;
               id?: T;
               blockName?: T;
             };
@@ -418,6 +545,79 @@ export interface PagesSelect<T extends boolean = true> {
                     blurb?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        contactDetails?:
+          | T
+          | {
+              inquiriesLabel?: T;
+              inquiries?:
+                | T
+                | {
+                    heading?: T;
+                    body?: T;
+                    id?: T;
+                  };
+              sidebarLabel?: T;
+              name?: T;
+              role?: T;
+              email?: T;
+              phone?: T;
+              office?: T;
+              licenseStatus?: T;
+              id?: T;
+              blockName?: T;
+            };
+        buildHero?:
+          | T
+          | {
+              eyebrow?: T;
+              title?: T;
+              meta?:
+                | T
+                | {
+                    label?: T;
+                    lines?: T;
+                    id?: T;
+                  };
+              intro?: T;
+              id?: T;
+              blockName?: T;
+            };
+        capabilities?:
+          | T
+          | {
+              heading?: T;
+              descriptor?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        steps?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              items?:
+                | T
+                | {
+                    label?: T;
+                    title?: T;
+                    body?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              label?: T;
+              heading?: T;
+              body?: T;
+              buttonText?: T;
+              buttonHref?: T;
               id?: T;
               blockName?: T;
             };

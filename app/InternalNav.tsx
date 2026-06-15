@@ -9,7 +9,7 @@ const ITEMS: { key: NavKey; href: string; label: string }[] = [
   { key: 'explore', href: '/explore', label: 'Explore' },
   { key: 'articles', href: '/articles', label: 'Articles' },
   { key: 'prompts', href: '/admin/prompts', label: 'Prompts' },
-  { key: 'pages', href: '/admin/pages', label: 'Pages' },
+  { key: 'pages', href: '/cms', label: 'Pages' },
 ]
 
 export default function InternalNav({ active }: { active?: NavKey }) {
