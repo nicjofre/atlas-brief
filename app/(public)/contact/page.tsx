@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Footer from '../Footer'
+import { getPageContent } from '@/lib/db/content'
 import './contact.css'
 
 export const metadata: Metadata = {
@@ -7,14 +8,19 @@ export const metadata: Metadata = {
   description: 'Atlas Home Builders, Inc. — based in Los Angeles. Editorial, construction, and acquisition inquiries.',
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const c = await getPageContent('contact')
+  const email = c['contact.direct_email']
+  const phone = c['contact.direct_phone']
+  // Build tel: href by stripping non-digits, keeping leading +.
+  const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`
   return (
     <>
       <header className="c-hero">
         <div className="wrap">
           <div className="k">§ Contact</div>
           <h1>Contact.</h1>
-          <p>Atlas Home Builders, Inc. is based in Los Angeles.</p>
+          <p>{c['contact.hero_subtitle']}</p>
         </div>
       </header>
 
@@ -22,22 +28,11 @@ export default function ContactPage() {
         <div className="c-form">
           <div className="k">Inquiries</div>
           <h2><strong>For editorial inquiries</strong></h2>
-          <p>
-            If you have a listing, a comp, a trade, or a deal worth covering in The Tape: send it over. We read
-            every submission. Interesting deals run in the next issue of the Brief. Uninteresting ones get a
-            straight answer back the same day.
-          </p>
+          <p>{c['contact.editorial_body']}</p>
           <h2 style={{ marginTop: 36 }}><strong>For construction or development inquiries</strong></h2>
-          <p>
-            If you have a project that needs a general contractor, or a site that needs a walk: describe it in a
-            few sentences. If it is a fit, we schedule a walk within the week. If it is not, we tell you why.
-          </p>
+          <p>{c['contact.construction_body']}</p>
           <h2 style={{ marginTop: 36 }}><strong>For acquisition inquiries</strong></h2>
-          <p>
-            If you own a Los Angeles home service business and are thinking about a sale, or a broker
-            representing one: we are a buyer. Plumbing, HVAC, electrical, restoration. Conversations are
-            confidential. Preferred size $500K to $5M in revenue, but we will read anything that fits the thesis.
-          </p>
+          <p>{c['contact.acquisition_body']}</p>
         </div>
 
         <aside className="c-side">
@@ -55,9 +50,9 @@ export default function ContactPage() {
             Operator · Developer · GC
           </p>
           <dl>
-            <div><dt>Email</dt><dd><a href="mailto:David@AtlasHomePro.com">David@AtlasHomePro.com</a></dd></div>
-            <div><dt>Phone</dt><dd><a href="tel:+12132752210">(213) 275-2210</a></dd></div>
-            <div><dt>Office</dt><dd>Los Angeles, California</dd></div>
+            <div><dt>Email</dt><dd><a href={`mailto:${email}`}>{email}</a></dd></div>
+            <div><dt>Phone</dt><dd><a href={telHref}>{phone}</a></dd></div>
+            <div><dt>Office</dt><dd>{c['contact.direct_office']}</dd></div>
             <div>
               <dt>License</dt>
               <dd>
@@ -71,7 +66,7 @@ export default function ContactPage() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  License [pending]
+                  {c['contact.license_status']}
                 </span>
               </dd>
             </div>

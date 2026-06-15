@@ -283,6 +283,27 @@ export type Database = {
         }
         Relationships: []
       }
+      content_blocks: {
+        Row: {
+          body: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           ab1482_applicable: boolean | null
@@ -1334,6 +1355,7 @@ export type Database = {
     }
     Functions: {
       explore_query: { Args: { query_text: string }; Returns: Json }
+      sanitize_pasted_html: { Args: { html: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

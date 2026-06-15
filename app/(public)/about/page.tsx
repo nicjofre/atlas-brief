@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Footer from '../Footer'
+import { getPageContent } from '@/lib/db/content'
 import './about.css'
 
 export const metadata: Metadata = {
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
     'Atlas is a Los Angeles real estate practice with three sides: Atlas Brief (publication), Atlas Home Builders, Inc. (general contractor), and Atlas Home Pro (acquisitions).',
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const c = await getPageContent('about')
   return (
     <>
       <header className="ab-top">
@@ -21,29 +23,13 @@ export default function AboutPage() {
       <section className="ab-body">
         <div className="wrap">
           <div className="prose">
-            <p>Atlas is a Los Angeles real estate practice with three sides.</p>
+            <p>{c['about.intro']}</p>
             <h2>Atlas Brief</h2>
-            <p>
-              The publication you are reading. A running log of Los Angeles multifamily deal commentary,
-              construction cost reads, and owner-operator analysis. Written by David Safai, a thirty-year LA
-              operator, developer, and general contractor. Not a marketing funnel. An operating journal.
-            </p>
+            <p>{c['about.brief_body']}</p>
             <h2>Atlas Home Builders, Inc.</h2>
-            <p>
-              The legal company behind it &mdash; a licensed California Class B general contractor, founded
-              in 1996. The practice operates a portfolio of approximately 126 units across multiple Los
-              Angeles buildings, develops ground-up multifamily and condominium projects, and takes selective
-              general contracting work for owners, developers, and family offices. Two buildings developed by
-              the firm are still held by the builder: The Felix on Fairfax, a 43-unit apartment in the
-              Fairfax District, and Olympic Towers, a 12-unit condominium.
-            </p>
+            <p>{c['about.builders_body']}</p>
             <h2>Atlas Home Pro</h2>
-            <p>
-              An acquisition platform for Los Angeles home service businesses &mdash; plumbing, HVAC,
-              electrical, restoration. We are a buyer. If you own a service company in Los Angeles County and
-              are considering a sale, or a broker representing one, send us the details. Conversations are
-              confidential.
-            </p>
+            <p>{c['about.homepro_body']}</p>
           </div>
         </div>
       </section>
@@ -78,11 +64,7 @@ export default function AboutPage() {
                 <div><dt>Delivered</dt><dd>2023</dd></div>
                 <div><dt>Held by</dt><dd>Sponsor</dd></div>
               </dl>
-              <p>
-                A 43-unit, five-story residential building developed, built, and held by Atlas. Designed
-                around a single organizing principle: no unit plan exists that the sponsor wouldn&apos;t live
-                in.
-              </p>
+              <p>{c['about.felix_blurb']}</p>
             </article>
 
             <article className="project">
@@ -108,11 +90,7 @@ export default function AboutPage() {
                 <div><dt>Delivered</dt><dd>2019</dd></div>
                 <div><dt>Sold</dt><dd>12 of 12</dd></div>
               </dl>
-              <p>
-                Twelve for-sale homes in a mid-Wilshire infill. A study in how much a thoughtful building
-                envelope and a real construction schedule can add to a buyer&apos;s basis without adding a
-                dollar to ours.
-              </p>
+              <p>{c['about.olympic_blurb']}</p>
             </article>
           </div>
         </div>
@@ -122,18 +100,9 @@ export default function AboutPage() {
         <div className="wrap">
           <div className="prose">
             <hr />
-            <p>
-              The practice began in 1996 with a long-hold real estate thesis: buy well-located Los Angeles
-              multifamily, operate it honestly, hold for decades, let debt amortize against rent growth.
-              Thirty years in, the thesis has held.
-            </p>
-            <p>
-              What changed recently is the writing. Atlas Brief exists because most of what gets published
-              about Los Angeles real estate is either a brokerage pitch or a consumer service blog. Very
-              little of it is written by someone who has actually operated a building, pulled a permit, or
-              signed a construction draw. The Brief tries to fill that gap.
-            </p>
-            <p>Read it like a trade journal, not a brochure.</p>
+            <p>{c['about.tail_p1']}</p>
+            <p>{c['about.tail_p2']}</p>
+            <p>{c['about.tail_p3']}</p>
             <p style={{ textAlign: 'right' }}><em>&mdash; David Safai</em></p>
             <p style={{ textAlign: 'right' }}>David@AtlasHomePro.com</p>
           </div>

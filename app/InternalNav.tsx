@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import SignOutButton from './SignOutButton'
 
-type NavKey = 'listings' | 'articles' | 'explore' | 'dashboard' | 'prompts'
+type NavKey = 'listings' | 'articles' | 'explore' | 'dashboard' | 'prompts' | 'pages'
 
 const ITEMS: { key: NavKey; href: string; label: string }[] = [
   { key: 'listings', href: '/listings', label: 'Database' },
@@ -9,6 +9,7 @@ const ITEMS: { key: NavKey; href: string; label: string }[] = [
   { key: 'explore', href: '/explore', label: 'Explore' },
   { key: 'articles', href: '/articles', label: 'Articles' },
   { key: 'prompts', href: '/admin/prompts', label: 'Prompts' },
+  { key: 'pages', href: '/admin/pages', label: 'Pages' },
 ]
 
 export default function InternalNav({ active }: { active?: NavKey }) {
