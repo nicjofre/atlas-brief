@@ -11,6 +11,13 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  // Payload CMS (admin at /cms, REST/GraphQL at /cms-api) handles its own
+  // authentication, separate from Supabase. Let those routes through
+  // untouched so the proxy doesn't bounce them to the Supabase /login.
+  if (request.nextUrl.pathname.startsWith('/cms')) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
