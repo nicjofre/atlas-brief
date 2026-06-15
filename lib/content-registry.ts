@@ -56,22 +56,9 @@ export const CONTENT_FIELDS: ContentField[] = [
     defaultText:
       'An acquisition platform for Los Angeles home service businesses — plumbing, HVAC, electrical, restoration. We are a buyer. If you own a service company in Los Angeles County and are considering a sale, or a broker representing one, send us the details. Conversations are confidential.',
   },
-  {
-    key: 'about.felix_blurb',
-    page: 'about',
-    label: 'Felix on Fairfax blurb',
-    multiline: true,
-    defaultText:
-      "A 43-unit, five-story residential building developed, built, and held by Atlas. Designed around a single organizing principle: no unit plan exists that the sponsor wouldn't live in.",
-  },
-  {
-    key: 'about.olympic_blurb',
-    page: 'about',
-    label: 'Olympic Towers blurb',
-    multiline: true,
-    defaultText:
-      "Twelve for-sale homes in a mid-Wilshire infill. A study in how much a thoughtful building envelope and a real construction schedule can add to a buyer's basis without adding a dollar to ours.",
-  },
+  // NOTE: the Felix / Olympic project blurbs used to live here as flat fields.
+  // They now belong to the editable `about.projects` collection below, where
+  // the whole project (name, photo, stats, blurb) can be edited together.
   {
     key: 'about.tail_p1',
     page: 'about',
@@ -226,4 +213,110 @@ export const CONTENT_FIELDS: ContentField[] = [
 
 export function fieldsForPage(page: PageSlug): ContentField[] {
   return CONTENT_FIELDS.filter(f => f.page === page)
+}
+
+// ===========================================================================
+// COLLECTIONS (Tier 2)
+//
+// Where CONTENT_FIELDS holds flat key -> string overrides, collections model
+// the repeatable, structured sections of a page — e.g. the About "Selected
+// work" projects. Each collection is an ordered list of items; every item is
+// a flat record whose shape is described by `fields`. The default items are
+// the source of truth when nothing has been saved.
+//
+// Field types:
+//   text     — single-line input
+//   textarea — multi-paragraph input
+//   image    — photo upload (stores a public URL or /local path)
+//   pairs    — an ordered list of { label, value } rows (the stat block)
+// ===========================================================================
+
+export type CollectionFieldType = 'text' | 'textarea' | 'image' | 'pairs'
+
+export type CollectionFieldDef = {
+  key: string
+  label: string
+  type: CollectionFieldType
+  hint?: string
+}
+
+// A pair row used by the `pairs` field type.
+export type Pair = { label: string; value: string }
+
+// One collection item is a record of field key -> value. Scalar fields are
+// strings; a `pairs` field is an array of { label, value }.
+export type CollectionItem = Record<string, string | Pair[]>
+
+export type CollectionDef = {
+  key: string
+  page: PageSlug
+  label: string
+  hint?: string
+  itemLabel: string // singular noun for the "Add ___" button, e.g. "Project"
+  fields: CollectionFieldDef[]
+  defaultItems: CollectionItem[]
+}
+
+export const CONTENT_COLLECTIONS: CollectionDef[] = [
+  {
+    key: 'about.projects',
+    page: 'about',
+    label: 'Selected work — projects',
+    hint: 'Buildings shown in the "Selected work" section. Add, remove, or reorder them.',
+    itemLabel: 'Project',
+    fields: [
+      { key: 'code', label: 'Code', type: 'text', hint: 'e.g. P-01' },
+      { key: 'name', label: 'Name', type: 'text' },
+      { key: 'category', label: 'Category', type: 'text', hint: 'e.g. Multifamily · Ground-up' },
+      { key: 'photo', label: 'Photo', type: 'image' },
+      { key: 'photo_alt', label: 'Photo alt text', type: 'textarea', hint: 'Describes the photo for screen readers.' },
+      { key: 'caption', label: 'Photo caption', type: 'text' },
+      { key: 'stats', label: 'Stats', type: 'pairs', hint: 'Label / value rows shown under the photo.' },
+      { key: 'blurb', label: 'Blurb', type: 'textarea' },
+    ],
+    defaultItems: [
+      {
+        code: 'P-01',
+        name: 'The Felix on Fairfax',
+        category: 'Multifamily · Ground-up',
+        photo: '/images/projects/felix-fairfax-1200.jpg',
+        photo_alt:
+          'The Felix on Fairfax — a five-story grey-and-white multifamily building at 731 N Fairfax Avenue, Los Angeles.',
+        caption: 'Exterior, south elevation · 731 N Fairfax Avenue',
+        stats: [
+          { label: 'Units', value: '43' },
+          { label: 'Stories', value: '5' },
+          { label: 'Delivered', value: '2023' },
+          { label: 'Held by', value: 'Sponsor' },
+        ],
+        blurb:
+          "A 43-unit, five-story residential building developed, built, and held by Atlas. Designed around a single organizing principle: no unit plan exists that the sponsor wouldn't live in.",
+      },
+      {
+        code: 'P-02',
+        name: 'Olympic Towers',
+        category: 'Condominium · Twelve Homes',
+        photo: '/images/projects/olympic-towers-1200.jpg',
+        photo_alt:
+          'Olympic Towers — a four-story white multifamily building with orange accent bands and cantilevered balconies, Mid-City West.',
+        caption: 'Exterior, corner elevation · Olympic Boulevard',
+        stats: [
+          { label: 'Units', value: '12' },
+          { label: 'Type', value: 'Condo' },
+          { label: 'Delivered', value: '2019' },
+          { label: 'Sold', value: '12 of 12' },
+        ],
+        blurb:
+          "Twelve for-sale homes in a mid-Wilshire infill. A study in how much a thoughtful building envelope and a real construction schedule can add to a buyer's basis without adding a dollar to ours.",
+      },
+    ],
+  },
+]
+
+export function collectionsForPage(page: PageSlug): CollectionDef[] {
+  return CONTENT_COLLECTIONS.filter(c => c.page === page)
+}
+
+export function collectionByKey(key: string): CollectionDef | undefined {
+  return CONTENT_COLLECTIONS.find(c => c.key === key)
 }

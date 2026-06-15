@@ -581,6 +581,30 @@ export type Database = {
           },
         ]
       }
+      page_collections: {
+        Row: {
+          items: Json
+          key: string
+          page: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          items?: Json
+          key: string
+          page: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          items?: Json
+          key?: string
+          page?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       prompts: {
         Row: {
           body: string

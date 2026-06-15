@@ -4,7 +4,14 @@
 // with the registry defaults from lib/content-registry.
 
 import { createClient } from '@/lib/supabase/server'
-import { CONTENT_FIELDS, fieldsForPage, type PageSlug } from '@/lib/content-registry'
+import {
+  CONTENT_FIELDS,
+  fieldsForPage,
+  collectionByKey,
+  collectionsForPage,
+  type PageSlug,
+  type CollectionItem,
+} from '@/lib/content-registry'
 
 export async function getPageContent(page: PageSlug): Promise<Record<string, string>> {
   const fields = fieldsForPage(page)
@@ -35,4 +42,34 @@ export async function getAllSavedContent(): Promise<Record<string, string>> {
   return result
 }
 
-export { CONTENT_FIELDS, fieldsForPage }
+// ===== Collections (Tier 2) =====
+
+// Returns the saved items for a collection, or the registry defaults when the
+// collection has never been edited. Unknown keys return an empty array.
+export async function getPageCollection(key: string): Promise<CollectionItem[]> {
+  const def = collectionByKey(key)
+  if (!def) return []
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('page_collections')
+    .select('items')
+    .eq('key', key)
+    .maybeSingle()
+
+  const saved = data?.items as CollectionItem[] | undefined
+  return saved ?? def.defaultItems
+}
+
+// Used by the admin page to show every saved collection in one query.
+export async function getAllSavedCollections(): Promise<Record<string, CollectionItem[]>> {
+  const supabase = await createClient()
+  const { data } = await supabase.from('page_collections').select('key, items')
+  const result: Record<string, CollectionItem[]> = {}
+  for (const row of data ?? []) {
+    result[row.key as string] = (row.items as CollectionItem[]) ?? []
+  }
+  return result
+}
+
+export { CONTENT_FIELDS, fieldsForPage, collectionsForPage, collectionByKey }

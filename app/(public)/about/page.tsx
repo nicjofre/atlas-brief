@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Footer from '../Footer'
-import { getPageContent } from '@/lib/db/content'
+import { getPageContent, getPageCollection } from '@/lib/db/content'
+import { createClient } from '@/lib/supabase/server'
+import { resolveHeroUrl } from '@/lib/db/hero-url'
+import type { Pair } from '@/lib/content-registry'
 import './about.css'
 
 export const metadata: Metadata = {
@@ -11,6 +14,8 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const c = await getPageContent('about')
+  const projects = await getPageCollection('about.projects')
+  const supabase = await createClient()
   return (
     <>
       <header className="ab-top">
@@ -41,57 +46,40 @@ export default async function AboutPage() {
             <h2>Two buildings,<br />still held by the&nbsp;builder.</h2>
           </div>
           <div className="projects">
-            <article className="project">
-              <header className="p-head">
-                <span className="n">P-01</span>
-                <h3>The Felix on Fairfax</h3>
-                <span className="cat">Multifamily · Ground-up</span>
-              </header>
-              <figure className="p-photo">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/projects/felix-fairfax-1200.jpg"
-                  alt="The Felix on Fairfax — a five-story grey-and-white multifamily building at 731 N Fairfax Avenue, Los Angeles."
-                  loading="lazy"
-                  width={1200}
-                  height={675}
-                />
-                <figcaption className="p-cap">Exterior, south elevation · 731 N Fairfax Avenue</figcaption>
-              </figure>
-              <dl>
-                <div><dt>Units</dt><dd>43</dd></div>
-                <div><dt>Stories</dt><dd>5</dd></div>
-                <div><dt>Delivered</dt><dd>2023</dd></div>
-                <div><dt>Held by</dt><dd>Sponsor</dd></div>
-              </dl>
-              <p>{c['about.felix_blurb']}</p>
-            </article>
-
-            <article className="project">
-              <header className="p-head">
-                <span className="n">P-02</span>
-                <h3>Olympic Towers</h3>
-                <span className="cat">Condominium · Twelve Homes</span>
-              </header>
-              <figure className="p-photo">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/projects/olympic-towers-1200.jpg"
-                  alt="Olympic Towers — a four-story white multifamily building with orange accent bands and cantilevered balconies, Mid-City West."
-                  loading="lazy"
-                  width={1200}
-                  height={675}
-                />
-                <figcaption className="p-cap">Exterior, corner elevation · Olympic Boulevard</figcaption>
-              </figure>
-              <dl>
-                <div><dt>Units</dt><dd>12</dd></div>
-                <div><dt>Type</dt><dd>Condo</dd></div>
-                <div><dt>Delivered</dt><dd>2019</dd></div>
-                <div><dt>Sold</dt><dd>12 of 12</dd></div>
-              </dl>
-              <p>{c['about.olympic_blurb']}</p>
-            </article>
+            {projects.map((p, i) => {
+              const photo = typeof p.photo === 'string' ? resolveHeroUrl(supabase, p.photo) : null
+              const stats = Array.isArray(p.stats) ? (p.stats as Pair[]) : []
+              return (
+                <article className="project" key={(p.code as string) || i}>
+                  <header className="p-head">
+                    <span className="n">{p.code as string}</span>
+                    <h3>{p.name as string}</h3>
+                    <span className="cat">{p.category as string}</span>
+                  </header>
+                  {photo && (
+                    <figure className="p-photo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo}
+                        alt={(p.photo_alt as string) || ''}
+                        loading="lazy"
+                        width={1200}
+                        height={675}
+                      />
+                      {p.caption ? <figcaption className="p-cap">{p.caption as string}</figcaption> : null}
+                    </figure>
+                  )}
+                  {stats.length > 0 && (
+                    <dl>
+                      {stats.map((s, j) => (
+                        <div key={j}><dt>{s.label}</dt><dd>{s.value}</dd></div>
+                      ))}
+                    </dl>
+                  )}
+                  <p>{p.blurb as string}</p>
+                </article>
+              )
+            })}
           </div>
         </div>
       </section>

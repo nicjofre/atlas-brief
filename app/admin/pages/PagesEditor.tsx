@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { ContentField, PageSlug } from '@/lib/content-registry'
+import type { ContentField, CollectionDef, CollectionItem, PageSlug } from '@/lib/content-registry'
+import CollectionEditor from './CollectionEditor'
 
 type Status = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -17,10 +18,16 @@ export default function PagesEditor({
   groups,
   initialValues,
   initialOverridden,
+  collectionGroups,
+  initialItems,
+  initialCollectionOverridden,
 }: {
   groups: Record<PageSlug, ContentField[]>
   initialValues: Record<string, string>
   initialOverridden: Record<string, boolean>
+  collectionGroups: Record<PageSlug, CollectionDef[]>
+  initialItems: Record<string, CollectionItem[]>
+  initialCollectionOverridden: Record<string, boolean>
 }) {
   const [tab, setTab] = useState<PageSlug>('about')
 
@@ -56,6 +63,15 @@ export default function PagesEditor({
             field={field}
             initialValue={initialValues[field.key]}
             initiallyOverridden={initialOverridden[field.key]}
+          />
+        ))}
+
+        {collectionGroups[tab].map(def => (
+          <CollectionEditor
+            key={def.key}
+            def={def}
+            initialItems={initialItems[def.key]}
+            initiallyOverridden={initialCollectionOverridden[def.key]}
           />
         ))}
       </div>

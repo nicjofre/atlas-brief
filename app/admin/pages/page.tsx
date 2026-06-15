@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { CONTENT_FIELDS, type PageSlug } from '@/lib/content-registry'
-import { getAllSavedContent } from '@/lib/db/content'
+import { CONTENT_FIELDS, CONTENT_COLLECTIONS, type PageSlug, type CollectionItem } from '@/lib/content-registry'
+import { getAllSavedContent, getAllSavedCollections } from '@/lib/db/content'
 import InternalNav from '@/app/InternalNav'
 import PagesEditor from './PagesEditor'
 
@@ -12,7 +12,10 @@ export default async function PagesAdminPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const saved = await getAllSavedContent()
+  const [saved, savedCollections] = await Promise.all([
+    getAllSavedContent(),
+    getAllSavedCollections(),
+  ])
 
   // Build the initial value map: for each registered field, prefer the saved
   // override; fall back to the registry default. PagesEditor takes this as its
@@ -25,6 +28,14 @@ export default async function PagesAdminPage() {
     overridden[f.key] = saved[f.key] !== undefined
   }
 
+  // Same idea for collections: prefer saved items, fall back to registry defaults.
+  const initialItems: Record<string, CollectionItem[]> = {}
+  const collectionOverridden: Record<string, boolean> = {}
+  for (const col of CONTENT_COLLECTIONS) {
+    initialItems[col.key] = savedCollections[col.key] ?? col.defaultItems
+    collectionOverridden[col.key] = savedCollections[col.key] !== undefined
+  }
+
   // Group fields by page for the tabbed UI.
   const groups: Record<PageSlug, typeof CONTENT_FIELDS> = {
     about: [],
@@ -33,6 +44,16 @@ export default async function PagesAdminPage() {
   }
   for (const f of CONTENT_FIELDS) {
     groups[f.page].push(f)
+  }
+
+  // Group collections by page too.
+  const collectionGroups: Record<PageSlug, typeof CONTENT_COLLECTIONS> = {
+    about: [],
+    contact: [],
+    build: [],
+  }
+  for (const col of CONTENT_COLLECTIONS) {
+    collectionGroups[col.page].push(col)
   }
 
   return (
@@ -53,7 +74,14 @@ export default async function PagesAdminPage() {
           </p>
         </div>
 
-        <PagesEditor groups={groups} initialValues={initialValues} initialOverridden={overridden} />
+        <PagesEditor
+          groups={groups}
+          initialValues={initialValues}
+          initialOverridden={overridden}
+          collectionGroups={collectionGroups}
+          initialItems={initialItems}
+          initialCollectionOverridden={collectionOverridden}
+        />
       </div>
     </div>
   )
