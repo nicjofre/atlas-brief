@@ -9,20 +9,23 @@ import { Capabilities } from '../blocks/Capabilities'
 import { Steps } from '../blocks/Steps'
 import { CTA } from '../blocks/CTA'
 
-const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-
 // Public marketing pages (About, Contact, Build, ...). Each page is a document
 // with a slug and a flexible `layout` of blocks the editor composes, reorders,
 // and previews live.
+//
+// Preview/live-preview URLs are RELATIVE (just "/slug") so the iframe and the
+// "open" link resolve against whatever origin the admin is served from —
+// localhost in dev, the real domain in production, the branch URL on previews.
+// No NEXT_PUBLIC_SERVER_URL needed.
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
-      url: ({ data }) => `${serverURL}/${data?.slug ?? ''}`,
+      url: ({ data }) => `/${data?.slug ?? ''}`,
     },
-    preview: (doc) => `${serverURL}/${doc?.slug ?? ''}`,
+    preview: (doc) => `/${doc?.slug ?? ''}`,
   },
   access: {
     read: () => true,
