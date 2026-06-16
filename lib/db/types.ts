@@ -283,27 +283,6 @@ export type Database = {
         }
         Relationships: []
       }
-      content_blocks: {
-        Row: {
-          body: string
-          key: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          body: string
-          key: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          body?: string
-          key?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
       listings: {
         Row: {
           ab1482_applicable: boolean | null
@@ -383,6 +362,7 @@ export type Database = {
           transfer_tax: number | null
           true_buyer: string | null
           true_seller: string | null
+          ula_override: string | null
           ula_tax_estimate: number | null
           ula_threshold_status: string | null
           unit_mix: Json | null
@@ -467,6 +447,7 @@ export type Database = {
           transfer_tax?: number | null
           true_buyer?: string | null
           true_seller?: string | null
+          ula_override?: string | null
           ula_tax_estimate?: number | null
           ula_threshold_status?: string | null
           unit_mix?: Json | null
@@ -551,6 +532,7 @@ export type Database = {
           transfer_tax?: number | null
           true_buyer?: string | null
           true_seller?: string | null
+          ula_override?: string | null
           ula_tax_estimate?: number | null
           ula_threshold_status?: string | null
           unit_mix?: Json | null
@@ -580,30 +562,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      page_collections: {
-        Row: {
-          items: Json
-          key: string
-          page: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          items?: Json
-          key: string
-          page: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          items?: Json
-          key?: string
-          page?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: []
       }
       prompts: {
         Row: {

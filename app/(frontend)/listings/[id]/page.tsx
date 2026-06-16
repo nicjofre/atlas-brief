@@ -8,6 +8,7 @@ import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
 import DeleteListingButton from './DeleteListingButton'
 import RentRegulationOverride from './RentRegulationOverride'
+import UlaOverride from './UlaOverride'
 import StatusEditor from './StatusEditor'
 import DraftArticleButton from './DraftArticleButton'
 import InternalNav from '@/app/InternalNav'
@@ -415,8 +416,33 @@ function SummaryTab({
             <Field label="AB 1482 Applicable" value={plain(l.ab1482_applicable as boolean | null)} hint="derived" />
           </div>
           <div>
-            <Field label="ULA Threshold" value={plain(l.ula_threshold_status as string | null)} hint="derived" />
-            <Field label="ULA Tax Estimate" value={dollars(l.ula_tax_estimate as number | null)} hint="derived" />
+            {(() => {
+              const override = l.ula_override as string | null
+              const threshold = l.ula_threshold_status as string | null
+              const estimate = l.ula_tax_estimate as number | null
+              // Summary of the auto-derived ULA, shown under the editor as a reference.
+              const derivedSummary = [
+                threshold ? `threshold ${threshold}` : null,
+                estimate != null ? dollars(estimate) : null,
+              ].filter(Boolean).join(' · ') || null
+              return (
+                <>
+                  {override ? (
+                    <Field label="ULA" value={plain(override)} hint="manual override" />
+                  ) : (
+                    <>
+                      <Field label="ULA Threshold" value={plain(threshold)} hint="derived" />
+                      <Field label="ULA Tax Estimate" value={dollars(estimate)} hint="derived" />
+                    </>
+                  )}
+                  <UlaOverride
+                    listingId={l.id as string}
+                    currentOverride={override ?? null}
+                    derivedSummary={derivedSummary}
+                  />
+                </>
+              )
+            })()}
           </div>
         </Grid>
       </Section>
