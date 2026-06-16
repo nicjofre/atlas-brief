@@ -38,7 +38,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <ul className="nav-links">
             <li><Link href="/">The Tape</Link></li>
             <li><Link href="/about">About</Link></li>
-            <li><Link href="/build">Build</Link></li>
             <li><Link href="/contact">Contact</Link></li>
           </ul>
           <div className="nav-right">

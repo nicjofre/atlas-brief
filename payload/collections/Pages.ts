@@ -4,10 +4,6 @@ import { Hero } from '../blocks/Hero'
 import { Prose } from '../blocks/Prose'
 import { Projects } from '../blocks/Projects'
 import { ContactDetails } from '../blocks/ContactDetails'
-import { BuildHero } from '../blocks/BuildHero'
-import { Capabilities } from '../blocks/Capabilities'
-import { Steps } from '../blocks/Steps'
-import { CTA } from '../blocks/CTA'
 
 // Public marketing pages (About, Contact, Build, ...). Each page is a document
 // with a slug and a flexible `layout` of blocks the editor composes, reorders,
@@ -43,7 +39,7 @@ export const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Hero, Prose, Projects, ContactDetails, BuildHero, Capabilities, Steps, CTA],
+      blocks: [Hero, Prose, Projects, ContactDetails],
     },
   ],
 }

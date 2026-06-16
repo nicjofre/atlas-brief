@@ -14,7 +14,6 @@ export default function Footer() {
             <ul>
               <li><Link href="/">The Tape</Link></li>
               <li><Link href="/about">About</Link></li>
-              <li><Link href="/build">Build</Link></li>
               <li><Link href="/contact">Contact</Link></li>
             </ul>
           </div>
