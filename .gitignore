@@ -52,3 +52,6 @@ next-env.d.ts
 # reference material downloaded from David's prototype site (kept locally as
 # design source-of-truth; not needed in the deployed app)
 /docs/atlas-brief-prototype/
+
+# Payload local-storage media (S3 is used in all envs)
+/media/

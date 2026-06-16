@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import ArticleEditor, { type AIDraftShape } from './ArticleEditor'
 import ReactionPanel, { type ListingFacts } from './ReactionPanel'
 import InternalNav from '@/app/InternalNav'
-import StatusEditor from '@/app/listings/[id]/StatusEditor'
+import StatusEditor from '@/app/(frontend)/listings/[id]/StatusEditor'
 
 export const dynamic = 'force-dynamic'
 
