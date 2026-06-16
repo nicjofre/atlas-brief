@@ -5,7 +5,6 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
-import sharp from 'sharp'
 
 import { Users } from './payload/collections/Users'
 import { Media } from './payload/collections/Media'
@@ -60,5 +59,4 @@ export default buildConfig({
     schemaName: 'payload',
   }),
   plugins,
-  sharp,
 })
