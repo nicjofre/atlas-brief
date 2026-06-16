@@ -61,6 +61,9 @@ export default function ArticleEditor({
   const [error, setError] = useState<string | null>(null)
   const [justSavedAt, setJustSavedAt] = useState<number | null>(null)
   const [editingSlug, setEditingSlug] = useState(false)
+  const [proofreading, setProofreading] = useState(false)
+  const [findings, setFindings] = useState<ProofFinding[] | null>(null)
+  const [proofErr, setProofErr] = useState<string | null>(null)
 
   async function saveDraft() {
     setSaving(true)
@@ -85,6 +88,32 @@ export default function ArticleEditor({
       setError(e instanceof Error ? e.message : 'Save failed')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Final AI read-through over the active tier's content (including unsaved
+  // edits). Advisory only — it surfaces potential issues, never blocks publish.
+  async function runProofread() {
+    setProofreading(true)
+    setProofErr(null)
+    try {
+      const cols = projectTapeToColumns(sanitizeDraft(draft), tier)
+      const res = await fetch(`/api/articles/${articleId}/proofread`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          headline: cols.headline ?? '',
+          deck: cols.deck ?? '',
+          body_html: cols.body_html ?? '',
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Proofread failed')
+      setFindings(Array.isArray(data.findings) ? data.findings : [])
+    } catch (e) {
+      setProofErr(e instanceof Error ? e.message : 'Proofread failed')
+    } finally {
+      setProofreading(false)
     }
   }
 
@@ -290,6 +319,14 @@ export default function ArticleEditor({
             {saving ? 'Saving…' : 'Save draft'}
           </button>
           <button
+            onClick={runProofread}
+            disabled={proofreading}
+            style={actionButtonStyle('ghost', proofreading)}
+            title="Final AI read-through for typos, leftover placeholders, and house-style slips"
+          >
+            {proofreading ? 'Reading…' : 'Proofread'}
+          </button>
+          <button
             onClick={publish}
             disabled={publishing}
             style={actionButtonStyle('primary', publishing)}
@@ -302,6 +339,14 @@ export default function ArticleEditor({
           {error && <span style={{ fontSize: 11, color: '#E5A04F' }}>{error}</span>}
         </div>
       </div>
+
+      {/* Proofread results — advisory, never blocks publishing */}
+      {proofErr && (
+        <div style={{ marginTop: 12, padding: 12, background: '#fff', border: '1px solid #E5A04F', borderRadius: 4, fontSize: 12, color: '#A35A1B' }}>
+          Proofread failed: {proofErr}
+        </div>
+      )}
+      {findings && <ProofreadPanel findings={findings} onClose={() => setFindings(null)} />}
 
       {/* Broker outreach email — collapsible, sits below the action bar */}
       {draft.broker_outreach_email && (
@@ -1315,4 +1360,60 @@ function projectTapeToColumns(d: AIDraftShape, tier: 1 | 2 | 3) {
     deal_stats_html: null,
     byline_html: null,
   }
+}
+
+// ============================================================================
+// Pre-publish read-through (AI proofread) results panel — advisory only.
+// ============================================================================
+
+type ProofFinding = {
+  severity: 'high' | 'low'
+  location: 'headline' | 'deck' | 'body'
+  quote: string
+  issue: string
+  suggestion: string
+}
+
+function ProofreadPanel({ findings, onClose }: { findings: ProofFinding[]; onClose: () => void }) {
+  const high = findings.filter(f => f.severity === 'high')
+  const low = findings.filter(f => f.severity !== 'high')
+  return (
+    <div style={{ marginTop: 12, padding: 16, background: '#fff', border: '1px solid #e5e5e5', borderRadius: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#9A6B3F' }}>
+          Pre-publish read-through
+        </div>
+        <button onClick={onClose} aria-label="Dismiss" style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>×</button>
+      </div>
+      {findings.length === 0 ? (
+        <div style={{ fontSize: 13, color: '#0A5417' }}>✓ No issues found. Good to publish.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {high.length > 0 && <ProofGroup title="Must fix" color="#A31414" items={high} />}
+          {low.length > 0 && <ProofGroup title="Worth a look" color="#9A6B3F" items={low} />}
+          <div style={{ fontSize: 11, color: '#999', fontStyle: 'italic' }}>
+            Advisory only — you can publish regardless.
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProofGroup({ title, color, items }: { title: string; color: string; items: ProofFinding[] }) {
+  return (
+    <div>
+      <div style={{ fontSize: 12, fontWeight: 600, color, marginBottom: 8 }}>{title} ({items.length})</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map((f, i) => (
+          <div key={i} style={{ borderLeft: `3px solid ${color}`, paddingLeft: 10 }}>
+            <div style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: '#999' }}>{f.location}</div>
+            <div style={{ fontSize: 13, color: '#111', margin: '2px 0' }}>{f.issue}</div>
+            {f.quote && <div style={{ fontSize: 12, color: '#777', fontFamily: 'ui-monospace, Menlo, monospace' }}>&ldquo;{f.quote}&rdquo;</div>}
+            {f.suggestion && <div style={{ fontSize: 12, color: '#0A5417', marginTop: 2 }}>&rarr; {f.suggestion}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
