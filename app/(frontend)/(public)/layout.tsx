@@ -34,7 +34,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       <nav className="nav">
         <div className="nav-inner">
-          <Link href="/" className="nav-logo"><span className="mark" /> Atlas</Link>
+          <Link href="/" className="nav-logo"><span className="mark" /> Atlas <em>Brief</em></Link>
           <ul className="nav-links">
             <li><Link href="/">The Tape</Link></li>
             <li><Link href="/about">About</Link></li>

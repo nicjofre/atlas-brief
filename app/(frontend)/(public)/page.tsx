@@ -7,7 +7,7 @@ import { formatDateLong, placeLine, statusBadgeKey, statusKicker } from '@/lib/d
 import './home.css'
 
 export const metadata: Metadata = {
-  title: 'The Tape · Atlas Home Pro',
+  title: 'The Tape · Atlas Brief',
   description:
     "A running log of Los Angeles real estate — what trades, what's listed, what the numbers actually say. By David Safai.",
 }

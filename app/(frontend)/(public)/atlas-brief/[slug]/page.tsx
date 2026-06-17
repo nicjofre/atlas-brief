@@ -172,7 +172,7 @@ export default async function PostPage(
               <div className="k">Written from the field</div>
               <h3>David Safai, operator, developer, GC.</h3>
               <p>
-                Atlas Home Pro is a Los Angeles owner-operator and general contractor. If you are
+                Atlas Home Builders, Inc. is a Los Angeles owner-operator and general contractor. If you are
                 a broker with a listing you want an honest read on, send the OM and the T-12 to{' '}
                 <a
                   href="mailto:David@AtlasHomePro.com"
@@ -194,7 +194,7 @@ export default async function PostPage(
       <footer className="site-footer">
         <div className="wrap">
           <div>
-            &copy; 2026 Atlas Home Pro &middot; <Link href="/atlas-brief">Atlas Brief</Link>
+            &copy; 2026 Atlas Home Builders, Inc. &middot; <Link href="/atlas-brief">Atlas Brief</Link>
           </div>
           <div>
             Entry № {String(article.entry_num).padStart(2, '0')} &middot; {sectionLabel} &middot;{' '}

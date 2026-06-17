@@ -9,7 +9,7 @@ import './contact.css'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Contact · Atlas Home Pro',
+  title: 'Contact · Atlas Brief',
   description: 'Atlas Home Builders, Inc. — based in Los Angeles. Editorial, construction, and acquisition inquiries.',
 }
 

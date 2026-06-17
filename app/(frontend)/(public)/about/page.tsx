@@ -9,7 +9,7 @@ import './about.css'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'About · Atlas Home Pro',
+  title: 'About · Atlas Brief',
   description:
     'Atlas is a Los Angeles real estate practice with three sides: Atlas Brief (publication), Atlas Home Builders, Inc. (general contractor), and Atlas Home Pro (acquisitions).',
 }
