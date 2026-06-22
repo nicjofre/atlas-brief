@@ -12,7 +12,7 @@ import type { DispatchEmailProps, DispatchStat } from './dispatch-template'
 export const RESEND_UNSUBSCRIBE_TOKEN = '{{{RESEND_UNSUBSCRIBE_URL}}}'
 
 export function siteBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://atlas-brief.vercel.app').replace(
+  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://atlasbrief.la').replace(
     /\/$/,
     ''
   )
