@@ -210,6 +210,7 @@ export type Database = {
           dre_license: string | null
           email: string | null
           firm: string | null
+          firm_logo_url: string | null
           focus_areas: string[] | null
           headshot_url: string | null
           id: string
@@ -236,6 +237,7 @@ export type Database = {
           dre_license?: string | null
           email?: string | null
           firm?: string | null
+          firm_logo_url?: string | null
           focus_areas?: string[] | null
           headshot_url?: string | null
           id?: string
@@ -262,6 +264,7 @@ export type Database = {
           dre_license?: string | null
           email?: string | null
           firm?: string | null
+          firm_logo_url?: string | null
           focus_areas?: string[] | null
           headshot_url?: string | null
           id?: string

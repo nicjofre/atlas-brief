@@ -6,6 +6,7 @@ import { rentRegulationLabel, parkingRatio, daysOnMarket, rentSpread, priorSale 
 import AugmentForm from './AugmentForm'
 import PhotosForm from './PhotosForm'
 import BrokerHeadshotUploader from './BrokerHeadshotUploader'
+import BrokerEnrichBox from './BrokerEnrichBox'
 import DeleteListingButton from './DeleteListingButton'
 import RentRegulationOverride from './RentRegulationOverride'
 import UlaOverride from './UlaOverride'
@@ -164,12 +165,23 @@ export default async function ListingDetailPage({
   const photoUrls = ((listing.photo_urls as string[] | null) ?? []).filter(p => p && p.length > 0)
   const lbHeadshotPath = (lb?.headshot_url as string | null) ?? null
   const bbHeadshotPath = (bb?.headshot_url as string | null) ?? null
+  const lbLogoPath = (lb?.firm_logo_url as string | null) ?? null
+  const bbLogoPath = (bb?.firm_logo_url as string | null) ?? null
 
-  const [heroSignedUrl, secondarySignedUrls, lbHeadshotSignedUrl, bbHeadshotSignedUrl] = await Promise.all([
+  const [
+    heroSignedUrl,
+    secondarySignedUrls,
+    lbHeadshotSignedUrl,
+    bbHeadshotSignedUrl,
+    lbLogoSignedUrl,
+    bbLogoSignedUrl,
+  ] = await Promise.all([
     signPath(heroPath),
     Promise.all(photoUrls.map(p => signPath(p))),
     signPath(lbHeadshotPath),
     signPath(bbHeadshotPath),
+    signPath(lbLogoPath),
+    signPath(bbLogoPath),
   ])
 
   const heroAsset = heroPath ? { path: heroPath, signedUrl: heroSignedUrl } : null
@@ -269,6 +281,10 @@ export default async function ListingDetailPage({
             bbHeadshotSignedUrl={bbHeadshotSignedUrl}
             lbHeadshotPath={lbHeadshotPath}
             bbHeadshotPath={bbHeadshotPath}
+            lbLogoSignedUrl={lbLogoSignedUrl}
+            bbLogoSignedUrl={bbLogoSignedUrl}
+            lbLogoPath={lbLogoPath}
+            bbLogoPath={bbLogoPath}
           />
         )}
         {tab === 'loan' && (
@@ -672,6 +688,10 @@ function ContactsTab({
   bbHeadshotSignedUrl,
   lbHeadshotPath,
   bbHeadshotPath,
+  lbLogoSignedUrl,
+  bbLogoSignedUrl,
+  lbLogoPath,
+  bbLogoPath,
 }: {
   lb: Record<string, unknown> | null
   bb: Record<string, unknown> | null
@@ -680,6 +700,10 @@ function ContactsTab({
   bbHeadshotSignedUrl: string | null
   lbHeadshotPath: string | null
   bbHeadshotPath: string | null
+  lbLogoSignedUrl: string | null
+  bbLogoSignedUrl: string | null
+  lbLogoPath: string | null
+  bbLogoPath: string | null
 }) {
   return (
     <div>
@@ -701,6 +725,13 @@ function ContactsTab({
               <Field label="Email" value={plain(lb.email as string | null)} />
               <Field label="DRE License" value={plain(lb.dre_license as string | null)} />
               <Field label="Office Address" value={plain(lb.office_address as string | null)} />
+              <BrokerEnrichBox
+                brokerId={lb.id as string}
+                current={lb}
+                firm={(lb.firm as string | null) ?? null}
+                logoSignedUrl={lbLogoSignedUrl}
+                logoPath={lbLogoPath}
+              />
             </>
           ) : (
             <AugmentNote text="No listing broker captured. Paste the Contacts tab via Augment to populate." />
@@ -721,6 +752,13 @@ function ContactsTab({
               <Field label="Phone" value={plain(bb.phone as string | null)} />
               <Field label="Email" value={plain(bb.email as string | null)} />
               <Field label="DRE License" value={plain(bb.dre_license as string | null)} />
+              <BrokerEnrichBox
+                brokerId={bb.id as string}
+                current={bb}
+                firm={(bb.firm as string | null) ?? null}
+                logoSignedUrl={bbLogoSignedUrl}
+                logoPath={bbLogoPath}
+              />
             </>
           ) : (
             <AugmentNote text="Buyer broker captured from the OM (sold deals) or the Contacts tab if visible." />
