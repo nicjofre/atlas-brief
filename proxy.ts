@@ -2,8 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes anyone can read without a session. Everything else requires auth.
+// `/api/subscribe` is the public dispatch-signup endpoint (anon POST); the
+// admin-only `/api/dispatch/*` preview/send routes deliberately stay gated.
 const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact']
-const PUBLIC_EXACT = new Set(['/'])
+const PUBLIC_EXACT = new Set(['/', '/api/subscribe'])
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true
