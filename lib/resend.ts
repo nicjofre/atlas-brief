@@ -13,8 +13,18 @@
 
 const RESEND_API = 'https://api.resend.com'
 
+// Env values are read trimmed: Vercel/CI env editors silently keep trailing
+// whitespace, and the audience id goes straight into a URL path
+// (/audiences/<id>/contacts) where a stray space breaks the request.
+function resendKey(): string {
+  return (process.env.RESEND_API_KEY ?? '').trim()
+}
+function resendAudienceId(): string {
+  return (process.env.RESEND_AUDIENCE_ID ?? '').trim()
+}
+
 export function resendConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_AUDIENCE_ID)
+  return Boolean(resendKey() && resendAudienceId())
 }
 
 type SyncResult =
@@ -30,12 +40,12 @@ type SyncResult =
 export async function syncContactToResend(email: string): Promise<SyncResult> {
   if (!resendConfigured()) return { ok: false, skipped: true }
 
-  const audienceId = process.env.RESEND_AUDIENCE_ID!
+  const audienceId = resendAudienceId()
   try {
     const res = await fetch(`${RESEND_API}/audiences/${audienceId}/contacts`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendKey()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, unsubscribed: false }),

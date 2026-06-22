@@ -13,8 +13,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const key = process.env.RESEND_API_KEY
-  const audienceId = process.env.RESEND_AUDIENCE_ID
+  const key = process.env.RESEND_API_KEY?.trim()
+  const audienceId = process.env.RESEND_AUDIENCE_ID?.trim()
 
   const out: Record<string, unknown> = {
     env: {
@@ -65,6 +65,26 @@ export async function GET(req: Request) {
       }
     } catch (e) {
       out.getConfiguredAudience = { error: e instanceof Error ? e.message : 'unknown' }
+    }
+
+    // 3) List contacts so we can confirm a signup actually mirrored through.
+    try {
+      const res = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
+        headers: { Authorization: `Bearer ${key}` },
+      })
+      const body = (await res.json().catch(() => ({}))) as {
+        data?: Array<{ email: string }>
+        message?: string
+      }
+      out.contacts = {
+        httpStatus: res.status,
+        ok: res.ok,
+        message: body.message ?? null,
+        count: body.data?.length ?? null,
+        emails: body.data?.map(c => c.email) ?? null,
+      }
+    } catch (e) {
+      out.contacts = { error: e instanceof Error ? e.message : 'unknown' }
     }
   }
 
