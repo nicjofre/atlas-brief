@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // `/api/subscribe` is the public dispatch-signup endpoint (anon POST); the
 // admin-only `/api/dispatch/*` preview/send routes deliberately stay gated.
 const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact']
-const PUBLIC_EXACT = new Set(['/', '/api/subscribe'])
+const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/_diag/resend'])
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true
