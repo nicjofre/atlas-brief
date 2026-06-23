@@ -317,11 +317,14 @@ function wordForCount(n: number): string {
 }
 
 function renderHeroCaption(caption: string) {
-  const m = caption.match(/^(FIG\. ?\d+),?\s*(.*)$/i)
+  // The hero is always the lead figure, so its label is "FIG. 01". The draft AI
+  // frequently emits a placeholder "FIG. 00" (and a few get "FIG. 01"); normalize
+  // any leading figure label so the caption never reads "FIG. 00".
+  const m = caption.match(/^FIG\.?\s*\d+\s*,?\s*(.*)$/i)
   if (!m) return caption
   return (
     <>
-      <b>{m[1]}</b>, {m[2]}
+      <b>FIG. 01</b>, {m[1]}
     </>
   )
 }
