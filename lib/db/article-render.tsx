@@ -34,6 +34,33 @@ export function extractTOCFromHtml(html: string | null | undefined): { id: strin
   return out
 }
 
+// The broker block used to be baked into body_html at draft time (a frozen
+// snapshot). It's now rendered live from the listing's broker record, so we
+// strip any legacy <div class="brokers">…</div> out of stored bodies before
+// rendering to avoid showing it twice. Depth-aware so nested <div>s inside the
+// block (CoStar contact cards nest heavily) are matched correctly.
+export function stripBrokersBlock(html: string | null | undefined): string {
+  if (!html) return ''
+  let out = html
+  const openRe = /<div\b[^>]*\bclass="brokers(?:\s[^"]*)?"[^>]*>/i
+  let m: RegExpExecArray | null
+  while ((m = openRe.exec(out)) !== null) {
+    const start = m.index
+    let depth = 1
+    const tagRe = /<\/?div\b[^>]*>/gi
+    tagRe.lastIndex = start + m[0].length
+    let end = tagRe.lastIndex
+    let t: RegExpExecArray | null
+    while (depth > 0 && (t = tagRe.exec(out)) !== null) {
+      depth += t[0].startsWith('</') ? -1 : 1
+      end = tagRe.lastIndex
+    }
+    if (depth !== 0) break // unbalanced — leave the rest alone rather than mangle
+    out = out.slice(0, start) + out.slice(end)
+  }
+  return out
+}
+
 // ===================================================================
 // Card-render helpers — shared between feed, section, and homepage
 // ===================================================================

@@ -98,6 +98,10 @@ async function upsertBroker(db: DB, b: BrokerPayload): Promise<string | null> {
 // ============================================================
 
 export type ContactsPayload = {
+  // New shape: every agent per side. Singular keys kept for back-compat with
+  // older parses.
+  listing_brokers?: BrokerPayload[] | null
+  buyer_brokers?: BrokerPayload[] | null
   listing_broker?: BrokerPayload | null
   buyer_broker?: BrokerPayload | null
   property_manager?: { name?: string | null; address?: string | null; phone?: string | null; since?: string | null } | null
@@ -126,13 +130,23 @@ export async function mergeContacts(
   const listingUpdate: ListingUpdate = {}
   const propertyUpdate: PropertyUpdate = {}
 
-  if (payload.listing_broker) {
-    const id = await upsertBroker(db, payload.listing_broker)
-    if (id) listingUpdate.listing_broker_id = id
+  // Capture every agent on each side into the listing_brokers roster (the
+  // source of truth for the article card). The FK column keeps pointing at the
+  // lead (first) agent for back-compat with the dispatch email + admin summary.
+  const joinRows: Database['public']['Tables']['listing_brokers']['Insert'][] = []
+  const listingAgents = payload.listing_brokers ?? (payload.listing_broker ? [payload.listing_broker] : [])
+  for (let i = 0; i < listingAgents.length; i++) {
+    const id = await upsertBroker(db, listingAgents[i])
+    if (!id) continue
+    if (i === 0) listingUpdate.listing_broker_id = id
+    joinRows.push({ listing_id: listingId, broker_id: id, role: 'listing', sort_order: i })
   }
-  if (payload.buyer_broker) {
-    const id = await upsertBroker(db, payload.buyer_broker)
-    if (id) listingUpdate.buyer_broker_id = id
+  const buyerAgents = payload.buyer_brokers ?? (payload.buyer_broker ? [payload.buyer_broker] : [])
+  for (let i = 0; i < buyerAgents.length; i++) {
+    const id = await upsertBroker(db, buyerAgents[i])
+    if (!id) continue
+    if (i === 0) listingUpdate.buyer_broker_id = id
+    joinRows.push({ listing_id: listingId, broker_id: id, role: 'buyer', sort_order: i })
   }
   if (payload.property_manager) {
     const pm = payload.property_manager
@@ -166,6 +180,13 @@ export async function mergeContacts(
   }
   if (Object.keys(propertyUpdate).length > 0) {
     await db.from('properties').update(propertyUpdate).eq('id', propertyId)
+  }
+  if (joinRows.length > 0) {
+    // Idempotent: re-pasting the Contacts tab re-adds the same agents without
+    // duplicating, and preserves any brokers added by hand on the listing.
+    await db
+      .from('listing_brokers')
+      .upsert(joinRows, { onConflict: 'listing_id,broker_id,role', ignoreDuplicates: true })
   }
 
   return changed

@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getArticleBySlug } from '@/lib/db/articles'
-import { HeadlineText, extractTOCFromHtml } from '@/lib/db/article-render'
+import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
+import { HeadlineText, extractTOCFromHtml, stripBrokersBlock } from '@/lib/db/article-render'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database, Tables } from '@/lib/db/types'
+import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -49,6 +52,11 @@ export default async function PostPage(
     supabase,
     article.hero_photo_url ?? listing?.hero_photo_url ?? null
   )
+
+  // Broker roster, live from the listing_brokers join table (no longer baked
+  // into body_html). Grouped + labeled so teams and dual-agency render
+  // faithfully. Falls back to the FK columns for any listing not yet backfilled.
+  const brokerGroups = buildBrokerGroups(listing, supabase)
 
   return (
     <>
@@ -159,11 +167,13 @@ export default async function PostPage(
 
             <article
               className="prose"
-              dangerouslySetInnerHTML={{ __html: article.body_html ?? '' }}
+              dangerouslySetInnerHTML={{ __html: stripBrokersBlock(article.body_html) }}
             />
           </div>
         </div>
       </section>
+
+      {brokerGroups.length > 0 && <BrokerBlock groups={brokerGroups} />}
 
       <section className="author">
         <div className="wrap">
@@ -208,6 +218,77 @@ export default async function PostPage(
       </footer>
     </>
   )
+}
+
+function toBrokerCard(
+  b: Tables<'brokers'>,
+  supabase: SupabaseClient<Database>
+): BrokerCard {
+  return {
+    name: b.name,
+    title: b.title,
+    firm: b.firm,
+    phone: b.phone ?? b.cell,
+    email: b.email,
+    dre: b.dre_license,
+    headshotUrl: resolveHeroUrl(supabase, b.headshot_url),
+    logoUrl: resolveHeroUrl(supabase, b.firm_logo_url),
+  }
+}
+
+// Build the labeled broker groups for the article card from the listing's
+// roster. Dual agency (a broker on both sides) collapses into a single
+// "Buyer & Listing Broker" group so the same person isn't shown twice.
+function buildBrokerGroups(
+  listing: ArticleWithJoins['listing'] | null | undefined,
+  supabase: SupabaseClient<Database>
+): BrokerGroup[] {
+  // Prefer the join table; fall back to the FK columns for listings not yet
+  // backfilled (and so new parses that only set the FKs still render).
+  let rows = (listing?.listing_brokers ?? [])
+    .filter(r => r.broker)
+    .map(r => ({ role: r.role, order: r.sort_order, broker: r.broker as Tables<'brokers'> }))
+
+  if (rows.length === 0 && listing) {
+    if (listing.listing_broker) rows.push({ role: 'listing', order: 0, broker: listing.listing_broker })
+    if (listing.buyer_broker) rows.push({ role: 'buyer', order: 0, broker: listing.buyer_broker })
+  }
+
+  // Roles per broker → detect dual agency (both sides).
+  const roleSets = new Map<string, Set<string>>()
+  for (const r of rows) {
+    if (!roleSets.has(r.broker.id)) roleSets.set(r.broker.id, new Set())
+    roleSets.get(r.broker.id)!.add(r.role)
+  }
+
+  const seen = new Set<string>()
+  const dual: typeof rows = []
+  const listingOnly: typeof rows = []
+  const buyerOnly: typeof rows = []
+  for (const r of rows) {
+    const roles = roleSets.get(r.broker.id)!
+    const isDual = roles.has('listing') && roles.has('buyer')
+    if (isDual) {
+      if (seen.has(r.broker.id)) continue // one card for a dual-agency broker
+      seen.add(r.broker.id)
+      dual.push(r)
+    } else if (r.role === 'listing') listingOnly.push(r)
+    else buyerOnly.push(r)
+  }
+
+  const sortAndMap = (list: typeof rows) =>
+    list
+      .sort((a, b) => a.order - b.order)
+      .map(r => toBrokerCard(r.broker, supabase))
+      .filter(b => b.name || b.firm)
+
+  const label = (base: string, n: number) => (n > 1 ? `${base}s` : base)
+
+  const groups: BrokerGroup[] = []
+  if (dual.length) groups.push({ key: 'dual', label: label('Buyer & Listing Broker', dual.length), brokers: sortAndMap(dual) })
+  if (listingOnly.length) groups.push({ key: 'listing', label: label('Listing Broker', listingOnly.length), brokers: sortAndMap(listingOnly) })
+  if (buyerOnly.length) groups.push({ key: 'buyer', label: label('Buyer Broker', buyerOnly.length), brokers: sortAndMap(buyerOnly) })
+  return groups.filter(g => g.brokers.length > 0)
 }
 
 function badgeClass(status: string | null | undefined): string {

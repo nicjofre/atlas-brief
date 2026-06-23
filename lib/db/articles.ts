@@ -4,11 +4,16 @@ import { resolveHeroUrl } from './hero-url'
 
 export type Takeaway = { bold: string; text: string }
 
+export type ListingBrokerRow = Pick<Tables<'listing_brokers'>, 'role' | 'sort_order'> & {
+  broker: Tables<'brokers'> | null
+}
+
 export type ArticleWithJoins = Tables<'articles'> & {
   listing: Tables<'listings'> & {
     property: Tables<'properties'> | null
     listing_broker: Tables<'brokers'> | null
     buyer_broker: Tables<'brokers'> | null
+    listing_brokers: ListingBrokerRow[]
   }
 }
 
@@ -23,7 +28,11 @@ export async function getArticleBySlug(slug: string): Promise<ArticleWithJoins |
         *,
         property:properties (*),
         listing_broker:brokers!listings_listing_broker_id_fkey (*),
-        buyer_broker:brokers!listings_buyer_broker_id_fkey (*)
+        buyer_broker:brokers!listings_buyer_broker_id_fkey (*),
+        listing_brokers (
+          role, sort_order,
+          broker:brokers (*)
+        )
       )
     `
     )

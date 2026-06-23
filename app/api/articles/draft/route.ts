@@ -17,7 +17,8 @@ const OUTPUT_FORMAT_PROMPT = `
 You will be asked to call a specific tool (emit_tape_1, emit_tape_2, emit_tape_3, or emit_meta) for each slice of the article. The tool input_schema enforces structure. This section documents the semantic conventions that apply inside string values.
 
 CRITICAL conventions:
-- HTML strings should use the same class names David's prototype uses: .table-fig, .speculation, .brokers (with .broker-col, .broker-name, .broker-firm, .broker-meta), <h2 id="kebab-case"> for body sections.
+- HTML strings should use the same class names David's prototype uses: .table-fig, .speculation, <h2 id="kebab-case"> for body sections.
+- Do NOT include a broker/contact block in body_html (no .brokers block, no broker contact cards). The broker roster is rendered automatically from the deal's broker records on the published page; anything you add duplicates it and will be stripped.
 - Headlines that use the *italic* convention should embed asterisks: "Address: N Doors at *$306K a Unit.*"
 - Placeholders David must fill stay as literal bracketed strings: [ATLAS HEADLINE], [ATLAS READ: short hint of what goes here], [BROKER TAG NOTE], [TRADE RANGE: $X.XM-$Y.YM, $Zk-$Wk/door].
 - NEVER use em-dashes (—). Use commas, periods, or parentheses.
@@ -187,9 +188,10 @@ type AIDraft = {
 }
 
 // Relocate misplaced structured blocks out of body_html. The AI often dumps
-// .stats-grid, .key-takeaways .kt-card, .byl, and .brokers blocks into the
-// prose body even when output_format tells it not to. We pull them out and
-// put them in the right field if that field is empty.
+// .stats-grid, .key-takeaways .kt-card, and .byl blocks into the prose body
+// even when output_format tells it not to. We pull them out and put them in
+// the right field if that field is empty. (Broker blocks are no longer
+// generated; any stray one is stripped at render via stripBrokersBlock.)
 //
 // We do raw-regex extraction rather than parse-with-DOMParser because this
 // runs in Node (no DOM) and the AI's HTML is consistent enough for regex.

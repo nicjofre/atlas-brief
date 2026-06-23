@@ -5,26 +5,30 @@
 export const CONTACTS_PROMPT = `You are parsing the CoStar "Contacts" tab for a commercial real estate property. Extract structured contact data and return ONLY valid JSON in this exact shape (use null for any field not found):
 
 {
-  "listing_broker": {
-    "name": string,
-    "title": string,
-    "firm": string,
-    "phone": string,
-    "cell": string,
-    "email": string,
-    "dre_license": string,
-    "office_address": string
-  } | null,
-  "buyer_broker": {
-    "name": string,
-    "title": string,
-    "firm": string,
-    "phone": string,
-    "cell": string,
-    "email": string,
-    "dre_license": string,
-    "office_address": string
-  } | null,
+  "listing_brokers": [
+    {
+      "name": string,
+      "title": string,
+      "firm": string,
+      "phone": string,
+      "cell": string,
+      "email": string,
+      "dre_license": string,
+      "office_address": string
+    }
+  ],
+  "buyer_brokers": [
+    {
+      "name": string,
+      "title": string,
+      "firm": string,
+      "phone": string,
+      "cell": string,
+      "email": string,
+      "dre_license": string,
+      "office_address": string
+    }
+  ],
   "property_manager": {
     "name": string,
     "address": string,
@@ -46,12 +50,13 @@ export const CONTACTS_PROMPT = `You are parsing the CoStar "Contacts" tab for a 
 }
 
 Notes:
-- The Contacts tab has multiple sections. Pick the most likely listing/sales broker (often labeled "Leasing Company" or "Primary Leasing Company"). If multiple firms are listed, pick the first one and the first individual agent within it.
-- CoStar often duplicates names (e.g. "Gregory Briest / Gregory Briest"). Dedupe — return the name once.
+- The Contacts tab has multiple sections. Capture EVERY individual agent on the listing/sales side as a separate entry in "listing_brokers" — including co-listing teammates and agents across multiple firms — in the order they appear (lead/primary agent first). Do NOT collapse a team to one person. Return [] if no listing broker is shown.
+- Capture every buyer-side agent the same way in "buyer_brokers". Buyer broker info is rare on this tab — return [] if none.
+- Each agent is one entry. A firm with three named agents → three entries (same firm on each).
+- CoStar often duplicates names (e.g. "Gregory Briest / Gregory Briest"). Dedupe — each distinct person appears once.
 - Format phone numbers as they appear (don't strip parens/dashes).
 - Dates like "Since Mar 5, 2003" → return as ISO date "2003-03-05".
 - "(p)" suffix means primary phone, "(m)" mobile/cell, "(f)" fax. Map to phone, cell, ignore fax.
-- If you can't confidently identify a buyer broker, return null. Buyer broker info is rare on this tab.
 - Return only valid JSON, no explanation, no markdown.`
 
 export const PUBLIC_RECORD_PROMPT = `You are parsing the CoStar "Public Record" tab for a commercial real estate property. Extract structured data and return ONLY valid JSON in this exact shape (use null for any field not found):

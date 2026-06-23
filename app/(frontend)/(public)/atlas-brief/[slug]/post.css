@@ -116,3 +116,22 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
 .site-footer{padding:48px 0;border-top:1px solid var(--ink);background:var(--bg-alt)}
 .site-footer .wrap{display:flex;flex-wrap:wrap;gap:32px;align-items:baseline;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
 .site-footer a{color:var(--ink)}
+
+/* Live broker card (Option A) — headshot · details · firm logo. Reads from the
+   listing's broker record; replaces the old baked-in .brokers block. */
+.broker-cards-wrap{padding:clamp(40px,5vw,72px) 0;border-bottom:1px solid var(--ink)}
+.bc-head{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--ink)}
+.bc-grid{display:grid;grid-template-columns:1fr;gap:28px;align-items:start}
+@media(min-width:760px){.bc-grid.cols-2{grid-template-columns:1fr 1fr}}
+.bc-group{display:flex;flex-direction:column;gap:14px}
+.bc-card{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:24px 26px;background:var(--bg-alt);border:1px solid var(--rule)}
+.bc-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg);border:1px solid var(--rule);flex-shrink:0}
+.bc-photo-empty{display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;font-weight:500;color:var(--accent);letter-spacing:.02em}
+.bc-side{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.bc-name{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.015em;color:var(--ink);margin-bottom:1px}
+.bc-title{font-family:var(--serif);font-size:14px;color:var(--ink-soft);margin-bottom:1px}
+.bc-firm{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft);margin-bottom:12px}
+.bc-meta{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);line-height:1.75}
+.bc-meta a{color:var(--ink)}
+.bc-logo{height:42px;max-width:124px;width:auto;object-fit:contain;justify-self:end}
+@media(max-width:560px){.bc-card{grid-template-columns:auto 1fr;gap:16px;padding:20px}.bc-logo{grid-column:1 / -1;justify-self:start;margin-top:6px}}

@@ -286,6 +286,46 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_brokers: {
+        Row: {
+          broker_id: string
+          created_at: string
+          id: string
+          listing_id: string
+          role: string
+          sort_order: number
+        }
+        Insert: {
+          broker_id: string
+          created_at?: string
+          id?: string
+          listing_id: string
+          role: string
+          sort_order?: number
+        }
+        Update: {
+          broker_id?: string
+          created_at?: string
+          id?: string
+          listing_id?: string
+          role?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_brokers_listing_id_fkey"
+            columns: ["listing_id"]
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_brokers_broker_id_fkey"
+            columns: ["broker_id"]
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           ab1482_applicable: boolean | null

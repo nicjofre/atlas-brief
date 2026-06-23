@@ -358,5 +358,19 @@ export async function persistDeal(db: DB, deal: ParsedDeal) {
   const brokerId = await upsertBrokerFromDeal(db, deal)
   const buyerBrokerId = await upsertBuyerBrokerFromDeal(db, deal)
   const listingId = await createListing(db, { propertyId, brokerId, buyerBrokerId, deal })
+
+  // Mirror the lead brokers into the listing_brokers roster (the source of
+  // truth for the article card). The parser captures one agent per side;
+  // co-listing teammates are added by hand on the listing's Brokers tab.
+  const brokerRows: Database['public']['Tables']['listing_brokers']['Insert'][] = []
+  if (brokerId) brokerRows.push({ listing_id: listingId, broker_id: brokerId, role: 'listing', sort_order: 0 })
+  if (buyerBrokerId) brokerRows.push({ listing_id: listingId, broker_id: buyerBrokerId, role: 'buyer', sort_order: 0 })
+  if (brokerRows.length) {
+    const { error } = await db
+      .from('listing_brokers')
+      .upsert(brokerRows, { onConflict: 'listing_id,broker_id,role', ignoreDuplicates: true })
+    if (error) console.error('[persistDeal] listing_brokers insert failed', error)
+  }
+
   return { propertyId, brokerId, buyerBrokerId, listingId }
 }
