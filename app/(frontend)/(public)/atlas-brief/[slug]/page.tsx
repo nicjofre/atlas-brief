@@ -35,7 +35,6 @@ export default async function PostPage(
   const listing = article.listing
   const property = listing?.property
   const takeaways = (article.takeaways as Takeaway[] | null) ?? []
-  const toc = extractTOCFromHtml(article.body_html)
 
   const sectionLabel =
     article.section_slug === 'broker-activity' ? 'Broker Activity' : article.section_slug
@@ -57,6 +56,14 @@ export default async function PostPage(
   // into body_html). Grouped + labeled so teams and dual-agency render
   // faithfully. Falls back to the FK columns for any listing not yet backfilled.
   const brokerGroups = buildBrokerGroups(listing, supabase)
+
+  // Strip the legacy broker content from the body ONLY when the card has brokers
+  // to show in its place. If the card would be empty (a listing with no broker
+  // records yet), keep the body section so the broker isn't lost — it just shows
+  // in the old form until its data is transferred. Build the TOC from whatever
+  // body we actually render, so it never links a removed section.
+  const cleanBody = brokerGroups.length > 0 ? stripBrokersBlock(article.body_html) : (article.body_html ?? '')
+  const toc = extractTOCFromHtml(cleanBody)
 
   return (
     <>
@@ -167,7 +174,7 @@ export default async function PostPage(
 
             <article
               className="prose"
-              dangerouslySetInnerHTML={{ __html: stripBrokersBlock(article.body_html) }}
+              dangerouslySetInnerHTML={{ __html: cleanBody }}
             />
           </div>
         </div>
