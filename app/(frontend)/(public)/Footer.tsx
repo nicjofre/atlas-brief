@@ -7,6 +7,9 @@ import Link from 'next/link'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/david-safai-b7622113b/'
 const X_URL = '' // Atlas Brief handle — paste to enable once the account is live
 
+// Contractor license. Swap to the real number once issued, e.g. 'License #1234567'.
+const LICENSE = 'License forthcoming'
+
 export default function Footer() {
   const hasSocial = LINKEDIN_URL || X_URL
   return (
@@ -55,7 +58,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-legal">
-          <span>© MMXXVI Atlas Home Builders, Inc. · CA Class B General Contractor · License # pending being issued</span>
+          <span>© MMXXVI Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>
           <span style={{ fontSize: '0.85em', opacity: 0.7 }}>atlasbrief.la</span>
         </div>
       </div>
