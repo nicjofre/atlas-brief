@@ -19,12 +19,13 @@ type PostRow = {
 type Totals = { total_views: number; unique_readers: number; last7: number }
 type BroadcastRow = { broadcast_id: string; first_seen: string; delivered: number; opens: number; clicks: number }
 type LinkRow = { link: string; clicks: number }
+type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 
 async function loadAnalytics() {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   try {
-    const [posts, totals, broadcasts, links, emailCount] = await Promise.all([
+    const [posts, totals, broadcasts, links, emailCount, emailTotals] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
@@ -56,6 +57,13 @@ async function loadAnalytics() {
         where type = 'clicked' and link is not null
         group by link order by clicks desc limit 30`),
       c.query<{ n: number }>(`select count(*)::int n from email_events`),
+      c.query<EmailTotals>(`
+        select
+          count(*) filter (where type = 'delivered')::int delivered,
+          count(distinct email) filter (where type = 'opened')::int opens,
+          count(distinct email) filter (where type = 'clicked')::int clicks,
+          count(*) filter (where broadcast_id is null)::int untracked
+        from email_events`),
     ])
     return {
       posts: posts.rows,
@@ -63,6 +71,7 @@ async function loadAnalytics() {
       broadcasts: broadcasts.rows,
       links: links.rows,
       hasEmail: (emailCount.rows[0]?.n ?? 0) > 0,
+      emailTotals: emailTotals.rows[0] ?? { delivered: 0, opens: 0, clicks: 0, untracked: 0 },
     }
   } finally {
     await c.end().catch(() => {})
@@ -95,7 +104,7 @@ export default async function AnalyticsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { posts, totals, broadcasts, links, hasEmail } = await loadAnalytics()
+  const { posts, totals, broadcasts, links, hasEmail, emailTotals } = await loadAnalytics()
 
   return (
     <>
@@ -158,6 +167,21 @@ export default async function AnalyticsPage() {
           </div>
         ) : (
           <>
+            {/* Email top-line — counts every event, including one-off test sends
+                that have no broadcast_id and so never reach the table below. */}
+            <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+              <Stat label="Delivered" value={emailTotals.delivered.toLocaleString()} />
+              <Stat label="Opens" value={emailTotals.opens.toLocaleString()} />
+              <Stat label="Clicks" value={emailTotals.clicks.toLocaleString()} />
+            </div>
+
+            {broadcasts.length === 0 ? (
+              <p style={{ color: '#999', fontSize: 14, marginBottom: 24 }}>
+                No full dispatches sent yet — the per-dispatch breakdown fills in once you
+                <b> Send now</b> or <b>Schedule</b> a dispatch. Test sends are counted in the totals
+                above but aren&rsquo;t broken out here.
+              </p>
+            ) : (
             <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden', marginBottom: 24 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -186,6 +210,7 @@ export default async function AnalyticsPage() {
                 </tbody>
               </table>
             </div>
+            )}
             {links.length > 0 && (
               <>
                 <h3 style={{ fontSize: 14, color: '#666', margin: '0 0 8px' }}>Most-clicked deals</h3>
