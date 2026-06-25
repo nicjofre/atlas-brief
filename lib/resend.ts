@@ -37,10 +37,15 @@ type SyncResult =
  * upserts contacts by email within an audience. Returns the contact id so the
  * caller can persist it back onto the subscribers row.
  */
-export async function syncContactToResend(email: string): Promise<SyncResult> {
+export async function syncContactToResend(
+  email: string,
+  opts: { firstName?: string | null; lastName?: string | null } = {}
+): Promise<SyncResult> {
   if (!resendConfigured()) return { ok: false, skipped: true }
 
   const audienceId = resendAudienceId()
+  const firstName = opts.firstName?.trim()
+  const lastName = opts.lastName?.trim()
   try {
     const res = await fetch(`${RESEND_API}/audiences/${audienceId}/contacts`, {
       method: 'POST',
@@ -48,7 +53,14 @@ export async function syncContactToResend(email: string): Promise<SyncResult> {
         Authorization: `Bearer ${resendKey()}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, unsubscribed: false }),
+      // Resend natively carries email + first/last name only; role lives in
+      // Supabase. first_name is included when the subscriber provided it.
+      body: JSON.stringify({
+        email,
+        unsubscribed: false,
+        ...(firstName ? { first_name: firstName } : {}),
+        ...(lastName ? { last_name: lastName } : {}),
+      }),
     })
 
     const data = (await res.json().catch(() => ({}))) as {

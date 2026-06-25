@@ -15,11 +15,28 @@ export const runtime = 'nodejs'
 // is delivery itself; this only catches obvious typos/garbage before storage.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// Optional profile collected by the signup pop-up. Role is constrained to a
+// known set so it stays clean for segmentation; anything else is dropped.
+const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
+
+function cleanText(v: unknown, max: number): string | null {
+  if (typeof v !== 'string') return null
+  const s = v.trim().slice(0, max)
+  return s.length > 0 ? s : null
+}
+
 export async function POST(req: Request) {
   let email: string
+  let firstName: string | null = null
+  let lastName: string | null = null
+  let role: string | null = null
   try {
     const body = await req.json()
     email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+    firstName = cleanText(body?.first_name, 80)
+    lastName = cleanText(body?.last_name, 80)
+    const r = cleanText(body?.role, 40)
+    role = r && ROLES.includes(r) ? r : null
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
@@ -27,6 +44,16 @@ export async function POST(req: Request) {
   if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
     return NextResponse.json(
       { error: 'Please enter a valid email address.' },
+      { status: 400 }
+    )
+  }
+
+  // First + last name are required (the signup pop-up enforces this; the API
+  // guards it too so direct posts can't create nameless rows). Role stays
+  // optional.
+  if (!firstName || !lastName) {
+    return NextResponse.json(
+      { error: 'Please enter your first and last name.' },
       { status: 400 }
     )
   }
@@ -42,7 +69,7 @@ export async function POST(req: Request) {
   // revealing whether an address is already on the list.
   const { error } = await supabase
     .from('subscribers')
-    .insert({ email, status: 'subscribed', source: 'home_dispatch_form' })
+    .insert({ email, status: 'subscribed', source: 'home_dispatch_form', first_name: firstName, last_name: lastName, role })
 
   if (error && error.code !== '23505') {
     console.error('[subscribe] insert failed', error)
@@ -55,7 +82,7 @@ export async function POST(req: Request) {
   // Mirror into Resend (no-op until the key is configured). We don't fail the
   // signup if the mirror errors — the Supabase row is the durable record and
   // can be back-synced later.
-  const sync = await syncContactToResend(email)
+  const sync = await syncContactToResend(email, { firstName, lastName })
   if (sync.ok === false && !sync.skipped) {
     console.error('[subscribe] resend sync failed', sync.error)
   }

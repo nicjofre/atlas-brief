@@ -973,3 +973,62 @@
   padding: 4px 10px !important;
   letter-spacing: 0.18em !important;
 }
+
+/* Signup pop-up — collects optional first name + role, completes the signup. */
+.tm-modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 10, 10, 0.45); padding: 20px;
+}
+.tm-modal {
+  position: relative; width: 100%; max-width: 420px;
+  background: var(--bg); border: 1px solid var(--ink);
+  padding: 34px 30px 26px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+.tm-modal-x {
+  position: absolute; top: 10px; right: 14px;
+  background: none; border: 0; font-size: 24px; line-height: 1;
+  color: var(--muted); cursor: pointer;
+}
+.tm-modal-x:hover { color: var(--ink); }
+.tm-modal-kicker {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+}
+.tm-modal-title {
+  font-family: var(--serif); font-weight: 500; font-size: 26px; line-height: 1.1;
+  letter-spacing: -0.02em; color: var(--ink); margin: 0 0 10px;
+}
+.tm-modal-sub {
+  font-family: var(--serif); font-size: 15px; line-height: 1.5;
+  color: var(--ink-soft); margin: 0 0 22px;
+}
+.tm-modal-sub b { color: var(--ink); }
+.tm-modal-field { display: block; margin-bottom: 16px; }
+.tm-modal-field span {
+  display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+}
+.tm-modal-field input, .tm-modal-field select {
+  width: 100%; box-sizing: border-box; padding: 11px 12px;
+  font-family: var(--serif); font-size: 16px; color: var(--ink);
+  background: var(--bg-alt); border: 1px solid var(--rule); border-radius: 0;
+}
+.tm-modal-field input:focus, .tm-modal-field select:focus { outline: none; border-color: var(--accent); }
+.tm-modal-err { font-family: var(--mono); font-size: 11px; color: #c0392b; margin: 0 0 12px; }
+.tm-modal-submit {
+  width: 100%; padding: 13px; margin-top: 6px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: var(--ink); color: var(--bg); border: 1px solid var(--ink); cursor: pointer;
+}
+.tm-modal-submit:hover { background: transparent; color: var(--ink); }
+.tm-modal-submit:disabled { opacity: 0.6; cursor: default; }
+.tm-modal-skip {
+  display: block; width: 100%; margin-top: 10px; padding: 4px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline;
+}
+.tm-modal-skip:hover { color: var(--ink); }
+.tm-modal-row { display: flex; gap: 12px; }
+.tm-modal-row .tm-modal-field { flex: 1 1 0; min-width: 0; }
+@media (max-width: 420px) { .tm-modal-row { flex-direction: column; gap: 0; } }

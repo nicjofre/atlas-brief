@@ -1018,8 +1018,11 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          first_name: string | null
           id: string
+          last_name: string | null
           resend_contact_id: string | null
+          role: string | null
           source: string | null
           status: string
           unsubscribed_at: string | null
@@ -1028,8 +1031,11 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           resend_contact_id?: string | null
+          role?: string | null
           source?: string | null
           status?: string
           unsubscribed_at?: string | null
@@ -1038,8 +1044,11 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           resend_contact_id?: string | null
+          role?: string | null
           source?: string | null
           status?: string
           unsubscribed_at?: string | null
