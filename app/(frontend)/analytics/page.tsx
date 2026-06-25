@@ -1,7 +1,14 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Client } from 'pg'
 import { createClient } from '@/lib/supabase/server'
 import InternalNav from '@/app/InternalNav'
+
+const TABS = [
+  { id: 'posts', label: 'By post' },
+  { id: 'dispatch', label: 'Dispatch engagement' },
+] as const
+type TabId = (typeof TABS)[number]['id']
 
 export const dynamic = 'force-dynamic'
 
@@ -96,10 +103,17 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   )
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const sp = await searchParams
+  const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
 
   const { posts, totals, broadcasts, links, hasEmail, emailTotals } = await loadAnalytics()
 
@@ -109,6 +123,30 @@ export default async function AnalyticsPage() {
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px', fontFamily: 'Georgia, serif' }}>
         <h1 style={{ fontSize: 28, margin: 0 }}>Analytics</h1>
 
+        {/* tab bar */}
+        <div style={{ display: 'flex', gap: 0, marginTop: 24, marginBottom: 8, borderBottom: '1px solid #ddd', flexWrap: 'wrap' }}>
+          {TABS.map(t => (
+            <Link
+              key={t.id}
+              href={`/analytics?tab=${t.id}`}
+              style={{
+                padding: '10px 20px',
+                fontSize: 11,
+                letterSpacing: 2,
+                textTransform: 'uppercase',
+                color: tab === t.id ? '#111' : '#999',
+                textDecoration: 'none',
+                borderBottom: tab === t.id ? '2px solid #111' : '2px solid transparent',
+                marginBottom: -1,
+              }}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+
+        {tab === 'posts' && (
+        <>
         {/* Reader top-line */}
         <div style={{ display: 'flex', gap: 16, marginTop: 20, flexWrap: 'wrap' }}>
           <Stat label="Total reads" value={totals.total_views.toLocaleString()} />
@@ -155,8 +193,13 @@ export default async function AnalyticsPage() {
           </div>
         )}
 
+        </>
+        )}
+
+        {tab === 'dispatch' && (
+        <>
         {/* Email engagement */}
-        <h2 style={{ fontSize: 18, marginTop: 36, marginBottom: 8 }}>Dispatch engagement</h2>
+        <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Dispatch engagement</h2>
         {!hasEmail ? (
           <div style={{ background: '#FBF6EC', border: '1px solid #EADFC8', borderRadius: 8, padding: 16, fontSize: 14, color: '#555' }}>
             No email engagement yet. This fills in once the <b>Resend webhook</b> is connected (in Resend: Webhooks → add{' '}
@@ -226,6 +269,8 @@ export default async function AnalyticsPage() {
               </>
             )}
           </>
+        )}
+        </>
         )}
       </div>
     </>
