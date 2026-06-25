@@ -8,9 +8,6 @@ import HeroPhotoEditor from './HeroPhotoEditor'
 
 export type AIDraftShape = {
   gaps?: string[]
-  tier_recommendation?: { tier: 1 | 2 | 3; reason: string }
-  tape_1?: { text: string }
-  tape_2?: { headline: string; deck: string; body_html: string }
   tape_3?: {
     headline: string
     deck: string
@@ -31,7 +28,6 @@ export default function ArticleEditor({
   articleId,
   slug: initialSlug,
   status,
-  tapeTier: initialTier,
   aiDraft,
   articleHeroPhotoUrl,
   listingHeroPhotoUrl,
@@ -42,7 +38,6 @@ export default function ArticleEditor({
   articleId: string
   slug: string
   status: string
-  tapeTier: number
   aiDraft: AIDraftShape | null
   articleHeroPhotoUrl: string | null
   listingHeroPhotoUrl: string | null
@@ -54,7 +49,6 @@ export default function ArticleEditor({
   const supabase = createClient()
 
   const [draft, setDraft] = useState<AIDraftShape>(aiDraft ?? {})
-  const [tier, setTier] = useState<1 | 2 | 3>(initialTier as 1 | 2 | 3)
   const [slug, setSlug] = useState(initialSlug)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
@@ -74,10 +68,9 @@ export default function ArticleEditor({
         .from('articles')
         .update({
           ai_draft: clean as unknown as never,
-          tape_tier: tier,
           slug,
-          headline: pickHeadline(clean, tier),
-          deck: pickDeck(clean, tier),
+          headline: clean.tape_3?.headline ?? '[ATLAS HEADLINE]',
+          deck: clean.tape_3?.deck ?? null,
         })
         .eq('id', articleId)
       if (updErr) throw new Error(updErr.message)
@@ -91,13 +84,13 @@ export default function ArticleEditor({
     }
   }
 
-  // Final AI read-through over the active tier's content (including unsaved
-  // edits). Advisory only — it surfaces potential issues, never blocks publish.
+  // Final AI read-through over the article content (including unsaved edits).
+  // Advisory only — it surfaces potential issues, never blocks publish.
   async function runProofread() {
     setProofreading(true)
     setProofErr(null)
     try {
-      const cols = projectTapeToColumns(sanitizeDraft(draft), tier)
+      const cols = projectTapeToColumns(sanitizeDraft(draft))
       const res = await fetch(`/api/articles/${articleId}/proofread`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,13 +116,12 @@ export default function ArticleEditor({
     setError(null)
     try {
       const clean = sanitizeDraft(draft)
-      const fields = projectTapeToColumns(clean, tier)
+      const fields = projectTapeToColumns(clean)
       const { error: updErr } = await supabase
         .from('articles')
         .update({
           ...fields,
           ai_draft: clean as unknown as never,
-          tape_tier: tier,
           slug,
           status: 'published',
           published_at: new Date().toISOString(),
@@ -185,35 +177,11 @@ export default function ArticleEditor({
       <style dangerouslySetInnerHTML={{ __html: proseRuleStyles }} />
       {/* Main visual editor */}
       <div>
-        {/* Tape tier tabs */}
+        {/* Editor heading */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '8px 12px', background: '#fff', border: '1px solid #e5e5e5', borderRadius: 4 }}>
-          {[1, 2, 3].map(t => {
-            const active = tier === t
-            const isRec = draft.tier_recommendation?.tier === t
-            return (
-              <button
-                key={t}
-                onClick={() => setTier(t as 1 | 2 | 3)}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 11,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  background: active ? '#111' : 'transparent',
-                  color: active ? '#fff' : '#666',
-                  border: active ? '1px solid #111' : '1px solid transparent',
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                Tape {t}
-                {isRec && <span style={{ fontSize: 9, color: active ? '#FFE4B0' : '#9A6B3F' }}>★</span>}
-              </button>
-            )
-          })}
+          <span style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#111' }}>
+            Article draft
+          </span>
           <div style={{ flex: 1 }} />
           <span style={{ fontSize: 10, letterSpacing: 1, color: '#888' }}>
             Click any text to edit
@@ -222,33 +190,16 @@ export default function ArticleEditor({
 
         {/* Visual surface — loads atlas-v2.css to match the rendered post */}
         <div className="atlas-editor-surface">
-          {tier === 1 && (
-            <Tape1Surface
-              tape={draft.tape_1 ?? { text: '' }}
-              onChange={t => setDraft(d => ({ ...d, tape_1: t }))}
-            />
-          )}
-          {tier === 2 && (
-            <Tape2Surface
-              tape={draft.tape_2 ?? { headline: '', deck: '', body_html: '' }}
-              onChange={t => setDraft(d => ({ ...d, tape_2: t }))}
-              listingAddress={listingAddress}
-              listingCity={listingCity}
-              listingState={listingState}
-            />
-          )}
-          {tier === 3 && (
-            <Tape3Surface
-              tape={draft.tape_3 ?? blankTape3()}
-              onChange={t => setDraft(d => ({ ...d, tape_3: t }))}
-              articleId={articleId}
-              listingAddress={listingAddress}
-              listingCity={listingCity}
-              listingState={listingState}
-              articleHeroPhotoUrl={articleHeroPhotoUrl}
-              listingHeroPhotoUrl={listingHeroPhotoUrl}
-            />
-          )}
+          <Tape3Surface
+            tape={draft.tape_3 ?? blankTape3()}
+            onChange={t => setDraft(d => ({ ...d, tape_3: t }))}
+            articleId={articleId}
+            listingAddress={listingAddress}
+            listingCity={listingCity}
+            listingState={listingState}
+            articleHeroPhotoUrl={articleHeroPhotoUrl}
+            listingHeroPhotoUrl={listingHeroPhotoUrl}
+          />
         </div>
 
         {/* Sticky action bar */}
@@ -270,7 +221,7 @@ export default function ArticleEditor({
           }}
         >
           <span style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#999' }}>
-            Tape {tier} · /atlas-brief/
+            /atlas-brief/
           </span>
           {editingSlug ? (
             <input
@@ -374,69 +325,6 @@ export default function ArticleEditor({
 // ============================================================================
 // Tape surfaces — each renders the actual post structure with editable nodes
 // ============================================================================
-
-function Tape1Surface({ tape, onChange }: { tape: { text: string }; onChange: (t: { text: string }) => void }) {
-  return (
-    <div
-      style={{
-        padding: 32,
-        background: '#FFF4E3',
-        border: '1px solid #D6CBB3',
-        borderRadius: 4,
-        fontFamily: '"Newsreader", Georgia, serif',
-        fontSize: 19,
-        lineHeight: 1.55,
-        color: '#1F1F1D',
-      }}
-    >
-      <div style={{ fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#8B5A2B', marginBottom: 16 }}>
-        Tape 1 · One-liner
-      </div>
-      <EditableText
-        value={tape.text}
-        onChange={v => onChange({ text: v })}
-        multiline
-        placeholder="[STATUS] · Address — N units · ... Atlas read: ..."
-        style={{ display: 'block', minHeight: 80, whiteSpace: 'pre-wrap' }}
-      />
-    </div>
-  )
-}
-
-function Tape2Surface({
-  tape,
-  onChange,
-  listingAddress,
-  listingCity,
-  listingState,
-}: {
-  tape: { headline: string; deck: string; body_html: string }
-  onChange: (t: { headline: string; deck: string; body_html: string }) => void
-  listingAddress: string | null
-  listingCity: string | null
-  listingState: string | null
-}) {
-  return (
-    <div style={postSurfaceStyle}>
-      <div style={topMetaStyle}>
-        <span>{listingAddress ?? '—'} · {[listingCity, listingState].filter(Boolean).join(', ')}</span>
-      </div>
-      <h1 style={headlineStyle}>
-        <EditableText value={tape.headline} onChange={v => onChange({ ...tape, headline: v })} placeholder="[ATLAS HEADLINE]" />
-      </h1>
-      <p style={deckStyle}>
-        <EditableText value={tape.deck} onChange={v => onChange({ ...tape, deck: v })} multiline placeholder="One-sentence deck" />
-      </p>
-      <hr style={hrStyle} />
-      <EditableHTML
-        value={tape.body_html}
-        onChange={v => onChange({ ...tape, body_html: v })}
-        style={proseStyle}
-        placeholder="<p>Body paragraphs…</p>"
-      />
-    </div>
-  )
-}
 
 function Tape3Surface({
   tape,
@@ -977,7 +865,7 @@ function EditableHTML({
   const ref = useRef<HTMLDivElement>(null)
   const [focused, setFocused] = useState(false)
 
-  // Hydrate the editor from the current value when it differs (e.g. tier switch).
+  // Hydrate the editor from the current value when it differs.
   useEffect(() => {
     if (ref.current && !focused && ref.current.innerHTML !== value) {
       ref.current.innerHTML = value || `<p style="color:#999;font-style:italic;">${placeholder}</p>`
@@ -1249,15 +1137,6 @@ const hrStyle: React.CSSProperties = {
   margin: '0 0 24px',
 }
 
-const topMetaStyle: React.CSSProperties = {
-  fontFamily: 'ui-monospace, Menlo, monospace',
-  fontSize: 10,
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: '#4F4F4B',
-  marginBottom: 16,
-}
-
 function actionButtonStyle(variant: 'primary' | 'ghost' | 'disabled', busy: boolean): React.CSSProperties {
   const base: React.CSSProperties = {
     padding: '8px 18px',
@@ -1278,9 +1157,6 @@ function actionButtonStyle(variant: 'primary' | 'ghost' | 'disabled', busy: bool
 // styles and unknown class names before it hits the database.
 function sanitizeDraft(d: AIDraftShape): AIDraftShape {
   const next: AIDraftShape = { ...d }
-  if (next.tape_2) {
-    next.tape_2 = { ...next.tape_2, body_html: sanitizeBodyHtml(next.tape_2.body_html) }
-  }
   if (next.tape_3) {
     next.tape_3 = {
       ...next.tape_3,
@@ -1306,59 +1182,19 @@ function blankTape3(): NonNullable<AIDraftShape['tape_3']> {
   }
 }
 
-function pickHeadline(d: AIDraftShape, tier: 1 | 2 | 3): string {
-  if (tier === 3) return d.tape_3?.headline ?? '[ATLAS HEADLINE]'
-  if (tier === 2) return d.tape_2?.headline ?? '[ATLAS HEADLINE]'
-  return d.tape_1?.text?.split('\n')[0]?.slice(0, 200) ?? '[ATLAS HEADLINE]'
-}
-
-function pickDeck(d: AIDraftShape, tier: 1 | 2 | 3): string | null {
-  if (tier === 3) return d.tape_3?.deck ?? null
-  if (tier === 2) return d.tape_2?.deck ?? null
-  return null
-}
-
-function projectTapeToColumns(d: AIDraftShape, tier: 1 | 2 | 3) {
-  if (tier === 3 && d.tape_3) {
-    const t = d.tape_3
-    return {
-      headline: t.headline,
-      deck: t.deck,
-      excerpt: t.deck,
-      status_tag: t.status_tag,
-      hero_caption: t.hero_caption,
-      takeaways_subhead: t.takeaways_subhead,
-      takeaways: t.takeaways as unknown as never,
-      deal_stats_html: t.deal_stats_html,
-      body_html: t.body_html,
-      byline_html: t.byline_html,
-    }
-  }
-  if (tier === 2 && d.tape_2) {
-    return {
-      headline: d.tape_2.headline,
-      deck: d.tape_2.deck,
-      excerpt: d.tape_2.deck,
-      body_html: d.tape_2.body_html,
-      status_tag: null,
-      hero_caption: null,
-      takeaways_subhead: null,
-      takeaways: null,
-      deal_stats_html: null,
-      byline_html: null,
-    }
-  }
+function projectTapeToColumns(d: AIDraftShape) {
+  const t = d.tape_3 ?? blankTape3()
   return {
-    headline: d.tape_1?.text?.split('\n')[0]?.slice(0, 200) ?? '[ATLAS HEADLINE]',
-    deck: null,
-    excerpt: d.tape_1?.text ?? null,
-    body_html: `<p>${(d.tape_1?.text ?? '').replace(/\n/g, '</p><p>')}</p>`,
-    status_tag: null,
-    hero_caption: null,
-    takeaways_subhead: null,
-    takeaways: null,
-    deal_stats_html: null,
-    byline_html: null,
+    headline: t.headline || '[ATLAS HEADLINE]',
+    deck: t.deck,
+    excerpt: t.deck,
+    status_tag: t.status_tag,
+    hero_caption: t.hero_caption,
+    takeaways_subhead: t.takeaways_subhead,
+    takeaways: t.takeaways as unknown as never,
+    deal_stats_html: t.deal_stats_html,
+    body_html: t.body_html,
+    byline_html: t.byline_html,
   }
 }
 

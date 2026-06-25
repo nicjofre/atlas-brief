@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 
 type Version = { body: string; at: string; by: string | null }
 
-export type Surface = 'shared' | 'tape_1' | 'tape_2' | 'tape_3' | 'broker_email' | 'system'
+export type Surface = 'shared' | 'tape_3' | 'broker_email' | 'system'
 
 export type Prompt = {
   id: string
@@ -21,10 +21,8 @@ export type Prompt = {
 
 // Display order + labels for sidebar grouping. System is last and toggled.
 const SURFACE_GROUPS: { surface: Surface; label: string; tagline: string }[] = [
-  { surface: 'shared', label: 'Shared', tagline: 'Voice and rules that apply to every tape' },
-  { surface: 'tape_1', label: 'Tape 1', tagline: 'One-liner — 50 words' },
-  { surface: 'tape_2', label: 'Tape 2', tagline: 'Short — 250 words' },
-  { surface: 'tape_3', label: 'Tape 3', tagline: 'Full brief — 1,000-1,200 words' },
+  { surface: 'shared', label: 'Shared', tagline: 'Voice and rules that apply to every article' },
+  { surface: 'tape_3', label: 'Article', tagline: 'Full brief — 1,000-1,200 words' },
   { surface: 'broker_email', label: 'Broker email', tagline: 'Outreach template (CRM)' },
   { surface: 'system', label: 'System', tagline: 'Structural — editing can break the editor' },
 ]

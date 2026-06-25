@@ -14,7 +14,7 @@ export const maxDuration = 300
 const OUTPUT_FORMAT_PROMPT = `
 ## [output_format]
 
-You will be asked to call a specific tool (emit_tape_1, emit_tape_2, emit_tape_3, or emit_meta) for each slice of the article. The tool input_schema enforces structure. This section documents the semantic conventions that apply inside string values.
+You will be asked to call a specific tool (emit_tape_3 or emit_meta) for each slice of the article. The tool input_schema enforces structure. This section documents the semantic conventions that apply inside string values.
 
 CRITICAL conventions:
 - HTML strings should use the same class names David's prototype uses: .table-fig, .speculation, <h2 id="kebab-case"> for body sections.
@@ -42,43 +42,10 @@ CRITICAL conventions:
 // matching the input_schema, which eliminates the class of bugs where HTML
 // quotes inside body_html broke JSON.parse on raw text output.
 //
-// All 4 tools are declared on every call so the tool list (and therefore the
+// Both tools are declared on every call so the tool list (and therefore the
 // prompt-cache prefix) is identical across the parallel calls; tool_choice
 // picks which one the model must use for each slice.
 const SLICE_TOOLS: Anthropic.Tool[] = [
-  {
-    name: 'emit_tape_1',
-    description: 'Emit the Tape 1 slice — the 50-word one-liner per tape_1_template.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        text: {
-          type: 'string',
-          description: 'The full Tape 1 one-liner, including the Atlas read line.',
-        },
-      },
-      required: ['text'],
-    },
-  },
-  {
-    name: 'emit_tape_2',
-    description: 'Emit the Tape 2 slice — the 250-word short per tape_2_template.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        headline: {
-          type: 'string',
-          description: '"[ATLAS HEADLINE]" if David should fill, else actual text.',
-        },
-        deck: { type: 'string' },
-        body_html: {
-          type: 'string',
-          description: '<p>...</p> markup. No headings needed at this tier.',
-        },
-      },
-      required: ['headline', 'deck', 'body_html'],
-    },
-  },
   {
     name: 'emit_tape_3',
     description: 'Emit the Tape 3 slice — the 1,000-1,200 word brief per tape_3_template.',
@@ -139,19 +106,11 @@ const SLICE_TOOLS: Anthropic.Tool[] = [
   {
     name: 'emit_meta',
     description:
-      'Emit the meta slice — gaps, tier recommendation, David-reaction angles, and broker outreach email.',
+      'Emit the meta slice — gaps, David-reaction angles, and broker outreach email.',
     input_schema: {
       type: 'object',
       properties: {
         gaps: { type: 'array', items: { type: 'string' } },
-        tier_recommendation: {
-          type: 'object',
-          properties: {
-            tier: { type: 'integer', enum: [1, 2, 3] },
-            reason: { type: 'string' },
-          },
-          required: ['tier', 'reason'],
-        },
         angles: {
           type: 'array',
           description: '3-5 pointed questions per the output_format spec.',
@@ -162,17 +121,14 @@ const SLICE_TOOLS: Anthropic.Tool[] = [
           description: 'Per the broker_outreach_email prompt.',
         },
       },
-      required: ['gaps', 'tier_recommendation', 'angles', 'broker_outreach_email'],
+      required: ['gaps', 'angles', 'broker_outreach_email'],
     },
   },
 ]
 
 type AIDraft = {
   gaps: string[]
-  tier_recommendation: { tier: 1 | 2 | 3; reason: string }
   angles: string[]
-  tape_1: { text: string }
-  tape_2: { headline: string; deck: string; body_html: string }
   tape_3: {
     headline: string
     deck: string
@@ -370,14 +326,14 @@ ${listingJson}
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-  // Fire 4 parallel calls instead of one giant sequential call. Each call
-  // produces a smaller slice; we recombine into the AIDraft shape after they
-  // all return. Wall time = max(4 calls) instead of sum(4 slices).
+  // Fire both slices in parallel instead of one giant sequential call. Each
+  // call produces a smaller slice; we recombine into the AIDraft shape after
+  // they return. Wall time = max(2 calls) instead of sum(2 slices).
   //
   // tool_use forces the model to emit valid JSON matching SLICE_TOOLS'
   // input_schema, which means body_html with HTML quotes can't break parsing.
   // The full SLICE_TOOLS list goes on every call (so the cache prefix matches
-  // across all 4) and tool_choice picks which one the model must use.
+  // across both) and tool_choice picks which one the model must use.
   // System prompt is marked for ephemeral caching so the parallel calls share
   // a cache write within the 5-minute TTL.
   async function callSlice(toolName: string, instruction: string, maxTokens: number): Promise<unknown> {
@@ -402,19 +358,9 @@ ${listingJson}
     return toolUse.input
   }
 
-  let tape1Raw: unknown, tape2Raw: unknown, tape3Raw: unknown, metaRaw: unknown
+  let tape3Raw: unknown, metaRaw: unknown
   try {
-    [tape1Raw, tape2Raw, tape3Raw, metaRaw] = await Promise.all([
-      callSlice(
-        'emit_tape_1',
-        'Call the emit_tape_1 tool with the 50-word one-liner per the tape_1_template.',
-        1024
-      ),
-      callSlice(
-        'emit_tape_2',
-        'Call the emit_tape_2 tool with the 250-word short per the tape_2_template.',
-        2048
-      ),
+    [tape3Raw, metaRaw] = await Promise.all([
       callSlice(
         'emit_tape_3',
         'Call the emit_tape_3 tool with the 1,000-1,200 word brief per the tape_3_template.',
@@ -422,7 +368,7 @@ ${listingJson}
       ),
       callSlice(
         'emit_meta',
-        'Call the emit_meta tool. angles are 3-5 pointed questions per the output_format spec. Do NOT emit any tape_N content here.',
+        'Call the emit_meta tool. angles are 3-5 pointed questions per the output_format spec. Do NOT emit any tape content here.',
         2048
       ),
     ])
@@ -433,22 +379,16 @@ ${listingJson}
     )
   }
 
-  const tape1 = tape1Raw as AIDraft['tape_1']
-  const tape2 = tape2Raw as AIDraft['tape_2']
   const tape3 = tape3Raw as AIDraft['tape_3']
   const meta = metaRaw as {
     gaps: string[]
-    tier_recommendation: AIDraft['tier_recommendation']
     angles: string[]
     broker_outreach_email: string
   }
 
   const parsed: AIDraft = {
     gaps: Array.isArray(meta.gaps) ? meta.gaps : [],
-    tier_recommendation: meta.tier_recommendation,
     angles: Array.isArray(meta.angles) ? meta.angles : [],
-    tape_1: tape1,
-    tape_2: tape2,
     tape_3: tape3,
     broker_outreach_email: meta.broker_outreach_email ?? '',
   }
@@ -484,8 +424,6 @@ ${listingJson}
     .maybeSingle()
   const entry_num = (maxRow?.entry_num ?? 0) + 1
 
-  const recTier = parsed.tier_recommendation?.tier ?? 3
-
   const { data: inserted, error: iErr } = await supabase
     .from('articles')
     .insert({
@@ -493,7 +431,9 @@ ${listingJson}
       slug,
       section_slug: sectionSlug,
       entry_num,
-      tape_tier: recTier,
+      // Only Tape 3 (the full brief) is produced now; the column is retained
+      // for existing rows but every new article is Tape 3.
+      tape_tier: 3,
       status: 'draft',
       headline: parsed.tape_3?.headline ?? '[ATLAS HEADLINE]',
       deck: parsed.tape_3?.deck ?? null,

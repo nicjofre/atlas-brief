@@ -28,7 +28,7 @@ export default async function PromptsAdminPage() {
   }
 
   // Coerce the jsonb version_history into the typed shape the workspace expects.
-  const validSurfaces: Surface[] = ['shared', 'tape_1', 'tape_2', 'tape_3', 'broker_email', 'system']
+  const validSurfaces: Surface[] = ['shared', 'tape_3', 'broker_email', 'system']
   const typed: Prompt[] = (prompts ?? []).map(p => ({
     id: p.id,
     key: p.key,

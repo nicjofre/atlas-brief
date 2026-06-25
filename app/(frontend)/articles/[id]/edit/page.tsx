@@ -138,7 +138,6 @@ export default async function ArticleEditPage(
           articleId={article.id}
           slug={article.slug}
           status={article.status}
-          tapeTier={article.tape_tier ?? 3}
           aiDraft={(article.ai_draft as AIDraftShape | null) ?? null}
           articleHeroPhotoUrl={article.hero_photo_url ?? null}
           listingHeroPhotoUrl={article.listing?.hero_photo_url ?? null}
