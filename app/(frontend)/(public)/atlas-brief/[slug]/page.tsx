@@ -192,16 +192,16 @@ export default async function PostPage(
                 Atlas Home Builders, Inc. is a Los Angeles owner-operator and general contractor. If you are
                 a broker with a listing you want an honest read on, send the OM and the T-12 to{' '}
                 <a
-                  href="mailto:David@AtlasHomePro.com"
+                  href="mailto:David@AtlasBrief.La"
                   style={{ borderBottom: '1px solid var(--accent)', color: 'var(--ink)' }}
                 >
-                  David@AtlasHomePro.com
+                  David@AtlasBrief.La
                 </a>
                 .
               </p>
             </div>
             <div className="btns">
-              <a href="mailto:David@AtlasHomePro.com">Send a Listing</a>
+              <a href="mailto:David@AtlasBrief.La">Send a Listing</a>
               <Link href={`/atlas-brief/sections/${article.section_slug}`}>Back to Board</Link>
             </div>
           </div>
@@ -219,7 +219,7 @@ export default async function PostPage(
           </div>
           <div>
             Los Angeles &middot;{' '}
-            <a href="mailto:David@AtlasHomePro.com">David@AtlasHomePro.com</a>
+            <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
           </div>
         </div>
       </footer>
