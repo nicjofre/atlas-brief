@@ -18,7 +18,7 @@ type PostRow = {
 }
 type Totals = { total_views: number; unique_readers: number; last7: number }
 type BroadcastRow = { broadcast_id: string; first_seen: string; delivered: number; opens: number; clicks: number }
-type LinkRow = { link: string; clicks: number }
+type LinkRow = { deal: string; clicks: number }
 type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 
 async function loadAnalytics() {
@@ -53,9 +53,11 @@ async function loadAnalytics() {
         from email_events where broadcast_id is not null
         group by broadcast_id order by min(created_at) desc limit 50`),
       c.query<LinkRow>(`
-        select link, count(*)::int clicks from email_events
+        select coalesce(substring(link from '/atlas-brief/([a-z0-9-]+)'), link) as deal,
+          count(*)::int clicks
+        from email_events
         where type = 'clicked' and link is not null
-        group by link order by clicks desc limit 30`),
+        group by deal order by clicks desc limit 30`),
       c.query<{ n: number }>(`select count(*)::int n from email_events`),
       c.query<EmailTotals>(`
         select
@@ -76,11 +78,6 @@ async function loadAnalytics() {
   } finally {
     await c.end().catch(() => {})
   }
-}
-
-function dealFromLink(link: string): string {
-  const m = link.match(/\/atlas-brief\/([a-z0-9-]+)/i)
-  return m ? m[1] : link
 }
 
 const TH: React.CSSProperties = {
@@ -218,8 +215,8 @@ export default async function AnalyticsPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
                       {links.map((l) => (
-                        <tr key={l.link}>
-                          <td style={TD}>{dealFromLink(l.link)}</td>
+                        <tr key={l.deal}>
+                          <td style={TD}>{l.deal}</td>
                           <td style={NUM}>{l.clicks}</td>
                         </tr>
                       ))}
