@@ -4,8 +4,8 @@ import Link from 'next/link'
 // hides that icon (so nothing broken ships before the accounts exist).
 //   LinkedIn: David's personal profile (Atlas Brief is his editorial voice)
 //   X:        the Atlas Brief account being set up
-const LINKEDIN_URL = '' // e.g. 'https://www.linkedin.com/in/davidsafai'
-const X_URL = '' //        e.g. 'https://x.com/atlasbrief'
+const LINKEDIN_URL = 'https://www.linkedin.com/in/david-safai-b7622113b/'
+const X_URL = '' // Atlas Brief handle — paste to enable once the account is live
 
 export default function Footer() {
   const hasSocial = LINKEDIN_URL || X_URL
