@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
+import TrackView from './TrackView'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -67,6 +68,7 @@ export default async function PostPage(
 
   return (
     <>
+      <TrackView slug={article.slug} />
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">

@@ -42,7 +42,8 @@ export function buildRoundupDeal(
     deck: article.deck,
     heroUrl: opts.heroUrl,
     brokerTag: brokerTag(article),
-    articleUrl: articleUrl(article.slug),
+    // ?ref=dispatch lets the reader-analytics beacon attribute the read to email.
+    articleUrl: `${articleUrl(article.slug)}?ref=dispatch`,
   }
 }
 

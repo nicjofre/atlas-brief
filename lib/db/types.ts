@@ -1014,6 +1014,69 @@ export type Database = {
         }
         Relationships: []
       }
+      post_views: {
+        Row: {
+          article_id: string | null
+          id: string
+          referrer: string | null
+          slug: string
+          source: string | null
+          viewed_at: string
+          visitor_hash: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          id?: string
+          referrer?: string | null
+          slug: string
+          source?: string | null
+          viewed_at?: string
+          visitor_hash?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          id?: string
+          referrer?: string | null
+          slug?: string
+          source?: string | null
+          viewed_at?: string
+          visitor_hash?: string | null
+        }
+        Relationships: []
+      }
+      email_events: {
+        Row: {
+          broadcast_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          link: string | null
+          raw: Json | null
+          resend_email_id: string | null
+          type: string
+        }
+        Insert: {
+          broadcast_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          link?: string | null
+          raw?: Json | null
+          resend_email_id?: string | null
+          type: string
+        }
+        Update: {
+          broadcast_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          link?: string | null
+          raw?: Json | null
+          resend_email_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
