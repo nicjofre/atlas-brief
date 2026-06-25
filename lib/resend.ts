@@ -80,3 +80,83 @@ export async function syncContactToResend(
     }
   }
 }
+
+// ===================================================================
+// Sending the dispatch
+// ===================================================================
+
+// The dispatch sends from the verified atlasbrief.la domain; replies route to
+// David's inbox.
+export const DISPATCH_FROM = 'Atlas Brief <dispatch@atlasbrief.la>'
+export const DISPATCH_REPLY_TO = 'David@atlasbrief.la'
+
+type SendResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: string }
+
+async function resendPost<T>(path: string, body: unknown): Promise<SendResult<T>> {
+  try {
+    const res = await fetch(`${RESEND_API}${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendKey()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      return { ok: false, error: (data.message as string) || `HTTP ${res.status}` }
+    }
+    return { ok: true, data: data as T }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'unknown error' }
+  }
+}
+
+// One-off email (used for the "send a test to me" step). Tokens are NOT filled
+// by Resend here, so the caller substitutes samples before sending.
+export function sendDispatchTest(args: {
+  to: string
+  subject: string
+  html: string
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: [args.to],
+    reply_to: DISPATCH_REPLY_TO,
+    subject: args.subject,
+    html: args.html,
+  })
+}
+
+// Create a broadcast against the configured audience. Keep the live
+// {{{FIRST_NAME}}} / unsubscribe tokens in the html so Resend fills them.
+export function createDispatchBroadcast(args: {
+  subject: string
+  html: string
+  name?: string
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  return resendPost('/broadcasts', {
+    audience_id: resendAudienceId(),
+    from: DISPATCH_FROM,
+    reply_to: DISPATCH_REPLY_TO,
+    subject: args.subject,
+    html: args.html,
+    name: args.name ?? args.subject,
+  })
+}
+
+// Send (or schedule) a created broadcast. scheduledAt accepts an ISO timestamp
+// or Resend's natural language (e.g. "in 1 hour"); omit to send immediately.
+export function sendDispatchBroadcast(
+  broadcastId: string,
+  opts: { scheduledAt?: string } = {}
+): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  return resendPost(`/broadcasts/${broadcastId}/send`, {
+    ...(opts.scheduledAt ? { scheduled_at: opts.scheduledAt } : {}),
+  })
+}

@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import SignOutButton from './SignOutButton'
 
-type NavKey = 'listings' | 'articles' | 'explore' | 'dashboard' | 'prompts' | 'pages'
+type NavKey = 'listings' | 'articles' | 'explore' | 'dashboard' | 'prompts' | 'pages' | 'dispatch'
 
 const ITEMS: { key: NavKey; href: string; label: string }[] = [
   { key: 'listings', href: '/listings', label: 'Database' },
   { key: 'dashboard', href: '/dashboard', label: 'Input' },
   { key: 'explore', href: '/explore', label: 'Explore' },
   { key: 'articles', href: '/articles', label: 'Articles' },
+  { key: 'dispatch', href: '/dispatch', label: 'Dispatch' },
   { key: 'prompts', href: '/admin/prompts', label: 'Prompts' },
   { key: 'pages', href: '/cms', label: 'Pages' },
 ]
