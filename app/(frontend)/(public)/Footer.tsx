@@ -58,7 +58,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-legal">
-          <span>© MMXXVI Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>
+          <span>© MMXXVI Atlas Brief · A publication of Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>
           <span style={{ fontSize: '0.85em', opacity: 0.7 }}>atlasbrief.la</span>
         </div>
       </div>

@@ -213,7 +213,7 @@ export default async function PostPage(
       <footer className="site-footer">
         <div className="wrap">
           <div>
-            &copy; 2026 Atlas Home Builders, Inc. &middot; <Link href="/atlas-brief">Atlas Brief</Link>
+            &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
           </div>
           <div>
             Entry № {String(article.entry_num).padStart(2, '0')} &middot; {sectionLabel} &middot;{' '}
