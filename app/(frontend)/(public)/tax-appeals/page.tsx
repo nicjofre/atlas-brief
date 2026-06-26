@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Footer from '../Footer'
+import WaitlistForm from './WaitlistForm'
 import './tax-appeals.css'
 
 export const metadata: Metadata = {
@@ -7,9 +8,6 @@ export const metadata: Metadata = {
   description:
     'Atlas Tax Appeals — we find over-assessed LA County multifamily and file the property-tax appeal for you, at a fraction of what the big firms charge. Join the waitlist.',
 }
-
-const WAITLIST =
-  'mailto:David@AtlasBrief.La?subject=Tax%20Appeals%20Waitlist&body=Property%20address(es)%3A%0AParcels%2Funits%3A%0AName%3A'
 
 export default function TaxAppealsPage() {
   return (
@@ -28,8 +26,8 @@ export default function TaxAppealsPage() {
             </p>
 
             <p className="tax-price">
-              The big firms take <strong>25–40%</strong>{' '}of your first-year savings.
-              We&rsquo;re building this to cost{' '}<strong>up to a tenth of that.</strong>
+              The big firms take <mark className="tax-mark">25–40% of your first-year savings.</mark>{' '}
+              We&rsquo;re building this to cost <mark className="tax-mark">up to a tenth of that.</mark>
             </p>
 
             <div className="tax-steps">
@@ -39,7 +37,7 @@ export default function TaxAppealsPage() {
             </div>
 
             <div className="tax-cta-row">
-              <a href={WAITLIST} className="tax-btn tax-btn-primary">Join the waitlist</a>
+              <WaitlistForm />
             </div>
             <p className="tax-note">Launching 2026. Join the list to be first in line.</p>
           </div>

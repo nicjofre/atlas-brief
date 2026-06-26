@@ -1119,6 +1119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_appeal_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          property: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          property?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          property?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       articles_active: {
