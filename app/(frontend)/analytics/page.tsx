@@ -8,6 +8,7 @@ const TABS = [
   { id: 'posts', label: 'By post' },
   { id: 'dispatch', label: 'Dispatch engagement' },
   { id: 'waitlist', label: 'Tax waitlist' },
+  { id: 'deals', label: 'Deal submissions' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -29,12 +30,13 @@ type BroadcastRow = { broadcast_id: string; first_seen: string; delivered: numbe
 type LinkRow = { deal: string; clicks: number }
 type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
+type DealRow = { name: string; email: string; deal: string; note: string | null; created_at: string }
 
 async function loadAnalytics() {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   try {
-    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist] = await Promise.all([
+    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist, deals] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
@@ -78,6 +80,9 @@ async function loadAnalytics() {
       c.query<WaitlistRow>(`
         select email, name, property, created_at
         from tax_appeal_waitlist order by created_at desc limit 500`),
+      c.query<DealRow>(`
+        select name, email, deal, note, created_at
+        from deal_submissions order by created_at desc limit 500`),
     ])
     return {
       posts: posts.rows,
@@ -87,6 +92,7 @@ async function loadAnalytics() {
       hasEmail: (emailCount.rows[0]?.n ?? 0) > 0,
       emailTotals: emailTotals.rows[0] ?? { delivered: 0, opens: 0, clicks: 0, untracked: 0 },
       waitlist: waitlist.rows,
+      deals: deals.rows,
     }
   } finally {
     await c.end().catch(() => {})
@@ -121,7 +127,7 @@ export default async function AnalyticsPage({
   const sp = await searchParams
   const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
 
-  const { posts, totals, broadcasts, links, hasEmail, emailTotals, waitlist } = await loadAnalytics()
+  const { posts, totals, broadcasts, links, hasEmail, emailTotals, waitlist, deals } = await loadAnalytics()
 
   return (
     <>
@@ -308,6 +314,48 @@ export default async function AnalyticsPage({
                     <td style={TD}>{w.property || <span style={{ color: '#bbb' }}>—</span>}</td>
                     <td style={{ ...TD, textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#666' }}>
                       {new Date(w.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        </>
+        )}
+
+        {tab === 'deals' && (
+        <>
+        <div style={{ display: 'flex', gap: 16, marginTop: 20, marginBottom: 8, flexWrap: 'wrap' }}>
+          <Stat label="Deals submitted" value={deals.length.toLocaleString()} />
+        </div>
+        <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Submitted deals</h2>
+        {deals.length === 0 ? (
+          <p style={{ color: '#999', fontSize: 14 }}>
+            No deals submitted yet. Deals sent through the header <b>Submit a Deal</b> popup show here.
+          </p>
+        ) : (
+          <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={TH}>From</th>
+                  <th style={TH}>Deal</th>
+                  <th style={TH}>Note</th>
+                  <th style={{ ...TH, textAlign: 'right' }}>Sent</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deals.map((d, i) => (
+                  <tr key={`${d.email}-${i}`}>
+                    <td style={TD}>
+                      <div>{d.name}</div>
+                      <a href={`mailto:${d.email}`} style={{ color: '#9A6B3F', fontSize: 13 }}>{d.email}</a>
+                    </td>
+                    <td style={{ ...TD, maxWidth: 320 }}>{d.deal}</td>
+                    <td style={{ ...TD, color: '#666', fontSize: 13 }}>{d.note || <span style={{ color: '#bbb' }}>—</span>}</td>
+                    <td style={{ ...TD, textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#666' }}>
+                      {new Date(d.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

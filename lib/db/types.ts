@@ -1146,6 +1146,36 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_submissions: {
+        Row: {
+          created_at: string
+          deal: string
+          email: string
+          id: string
+          name: string
+          note: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          deal: string
+          email: string
+          id?: string
+          name: string
+          note?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          deal?: string
+          email?: string
+          id?: string
+          name?: string
+          note?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       articles_active: {
