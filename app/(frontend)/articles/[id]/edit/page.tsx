@@ -42,6 +42,14 @@ export default async function ArticleEditPage(
   }
   if (!article) notFound()
 
+  // Editable guidance for the in-editor headline generator (also tunable in
+  // /admin/prompts). Passed in so the inline prompt editor is populated at once.
+  const { data: headlinePromptRow } = await supabase
+    .from('prompts')
+    .select('body')
+    .eq('key', 'headline_generator')
+    .maybeSingle()
+
   return (
     <PageShell>
       {/* Load David's editorial fonts so the editor preview matches the published post. */}
@@ -139,6 +147,7 @@ export default async function ArticleEditPage(
           slug={article.slug}
           status={article.status}
           aiDraft={(article.ai_draft as AIDraftShape | null) ?? null}
+          headlinePromptDefault={headlinePromptRow?.body ?? ''}
           articleHeroPhotoUrl={article.hero_photo_url ?? null}
           listingHeroPhotoUrl={article.listing?.hero_photo_url ?? null}
           listingAddress={article.listing?.property?.street_address ?? null}

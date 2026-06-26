@@ -29,6 +29,7 @@ export default function ArticleEditor({
   slug: initialSlug,
   status,
   aiDraft,
+  headlinePromptDefault,
   articleHeroPhotoUrl,
   listingHeroPhotoUrl,
   listingAddress,
@@ -39,6 +40,7 @@ export default function ArticleEditor({
   slug: string
   status: string
   aiDraft: AIDraftShape | null
+  headlinePromptDefault: string
   articleHeroPhotoUrl: string | null
   listingHeroPhotoUrl: string | null
   listingAddress: string | null
@@ -58,6 +60,70 @@ export default function ArticleEditor({
   const [proofreading, setProofreading] = useState(false)
   const [findings, setFindings] = useState<ProofFinding[] | null>(null)
   const [proofErr, setProofErr] = useState<string | null>(null)
+
+  // Headline generator: panel open, the editable guidance prompt, generated
+  // options, and status. Prompt seeds from the stored `headline_generator`.
+  const [headlinePanelOpen, setHeadlinePanelOpen] = useState(false)
+  const [headlinePrompt, setHeadlinePrompt] = useState(headlinePromptDefault)
+  const [headlineOptions, setHeadlineOptions] = useState<string[] | null>(null)
+  const [generatingHeadlines, setGeneratingHeadlines] = useState(false)
+  const [headlineErr, setHeadlineErr] = useState<string | null>(null)
+  const [savingHeadlinePrompt, setSavingHeadlinePrompt] = useState(false)
+  const [headlinePromptSavedAt, setHeadlinePromptSavedAt] = useState<number | null>(null)
+
+  function currentArticleCols() {
+    const t = sanitizeDraft(draft).tape_3
+    return {
+      headline: t?.headline ?? '',
+      deck: t?.deck ?? '',
+      body_html: t?.body_html ?? '',
+    }
+  }
+
+  async function generateHeadlines() {
+    setGeneratingHeadlines(true)
+    setHeadlineErr(null)
+    try {
+      const cols = currentArticleCols()
+      const res = await fetch(`/api/articles/${articleId}/headlines`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...cols, prompt: headlinePrompt }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Headline generation failed')
+      setHeadlineOptions(Array.isArray(data.headlines) ? data.headlines : [])
+    } catch (e) {
+      setHeadlineErr(e instanceof Error ? e.message : 'Headline generation failed')
+    } finally {
+      setGeneratingHeadlines(false)
+    }
+  }
+
+  function applyHeadline(h: string) {
+    setDraft(d => {
+      if (!d.tape_3) return d
+      return { ...d, tape_3: { ...d.tape_3, headline: h } }
+    })
+    setHeadlinePanelOpen(false)
+  }
+
+  async function saveHeadlinePromptDefault() {
+    setSavingHeadlinePrompt(true)
+    setHeadlineErr(null)
+    try {
+      const { error: upErr } = await supabase
+        .from('prompts')
+        .update({ body: headlinePrompt })
+        .eq('key', 'headline_generator')
+      if (upErr) throw new Error(upErr.message)
+      setHeadlinePromptSavedAt(Date.now())
+    } catch (e) {
+      setHeadlineErr(e instanceof Error ? e.message : 'Could not save prompt')
+    } finally {
+      setSavingHeadlinePrompt(false)
+    }
+  }
 
   async function saveDraft() {
     setSaving(true)
@@ -270,6 +336,13 @@ export default function ArticleEditor({
             {saving ? 'Saving…' : 'Save draft'}
           </button>
           <button
+            onClick={() => { setHeadlinePanelOpen(o => !o); setHeadlineErr(null) }}
+            style={actionButtonStyle('ghost', false)}
+            title="Generate headline options from the article, with an editable prompt"
+          >
+            Headlines
+          </button>
+          <button
             onClick={runProofread}
             disabled={proofreading}
             style={actionButtonStyle('ghost', proofreading)}
@@ -298,6 +371,23 @@ export default function ArticleEditor({
         </div>
       )}
       {findings && <ProofreadPanel findings={findings} onClose={() => setFindings(null)} />}
+
+      {/* Headline generator — options + an editable prompt */}
+      {headlinePanelOpen && (
+        <HeadlinePanel
+          prompt={headlinePrompt}
+          onPromptChange={setHeadlinePrompt}
+          options={headlineOptions}
+          generating={generatingHeadlines}
+          onGenerate={generateHeadlines}
+          onApply={applyHeadline}
+          onSavePrompt={saveHeadlinePromptDefault}
+          savingPrompt={savingHeadlinePrompt}
+          promptSavedAt={headlinePromptSavedAt}
+          error={headlineErr}
+          onClose={() => setHeadlinePanelOpen(false)}
+        />
+      )}
 
       {/* Broker outreach email — collapsible, sits below the action bar */}
       {draft.broker_outreach_email && (
@@ -1196,6 +1286,117 @@ function projectTapeToColumns(d: AIDraftShape) {
     body_html: t.body_html,
     byline_html: t.byline_html,
   }
+}
+
+// ============================================================================
+// Headline generator panel — options to pick from + an editable prompt.
+// ============================================================================
+
+function HeadlinePanel({
+  prompt,
+  onPromptChange,
+  options,
+  generating,
+  onGenerate,
+  onApply,
+  onSavePrompt,
+  savingPrompt,
+  promptSavedAt,
+  error,
+  onClose,
+}: {
+  prompt: string
+  onPromptChange: (v: string) => void
+  options: string[] | null
+  generating: boolean
+  onGenerate: () => void
+  onApply: (h: string) => void
+  onSavePrompt: () => void
+  savingPrompt: boolean
+  promptSavedAt: number | null
+  error: string | null
+  onClose: () => void
+}) {
+  const [showPrompt, setShowPrompt] = useState(false)
+  return (
+    <div style={{ marginTop: 12, background: '#fff', border: '1px solid #E3DCCB', borderRadius: 6, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#FBF6EC', borderBottom: '1px solid #EADFC8' }}>
+        <span style={{ fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase', color: '#8B5A2B', fontWeight: 600 }}>
+          Headline options
+        </span>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button onClick={() => setShowPrompt(s => !s)} style={linkBtn}>
+            {showPrompt ? 'Hide prompt' : 'Edit prompt'}
+          </button>
+          <button onClick={onClose} style={linkBtn}>Close</button>
+        </div>
+      </div>
+
+      <div style={{ padding: 16 }}>
+        {/* Editable prompt */}
+        {showPrompt && (
+          <div style={{ marginBottom: 16, padding: 12, background: '#FAFAF8', border: '1px solid #eee', borderRadius: 4 }}>
+            <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>
+              Guidance sent to the generator. House style and the JSON format are added automatically.
+            </div>
+            <textarea
+              value={prompt}
+              onChange={e => onPromptChange(e.target.value)}
+              rows={7}
+              style={{ width: '100%', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12, lineHeight: 1.5, padding: 10, border: '1px solid #ddd', borderRadius: 4, resize: 'vertical', color: '#222', boxSizing: 'border-box' }}
+            />
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 8 }}>
+              <button onClick={onSavePrompt} disabled={savingPrompt} style={actionButtonStyle('ghost', savingPrompt)}>
+                {savingPrompt ? 'Saving…' : 'Save as default'}
+              </button>
+              {promptSavedAt && Date.now() - promptSavedAt < 4000 && (
+                <span style={{ fontSize: 11, color: '#7FB77E', letterSpacing: 1 }}>✓ saved</span>
+              )}
+              <span style={{ fontSize: 11, color: '#aaa' }}>Edits apply to the next generation even without saving.</span>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: options ? 14 : 0 }}>
+          <button onClick={onGenerate} disabled={generating} style={actionButtonStyle('primary', generating)}>
+            {generating ? 'Generating…' : options ? 'Regenerate' : 'Generate options'}
+          </button>
+          {options && <span style={{ fontSize: 12, color: '#888' }}>Click an option to use it as the headline.</span>}
+        </div>
+
+        {error && (
+          <div style={{ padding: 10, background: '#fff6f6', border: '1px solid #f0c9c9', borderRadius: 4, fontSize: 12, color: '#A33', marginBottom: options ? 12 : 0 }}>
+            {error}
+          </div>
+        )}
+
+        {options && options.length === 0 && !generating && (
+          <div style={{ fontSize: 13, color: '#999' }}>No options came back. Try regenerating.</div>
+        )}
+
+        {options && options.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {options.map((h, i) => (
+              <button
+                key={i}
+                onClick={() => onApply(h)}
+                style={{ textAlign: 'left', padding: '12px 14px', background: '#fff', border: '1px solid #E3DCCB', borderRadius: 4, cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 17, color: '#111', lineHeight: 1.3, transition: 'border-color .15s, background .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5A2B'; e.currentTarget.style.background = '#FBF6EC' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E3DCCB'; e.currentTarget.style.background = '#fff' }}
+              >
+                {h}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const linkBtn: React.CSSProperties = {
+  background: 'none', border: 0, padding: 0, cursor: 'pointer',
+  fontSize: 12, color: '#8B5A2B', textDecoration: 'underline',
 }
 
 // ============================================================================
