@@ -85,8 +85,8 @@
   transition: background .15s, border-color .15s;
   white-space: nowrap;
 }
-.tax-btn-primary { background: var(--accent); color: var(--bg); border: 1px solid var(--accent); }
-.tax-btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.tax-btn-primary { background: #FFE680; color: var(--ink); border: 1px solid #EFCF4D; }
+.tax-btn-primary:hover { background: #FFD83D; border-color: #E6BE2E; }
 .tax-btn-primary:disabled { opacity: 0.6; cursor: default; }
 
 /* ---- Waitlist form ---- */
