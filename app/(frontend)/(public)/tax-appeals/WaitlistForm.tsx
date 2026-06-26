@@ -14,6 +14,11 @@ export default function WaitlistForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (state === 'submitting') return
+    if (!name.trim()) {
+      setState('error')
+      setMessage('Please enter your name.')
+      return
+    }
     setState('submitting')
     setMessage('')
     try {
@@ -63,8 +68,9 @@ export default function WaitlistForm() {
       <div className="tax-form-row">
         <input
           type="text"
-          placeholder="Name (optional)"
-          aria-label="Name"
+          required
+          placeholder="Full name *"
+          aria-label="Full name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="tax-input"

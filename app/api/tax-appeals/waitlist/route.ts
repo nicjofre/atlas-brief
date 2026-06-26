@@ -36,6 +36,15 @@ export async function POST(req: Request) {
     )
   }
 
+  // Name is required (the form enforces it; the API guards it too so direct
+  // posts can't create nameless rows). Property stays optional.
+  if (!name) {
+    return NextResponse.json(
+      { error: 'Please enter your name.' },
+      { status: 400 }
+    )
+  }
+
   const supabase = await createClient()
 
   // Plain INSERT — anon is insert-only by design (no SELECT so the list stays
