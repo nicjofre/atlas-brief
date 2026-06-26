@@ -162,6 +162,31 @@ body {
   transition: border-color .15s;
 }
 .nav-links a:hover, .nav-links a.active { border-color: var(--accent); }
+/* Highlighted nav tab — the new Tax Appeals service. Filled accent pill so it
+   reads as a call-to-action, distinct from the editorial links. */
+.nav-links a.nav-highlight {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 6px 12px;
+  border-bottom-color: transparent;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background .15s;
+}
+.nav-links a.nav-highlight:hover { background: var(--accent-ink); border-bottom-color: transparent; }
+.nav-highlight-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--bg);
+  color: var(--accent-ink);
+  padding: 2px 5px;
+  border-radius: 2px;
+}
 .nav-right {
   display: flex;
   align-items: center;

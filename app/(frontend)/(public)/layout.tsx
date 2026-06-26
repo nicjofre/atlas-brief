@@ -39,6 +39,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <li><Link href="/">The Tape</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><Link href="/contact">Contact</Link></li>
+            <li><Link href="/tax-appeals" className="nav-highlight">Tax Appeals<span className="nav-highlight-tag">New</span></Link></li>
           </ul>
           <div className="nav-right">
             <button className="nav-burger" aria-label="Menu"><span /><span /><span /></button>
