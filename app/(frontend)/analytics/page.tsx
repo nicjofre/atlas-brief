@@ -7,6 +7,7 @@ import InternalNav from '@/app/InternalNav'
 const TABS = [
   { id: 'posts', label: 'By post' },
   { id: 'dispatch', label: 'Dispatch engagement' },
+  { id: 'waitlist', label: 'Tax waitlist' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -27,12 +28,13 @@ type Totals = { total_views: number; unique_readers: number; last7: number }
 type BroadcastRow = { broadcast_id: string; first_seen: string; delivered: number; opens: number; clicks: number }
 type LinkRow = { deal: string; clicks: number }
 type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
+type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
 
 async function loadAnalytics() {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   try {
-    const [posts, totals, broadcasts, links, emailCount, emailTotals] = await Promise.all([
+    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
@@ -73,6 +75,9 @@ async function loadAnalytics() {
           count(distinct email) filter (where type = 'clicked')::int clicks,
           count(*) filter (where broadcast_id is null)::int untracked
         from email_events`),
+      c.query<WaitlistRow>(`
+        select email, name, property, created_at
+        from tax_appeal_waitlist order by created_at desc limit 500`),
     ])
     return {
       posts: posts.rows,
@@ -81,6 +86,7 @@ async function loadAnalytics() {
       links: links.rows,
       hasEmail: (emailCount.rows[0]?.n ?? 0) > 0,
       emailTotals: emailTotals.rows[0] ?? { delivered: 0, opens: 0, clicks: 0, untracked: 0 },
+      waitlist: waitlist.rows,
     }
   } finally {
     await c.end().catch(() => {})
@@ -115,7 +121,7 @@ export default async function AnalyticsPage({
   const sp = await searchParams
   const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
 
-  const { posts, totals, broadcasts, links, hasEmail, emailTotals } = await loadAnalytics()
+  const { posts, totals, broadcasts, links, hasEmail, emailTotals, waitlist } = await loadAnalytics()
 
   return (
     <>
@@ -269,6 +275,45 @@ export default async function AnalyticsPage({
               </>
             )}
           </>
+        )}
+        </>
+        )}
+
+        {tab === 'waitlist' && (
+        <>
+        <div style={{ display: 'flex', gap: 16, marginTop: 20, marginBottom: 8, flexWrap: 'wrap' }}>
+          <Stat label="Waitlist signups" value={waitlist.length.toLocaleString()} />
+        </div>
+        <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Tax Appeals waitlist</h2>
+        {waitlist.length === 0 ? (
+          <p style={{ color: '#999', fontSize: 14 }}>
+            No signups yet. Interest captured on the public <Link href="/tax-appeals" style={{ color: '#9A6B3F' }}>Tax Appeals</Link> page shows here.
+          </p>
+        ) : (
+          <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={TH}>Email</th>
+                  <th style={TH}>Name</th>
+                  <th style={TH}>Property</th>
+                  <th style={{ ...TH, textAlign: 'right' }}>Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {waitlist.map((w) => (
+                  <tr key={w.email}>
+                    <td style={TD}><a href={`mailto:${w.email}`} style={{ color: '#0A0A0A' }}>{w.email}</a></td>
+                    <td style={TD}>{w.name || <span style={{ color: '#bbb' }}>—</span>}</td>
+                    <td style={TD}>{w.property || <span style={{ color: '#bbb' }}>—</span>}</td>
+                    <td style={{ ...TD, textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#666' }}>
+                      {new Date(w.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         </>
         )}
