@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendDealNotification } from '@/lib/resend'
 
 export const runtime = 'nodejs'
 
@@ -48,6 +49,13 @@ export async function POST(req: Request) {
   if (error) {
     console.error('[deal-submit] insert failed', error)
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
+  }
+
+  // Notify David by email (reply_to = submitter). The DB row is the durable
+  // record, so a failed notification doesn't fail the submission.
+  const notify = await sendDealNotification({ name, email, deal, note })
+  if (!notify.ok) {
+    console.error('[deal-submit] notify failed', notify.error)
   }
 
   return NextResponse.json({ ok: true })

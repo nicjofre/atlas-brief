@@ -131,6 +131,51 @@ export function sendDispatchTest(args: {
   })
 }
 
+// Notify David when a deal is submitted through the header "Submit a Deal"
+// popup. Sent to David, with reply_to set to the submitter so he can reply
+// straight back to them. No-op (silent) when Resend isn't configured.
+const DEAL_NOTIFY_TO = 'David@atlasbrief.la'
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export function sendDealNotification(args: {
+  name: string
+  email: string
+  deal: string
+  note: string | null
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const rows: [string, string][] = [
+    ['From', `${args.name} (${args.email})`],
+    ['Deal', args.deal],
+  ]
+  if (args.note) rows.push(['Note', args.note])
+  const html =
+    `<div style="font-family:Georgia,serif;font-size:15px;color:#1a1a1a;line-height:1.6">` +
+    `<p style="margin:0 0 14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#8B5A2B">New deal for an operator read</p>` +
+    rows
+      .map(
+        ([k, v]) =>
+          `<p style="margin:0 0 10px"><strong>${k}:</strong> ${escapeHtml(v)}</p>`
+      )
+      .join('') +
+    `<p style="margin:18px 0 0;font-size:13px;color:#777">Reply to this email to respond to ${escapeHtml(args.name)} directly.</p>` +
+    `</div>`
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: [DEAL_NOTIFY_TO],
+    reply_to: args.email,
+    subject: `New deal submitted: ${args.deal.slice(0, 80)}`,
+    html,
+  })
+}
+
 // Create a broadcast against the configured audience. Keep the live
 // {{{FIRST_NAME}}} / unsubscribe tokens in the html so Resend fills them.
 export function createDispatchBroadcast(args: {
