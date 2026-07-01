@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import SiteNav from './SiteNav'
+import LinkedInInsight from './LinkedInInsight'
 import './atlas-v2.css'
 
 export const metadata: Metadata = {
@@ -37,6 +38,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <div id="atlas-ticker" />
 
       {children}
+
+      <LinkedInInsight />
     </>
   )
 }
