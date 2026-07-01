@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
-import SubmitDealButton from './SubmitDealButton'
+import SiteNav from './SiteNav'
 import './atlas-v2.css'
 
 export const metadata: Metadata = {
@@ -33,23 +32,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
 
-      <nav className="nav">
-        <div className="nav-inner">
-          <Link href="/" className="nav-logo"><span className="mark" /> Atlas <em>Brief</em></Link>
-          <ul className="nav-links">
-            <li><Link href="/">The Tape</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
-          </ul>
-          <div className="nav-right">
-            {/* Tertiary → secondary → primary, ascending in prominence toward the edge. */}
-            <Link href="/contact" className="nav-tertiary">Work with Atlas</Link>
-            <Link href="/tax-appeals" className="nav-highlight">Tax Appeals<span className="nav-highlight-tag">New</span></Link>
-            <SubmitDealButton />
-            <button className="nav-burger" aria-label="Menu"><span /><span /><span /></button>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <div id="atlas-ticker" />
 

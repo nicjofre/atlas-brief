@@ -367,6 +367,26 @@ body {
   font-weight: 400;
   color: var(--ink);
 }
+/* "Submit a Deal" in the menu — a full-width accent button. */
+.mobile-menu-cta {
+  display: block;
+  width: 100%;
+  margin: 16px 0 2px;
+  padding: 14px;
+  background: var(--accent);
+  color: var(--bg);
+  border: 0;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+}
+.mobile-menu-cta:hover { background: var(--accent-ink); }
+/* The menu is a mobile affordance only — never show it on desktop. */
+@media (min-width: 1025px) { .mobile-menu { display: none !important; } }
 .mobile-menu .mm-meta {
   margin-top: 18px;
   display: flex; flex-direction: column; gap: 8px;
@@ -377,12 +397,12 @@ body {
 }
 
 @media (max-width: 1024px) {
-  /* WSJ-style mobile header: burger left, wordmark centered, right side minimal */
+  /* Mobile header: burger left, wordmark centered, Tax Appeals pinned right. */
   .nav-inner {
-    grid-template-columns: 44px 1fr 44px;
+    grid-template-columns: 44px 1fr auto;
     height: 56px;
     gap: 8px;
-    padding: 0 16px;
+    padding: 0 14px;
     position: relative;
   }
   .nav-logo {
@@ -398,13 +418,13 @@ body {
   .nav-right {
     grid-column: 3;
     justify-self: end;
-    gap: 10px;
+    gap: 8px;
   }
-  /* On mobile the burger leads; keep the primary "Submit a Deal" CTA, drop the
-     secondary/tertiary so the header doesn't crowd. */
+  /* Keep only Tax Appeals pinned to the top bar; the rest goes in the menu. */
   .nav-right .nav-phone, .nav-right .nav-cta,
-  .nav-right .nav-tertiary, .nav-right .nav-highlight { display: none; }
-  .nav-primary { padding: 7px 12px; font-size: 12px; }
+  .nav-right .nav-tertiary, .nav-right .nav-primary { display: none; }
+  .nav-right .nav-highlight { display: inline-flex; padding: 6px 11px; font-size: 12px; }
+  .nav-highlight .nav-highlight-tag { display: none; }
   .nav-burger {
     display: block;
     position: absolute;
