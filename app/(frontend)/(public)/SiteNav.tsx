@@ -40,23 +40,14 @@ export default function SiteNav() {
         </div>
       </nav>
 
-      {/* Mobile menu — everything not pinned to the top bar. */}
+      {/* Mobile menu — editorial links. Tax Appeals + Submit a Deal stay pinned
+          to the top bar, so they're not repeated here. */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <ul>
           <li><Link href="/" onClick={closeMenu}>The Tape</Link></li>
           <li><Link href="/about" onClick={closeMenu}>About</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Contact</Link></li>
-          <li><Link href="/tax-appeals" onClick={closeMenu}>Tax Appeals</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Work with Atlas</Link></li>
-          <li>
-            <button
-              type="button"
-              className="mobile-menu-cta"
-              onClick={() => { setMenuOpen(false); setDealOpen(true) }}
-            >
-              Submit a Deal
-            </button>
-          </li>
         </ul>
       </div>
 

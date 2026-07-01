@@ -418,12 +418,13 @@ body {
   .nav-right {
     grid-column: 3;
     justify-self: end;
-    gap: 8px;
+    gap: 6px;
   }
-  /* Keep only Tax Appeals pinned to the top bar; the rest goes in the menu. */
-  .nav-right .nav-phone, .nav-right .nav-cta,
-  .nav-right .nav-tertiary, .nav-right .nav-primary { display: none; }
-  .nav-right .nav-highlight { display: inline-flex; padding: 6px 11px; font-size: 12px; }
+  /* Pin Tax Appeals + Submit a Deal to the top bar; editorial links go in the
+     menu. Hide the quiet tertiary link and the "New" tag to save width. */
+  .nav-right .nav-phone, .nav-right .nav-cta, .nav-right .nav-tertiary { display: none; }
+  .nav-right .nav-highlight { display: inline-flex; padding: 6px 10px; font-size: 12px; }
+  .nav-right .nav-primary { display: inline-block; padding: 6px 10px; font-size: 12px; }
   .nav-highlight .nav-highlight-tag { display: none; }
   .nav-burger {
     display: block;
@@ -444,8 +445,12 @@ body {
   .nav { border-bottom: 1px solid rgba(0,0,0,0.08); }
 }
 @media (max-width: 480px) {
-  .nav-logo { font-size: 17px; }
-  .nav-inner { grid-template-columns: 40px 1fr 40px; padding: 0 12px; }
+  .nav-logo { font-size: 16px; }
+  .nav-inner { grid-template-columns: 36px 1fr auto; padding: 0 10px; gap: 6px; }
+  /* Two compact buttons need every pixel on small phones. */
+  .nav-right { gap: 5px; }
+  .nav-right .nav-highlight { padding: 5px 8px; font-size: 11px; }
+  .nav-right .nav-primary { padding: 5px 8px; font-size: 11px; }
 }
 
 /* ============================================================
