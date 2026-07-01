@@ -74,22 +74,29 @@ export default function DispatchForm() {
         onSubmit={onEmailSubmit}
         noValidate
       >
-        <span className="tm-d-label">Friday dispatch &mdash; one note per week.</span>
-        <input
-          type="email"
-          name="email"
-          placeholder="name@domain.com"
-          required
-          autoComplete="email"
-          aria-label="Email address"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value)
-            if (state === 'error') setState('idle')
-          }}
-        />
-        <button type="submit">Subscribe</button>
-        <span className="tm-d-sent">You are on the list.</span>
+        <div className="tm-d-head">
+          <span className="tm-d-label">Subscribe to the Friday Dispatch</span>
+          <span className="tm-d-note">
+            One note per week &mdash; what traded, what&rsquo;s listed, what the numbers say. Free.
+          </span>
+        </div>
+        <div className="tm-d-row">
+          <input
+            type="email"
+            name="email"
+            placeholder="name@domain.com"
+            required
+            autoComplete="email"
+            aria-label="Email address"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              if (state === 'error') setState('idle')
+            }}
+          />
+          <button type="submit">Subscribe</button>
+        </div>
+        <span className="tm-d-sent">✓ You are on the list.</span>
         {state === 'error' && (
           <span className="tm-d-err" role="alert">
             {error}
