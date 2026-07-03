@@ -11,6 +11,9 @@ const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/we
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true
+  // Generated social-share images (Next appends a hash: /opengraph-image-abc123).
+  // Crawlers fetch these unauthenticated, so they must never bounce to /login.
+  if (pathname.startsWith('/opengraph-image') || pathname.startsWith('/twitter-image')) return true
   return PUBLIC_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
 }
 

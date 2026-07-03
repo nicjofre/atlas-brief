@@ -3,6 +3,14 @@ import SiteNav from './SiteNav'
 import LinkedInInsight from './LinkedInInsight'
 import './atlas-v2.css'
 
+const OG_TITLE = 'Atlas Brief — A Journal of Record on LA Real Estate'
+const OG_DESCRIPTION =
+  'Every significant multifamily sale, land deal, and development move in Los Angeles. Tracked and explained by David Safai, 30-year operator.'
+
+// Sitewide social-share defaults. The og:image is supplied by the generated
+// opengraph-image.tsx in this segment; article pages override title/description/
+// image with their own headline, deck, and hero photo. metadataBase (set in the
+// (frontend) root layout) makes relative URLs resolve to atlasbrief.la.
 export const metadata: Metadata = {
   title: 'Atlas Brief',
   description: 'An owner-builder journal of Los Angeles real estate, development, and policy.',
@@ -12,6 +20,18 @@ export const metadata: Metadata = {
       { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
     ],
     apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Atlas Brief',
+    title: OG_TITLE,
+    description: OG_DESCRIPTION,
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: OG_TITLE,
+    description: OG_DESCRIPTION,
   },
 }
 

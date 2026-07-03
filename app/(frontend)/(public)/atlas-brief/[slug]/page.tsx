@@ -20,9 +20,33 @@ export async function generateMetadata(
   const article = await getArticleBySlug(slug)
   if (!article) return { title: 'Atlas Brief' }
   const plainHeadline = (article.headline ?? '').replace(/\*/g, '')
+  const title = `${plainHeadline} — Atlas Brief`
+  const description = article.deck ?? undefined
+
+  // Share card uses the property's hero photo (overrides the sitewide banner).
+  const supabase = await createClient()
+  const heroUrl = resolveHeroUrl(
+    supabase,
+    article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
+  )
+  const images = heroUrl ? [heroUrl] : undefined
+
   return {
-    title: `${plainHeadline} — Atlas Brief`,
-    description: article.deck ?? undefined,
+    title,
+    description,
+    openGraph: {
+      type: 'article',
+      title,
+      description,
+      url: `/atlas-brief/${slug}`,
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images,
+    },
   }
 }
 
