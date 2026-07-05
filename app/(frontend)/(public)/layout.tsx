@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import SiteNav from './SiteNav'
 import LinkedInInsight from './LinkedInInsight'
+import GoogleTag from './GoogleTag'
 import './atlas-v2.css'
 
 const OG_TITLE = 'Atlas Brief — A Journal of Record on LA Real Estate'
@@ -60,6 +61,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {children}
 
       <LinkedInInsight />
+      <GoogleTag />
     </>
   )
 }
