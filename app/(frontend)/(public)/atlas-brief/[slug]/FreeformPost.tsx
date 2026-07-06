@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Post, Media } from '@/payload-types'
 import PostBlocks from '../../_blocks/PostBlocks'
+import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import TrackView from './TrackView'
 import './post.css'
 
@@ -19,14 +20,18 @@ function asMedia(v: unknown): Media | null {
 // Public render for a freeform Post. Shares the article chrome (post.css) with
 // briefs — crumb, kicker, headline, deck, byline, hero — but the body is the
 // composed block layout instead of the fixed brief sections.
-export default function FreeformPost({ post }: { post: Post }) {
+export default function FreeformPost({ post, preview = false }: { post: Post; preview?: boolean }) {
   const hero = asMedia(post.heroImage)
   const kicker = post.kicker || 'Dispatch'
   const dateStr = fmtDate(post.publishedAt)
 
   return (
     <>
-      <TrackView slug={post.slug} />
+      {/* In the CMS Live Preview iframe, refresh the render on save. Not
+          rendered on the public page — only in preview. */}
+      {preview && <RefreshRouteOnSave />}
+      {/* Don't log a reader view while previewing a draft in the CMS. */}
+      {!preview && <TrackView slug={post.slug} />}
 
       <header className="art-top">
         <div className="wrap">

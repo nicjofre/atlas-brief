@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
@@ -22,7 +23,8 @@ export async function generateMetadata(
   const article = await getArticleBySlug(slug)
   if (!article) {
     // Not a brief — maybe a freeform post.
-    const post = await getPostBySlug(slug)
+    const { isEnabled: draft } = await draftMode()
+    const post = await getPostBySlug(slug, draft)
     if (!post) return { title: 'Atlas Brief' }
     const title = `${post.title} — Atlas Brief`
     const description = post.deck ?? undefined
@@ -72,9 +74,11 @@ export default async function PostPage(
   const { slug } = await params
   const article = await getArticleBySlug(slug)
   if (!article) {
-    // Not a brief — try a freeform post before 404ing.
-    const post = await getPostBySlug(slug)
-    if (post) return <FreeformPost post={post} />
+    // Not a brief — try a freeform post before 404ing. In CMS draft mode, show
+    // the in-progress draft (for Live Preview).
+    const { isEnabled: draft } = await draftMode()
+    const post = await getPostBySlug(slug, draft)
+    if (post) return <FreeformPost post={post} preview={draft} />
     notFound()
   }
 

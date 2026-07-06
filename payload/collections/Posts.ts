@@ -20,8 +20,12 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'publishedAt', '_status', 'updatedAt'],
-    livePreview: { url: ({ data }) => `/atlas-brief/${data?.slug ?? ''}` },
-    preview: (doc) => `/atlas-brief/${doc?.slug ?? ''}`,
+    // Route through /next/preview so draft mode is enabled — the live preview
+    // then renders the in-progress (unpublished) draft, not the published one.
+    livePreview: {
+      url: ({ data }) => `/next/preview?path=${encodeURIComponent(`/atlas-brief/${data?.slug ?? ''}`)}`,
+    },
+    preview: (doc) => `/next/preview?path=${encodeURIComponent(`/atlas-brief/${doc?.slug ?? ''}`)}`,
   },
   versions: { drafts: true },
   access: {

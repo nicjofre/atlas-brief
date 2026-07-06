@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // `/api/webhooks/resend` (Resend posts email events, verified by signature).
 // The admin-only `/api/dispatch/*` routes deliberately stay gated.
 const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact', '/tax-appeals']
-const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/webhooks/resend', '/api/tax-appeals/waitlist', '/api/deals/submit'])
+const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/webhooks/resend', '/api/tax-appeals/waitlist', '/api/deals/submit', '/next/preview', '/next/exit-preview'])
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true

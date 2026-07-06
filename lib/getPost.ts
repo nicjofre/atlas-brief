@@ -5,11 +5,14 @@ import type { Post } from '@/payload-types'
 // Fetch a published freeform Post by slug via the Payload local API. depth:2 so
 // upload relationships (hero image, block images) come back as populated Media
 // objects. Only published docs are returned — drafts stay in the CMS.
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+export async function getPostBySlug(slug: string, draft = false): Promise<Post | null> {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'posts',
-    where: { slug: { equals: slug }, _status: { equals: 'published' } },
+    // In draft mode (CMS live preview) return the latest draft regardless of
+    // status; otherwise only published docs are public.
+    where: draft ? { slug: { equals: slug } } : { slug: { equals: slug }, _status: { equals: 'published' } },
+    draft,
     depth: 2,
     limit: 1,
   })
