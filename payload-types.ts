@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     pages: Page;
+    posts: Post;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +81,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -283,6 +285,103 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * URL path under /atlas-brief/. Must be unique (and not clash with a brief).
+   */
+  slug: string;
+  /**
+   * Category label, e.g. "Essay" or "Special Report".
+   */
+  kicker?: string | null;
+  /**
+   * Controls ordering in The Tape feed.
+   */
+  publishedAt?: string | null;
+  author?: string | null;
+  /**
+   * One-sentence standfirst under the headline. Also the share/dispatch teaser.
+   */
+  deck?: string | null;
+  heroImage?: (number | null) | Media;
+  heroCaption?: string | null;
+  layout?:
+    | (
+        | {
+            content?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            image: number | Media;
+            caption?: string | null;
+            width?: ('normal' | 'full') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            /**
+             * Optional caption under the whole row.
+             */
+            caption?: string | null;
+            items?:
+              | {
+                  image: number | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'gallery';
+          }
+        | {
+            quote: string;
+            /**
+             * Optional — who said it.
+             */
+            attribution?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'quote';
+          }
+        | {
+            /**
+             * YouTube or X (Twitter) URL.
+             */
+            url: string;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'embed';
+          }
+      )[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -316,6 +415,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -478,6 +581,72 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  kicker?: T;
+  publishedAt?: T;
+  author?: T;
+  deck?: T;
+  heroImage?: T;
+  heroCaption?: T;
+  layout?:
+    | T
+    | {
+        richText?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              caption?: T;
+              items?:
+                | T
+                | {
+                    image?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        quote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+        embed?:
+          | T
+          | {
+              url?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

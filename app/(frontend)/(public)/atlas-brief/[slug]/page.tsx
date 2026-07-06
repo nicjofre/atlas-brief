@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
+import { getPostBySlug } from '@/lib/getPost'
+import FreeformPost from './FreeformPost'
 import { HeadlineText, extractTOCFromHtml, stripBrokersBlock } from '@/lib/db/article-render'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 import { createClient } from '@/lib/supabase/server'
@@ -18,7 +20,21 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
-  if (!article) return { title: 'Atlas Brief' }
+  if (!article) {
+    // Not a brief — maybe a freeform post.
+    const post = await getPostBySlug(slug)
+    if (!post) return { title: 'Atlas Brief' }
+    const title = `${post.title} — Atlas Brief`
+    const description = post.deck ?? undefined
+    const hero = post.heroImage && typeof post.heroImage === 'object' ? post.heroImage.url : undefined
+    const images = hero ? [hero] : undefined
+    return {
+      title,
+      description,
+      openGraph: { type: 'article', title, description, url: `/atlas-brief/${slug}`, images },
+      twitter: { card: 'summary_large_image', title, description, images },
+    }
+  }
   const plainHeadline = (article.headline ?? '').replace(/\*/g, '')
   const title = `${plainHeadline} — Atlas Brief`
   const description = article.deck ?? undefined
@@ -55,7 +71,12 @@ export default async function PostPage(
 ) {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
-  if (!article) notFound()
+  if (!article) {
+    // Not a brief — try a freeform post before 404ing.
+    const post = await getPostBySlug(slug)
+    if (post) return <FreeformPost post={post} />
+    notFound()
+  }
 
   const listing = article.listing
   const property = listing?.property
