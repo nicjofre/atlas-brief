@@ -36,7 +36,7 @@ async function loadAnalytics() {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   try {
-    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist, deals] = await Promise.all([
+    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist, deals, postTitleRows] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
@@ -83,9 +83,21 @@ async function loadAnalytics() {
       c.query<DealRow>(`
         select name, email, deal, note, created_at
         from deal_submissions order by created_at desc limit 500`),
+      // Freeform post titles (they live in the Payload schema, not `articles`),
+      // so "By post" can show a real title instead of the bare slug.
+      c.query<{ slug: string; title: string }>(`
+        select slug, title from payload.posts where _status = 'published'`),
     ])
+    // For a post view, the articles join found nothing so headline === slug.
+    // Swap in the post title where we have one.
+    const postTitles = new Map(postTitleRows.rows.map(r => [r.slug, r.title]))
+    const postsResolved = posts.rows.map(p =>
+      p.headline === p.slug && postTitles.has(p.slug)
+        ? { ...p, headline: postTitles.get(p.slug)! }
+        : p
+    )
     return {
-      posts: posts.rows,
+      posts: postsResolved,
       totals: totals.rows[0] ?? { total_views: 0, unique_readers: 0, last7: 0 },
       broadcasts: broadcasts.rows,
       links: links.rows,

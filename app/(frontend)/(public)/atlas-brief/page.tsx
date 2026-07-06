@@ -194,15 +194,22 @@ function FeedMasthead() {
 function LeadCard({ a }: { a: ArticleCard }) {
   const p = a.listing?.property ?? null
   const status = a.listing?.status
+  const isPost = a.kind === 'post'
   return (
     <Link href={`/atlas-brief/${a.slug}`} className="lead-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={a.heroUrl ?? ''} alt="" className="lead-img" />
       <div className="lead-kicker">
-        <span className={`badge badge-${statusBadgeKey(status)}`}>{statusKicker(status)}</span>
-        <span>
-          {a.cat_label ?? sectionLabel(a.section_slug)} · Entry № {String(a.entry_num).padStart(2, '0')}
-        </span>
+        {isPost ? (
+          <span>{a.cat_label ?? 'Dispatch'}</span>
+        ) : (
+          <>
+            <span className={`badge badge-${statusBadgeKey(status)}`}>{statusKicker(status)}</span>
+            <span>
+              {a.cat_label ?? sectionLabel(a.section_slug)} · Entry № {String(a.entry_num).padStart(2, '0')}
+            </span>
+          </>
+        )}
       </div>
       <h3 className="lead-title"><HeadlineText text={a.headline} /></h3>
       <p className="lead-deck">{a.excerpt ?? a.deck}</p>
@@ -216,13 +223,16 @@ function LeadCard({ a }: { a: ArticleCard }) {
 
 function RailItem({ a }: { a: ArticleCard }) {
   const status = a.listing?.status
+  const isPost = a.kind === 'post'
   return (
     <Link href={`/atlas-brief/${a.slug}`} className="rail-item">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={a.heroUrl ?? ''} alt="" />
       <div>
         <div className="r-kicker">
-          {statusKicker(status)} · {a.cat_label ?? sectionLabel(a.section_slug)}
+          {isPost
+            ? (a.cat_label ?? 'Dispatch')
+            : `${statusKicker(status)} · ${a.cat_label ?? sectionLabel(a.section_slug)}`}
         </div>
         <h4 className="r-title"><HeadlineText text={a.headline} /></h4>
         <p className="r-deck">{a.excerpt ?? a.deck}</p>
@@ -233,12 +243,19 @@ function RailItem({ a }: { a: ArticleCard }) {
 
 function ArchiveRow({ a, pos }: { a: ArticleCard; pos: number }) {
   const status = a.listing?.status
+  const isPost = a.kind === 'post'
   return (
     <Link href={`/atlas-brief/${a.slug}`} className="arc-row">
       <div className="arc-num">№ {String(pos).padStart(2, '0')}</div>
       <div className="arc-kicker">
-        {statusKicker(status)}<br />
-        {a.cat_label ?? sectionLabel(a.section_slug)}
+        {isPost ? (
+          a.cat_label ?? 'Dispatch'
+        ) : (
+          <>
+            {statusKicker(status)}<br />
+            {a.cat_label ?? sectionLabel(a.section_slug)}
+          </>
+        )}
       </div>
       <div>
         <h3 className="arc-title"><HeadlineText text={a.headline} /></h3>

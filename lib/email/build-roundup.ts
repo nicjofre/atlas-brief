@@ -1,4 +1,5 @@
 import type { ArticleWithJoins } from '@/lib/db/articles'
+import type { Post } from '@/payload-types'
 import type { RoundupDeal } from './roundup-template'
 import { articleUrl, RESEND_UNSUBSCRIBE_TOKEN } from './build-dispatch'
 
@@ -44,6 +45,22 @@ export function buildRoundupDeal(
     brokerTag: brokerTag(article),
     // ?ref=dispatch lets the reader-analytics beacon attribute the read to email.
     articleUrl: `${articleUrl(article.slug)}?ref=dispatch`,
+  }
+}
+
+// A freeform post as a roundup deal. No listing, so no broker tag; the kicker
+// is the post's category and the teaser is its deck.
+export function buildRoundupDealFromPost(
+  post: Post,
+  opts: { heroUrl: string | null }
+): RoundupDeal {
+  return {
+    kicker: post.kicker || 'Dispatch',
+    headline: post.title || '',
+    deck: post.deck ?? null,
+    heroUrl: opts.heroUrl,
+    brokerTag: null,
+    articleUrl: `${articleUrl(post.slug)}?ref=dispatch`,
   }
 }
 

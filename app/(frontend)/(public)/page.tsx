@@ -54,7 +54,10 @@ export default async function HomePage() {
         <div className="wrap">
           {articles.map(a => {
             const p = a.listing?.property ?? null
-            const tier = a.tape_tier ? `TAPE ${a.tape_tier}` : 'TAPE 3'
+            const isPost = a.kind === 'post'
+            const tier = isPost
+              ? (a.cat_label ?? 'Dispatch').toUpperCase()
+              : a.tape_tier ? `TAPE ${a.tape_tier}` : 'TAPE 3'
             // Strip the *italic* markers — homepage tape headlines render plain.
             const headlinePlain = (a.headline ?? '').replace(/\*/g, '')
             return (
@@ -67,13 +70,19 @@ export default async function HomePage() {
                   <h2 className="te-headline">
                     <Link href={`/atlas-brief/${a.slug}`}>{headlinePlain}</Link>
                   </h2>
-                  <div className="te-place">{placeLine(p)}</div>
+                  {!isPost && <div className="te-place">{placeLine(p)}</div>}
                   <p className="te-excerpt">{a.excerpt ?? a.deck}</p>
                   <div className="te-foot">
-                    <span>{a.cat_label ?? 'Broker Activity'}</span>
-                    <span className={`badge badge-${statusBadgeKey(a.listing?.status)}`}>
-                      {statusKicker(a.listing?.status)}
-                    </span>
+                    {isPost ? (
+                      <span>Atlas Brief</span>
+                    ) : (
+                      <>
+                        <span>{a.cat_label ?? 'Broker Activity'}</span>
+                        <span className={`badge badge-${statusBadgeKey(a.listing?.status)}`}>
+                          {statusKicker(a.listing?.status)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <Link

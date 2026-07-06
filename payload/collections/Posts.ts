@@ -44,6 +44,23 @@ export const Posts: CollectionConfig = {
       unique: true,
       index: true,
       admin: { position: 'sidebar', description: 'URL path under /atlas-brief/. Must be unique (and not clash with a brief).' },
+      // Guard against colliding with a brief's slug — briefs win at the URL
+      // resolver, so a clash would silently shadow the post. Checked on save;
+      // never blocks on a DB hiccup.
+      validate: async (value: string | null | undefined) => {
+        if (!value) return 'Slug is required.'
+        try {
+          const { Client } = await import('pg')
+          const c = new Client({ connectionString: process.env.DATABASE_URI })
+          await c.connect()
+          const r = await c.query('select 1 from public.articles where slug = $1 and deleted_at is null limit 1', [value])
+          await c.end()
+          if (r.rowCount) return `A brief already uses "${value}". Choose a different slug.`
+        } catch {
+          // Don't block saving if the check can't run.
+        }
+        return true
+      },
     },
     {
       name: 'kicker',

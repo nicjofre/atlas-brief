@@ -1,6 +1,8 @@
 import type { Tables } from './types'
 import { createClient } from '@/lib/supabase/server'
 import { resolveHeroUrl } from './hero-url'
+import { getPublishedPosts } from '@/lib/getPost'
+import type { Post } from '@/payload-types'
 
 export type Takeaway = { bold: string; text: string }
 
@@ -66,6 +68,10 @@ export type ArticleCard = Pick<
   | 'published_at'
 > & {
   heroUrl: string | null
+  // 'post' = a freeform Payload post bridged into the feed; undefined/'brief' =
+  // a normal Tape brief. Cards branch on this to skip listing-only chrome
+  // (status badge, entry number, place line).
+  kind?: 'brief' | 'post'
   listing: {
     status: string | null
     property: {
@@ -76,6 +82,28 @@ export type ArticleCard = Pick<
       unit_count: number | null
     } | null
   } | null
+}
+
+// Map a published freeform post into the shared card shape so it renders in the
+// same feeds as briefs. Posts have no listing; kind:'post' tells cards to drop
+// listing-only chrome.
+function postToCard(post: Post): ArticleCard {
+  const hero = post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null
+  return {
+    id: `post_${post.id}`,
+    slug: post.slug,
+    section_slug: 'the-tape',
+    cat_label: post.kicker ?? 'Dispatch',
+    entry_num: 0,
+    tape_tier: null,
+    headline: post.title ?? '',
+    deck: post.deck ?? null,
+    excerpt: null,
+    published_at: post.publishedAt ?? post.createdAt ?? null,
+    heroUrl: hero,
+    kind: 'post',
+    listing: null,
+  }
 }
 
 export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<ArticleCard[]> {
@@ -109,7 +137,7 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
 
   // Project: prefer the article's hero override; fall back to the listing's;
   // resolve to a browser-loadable URL.
-  return (data ?? []).map(row => {
+  const briefCards = (data ?? []).map(row => {
     const r = row as unknown as {
       id: string
       slug: string
@@ -148,4 +176,20 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
         : null,
     }
   })
+
+  // Listing-section pages stay brief-only. The general feed (homepage,
+  // /atlas-brief, dispatch) interleaves published freeform posts by date.
+  if (opts.sectionSlug) return briefCards
+
+  let postCards: ArticleCard[] = []
+  try {
+    const posts = await getPublishedPosts()
+    postCards = posts.map(postToCard)
+  } catch (e) {
+    console.error('[getArticles] posts bridge failed', e)
+  }
+
+  return [...briefCards, ...postCards].sort((a, b) =>
+    (b.published_at ?? '').localeCompare(a.published_at ?? '')
+  )
 }

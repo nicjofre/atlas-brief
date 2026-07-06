@@ -1,9 +1,10 @@
 import { render } from '@react-email/render'
 import { createClient } from '@/lib/supabase/server'
 import { getArticleBySlug } from '@/lib/db/articles'
+import { getPostBySlug } from '@/lib/getPost'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 import { siteBaseUrl } from './build-dispatch'
-import { buildRoundupDeal } from './build-roundup'
+import { buildRoundupDeal, buildRoundupDealFromPost } from './build-roundup'
 import { RoundupEmail } from './roundup-template'
 
 // Single source of truth for the roundup HTML — preview, test, and the live
@@ -22,16 +23,24 @@ export async function renderRoundupHtml(args: {
   const missing: string[] = []
   for (const slug of args.slugs) {
     const article = await getArticleBySlug(slug)
-    if (!article) {
-      missing.push(slug)
+    if (article) {
+      let heroUrl = resolveHeroUrl(
+        supabase,
+        article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
+      )
+      if (heroUrl && heroUrl.startsWith('/')) heroUrl = siteBaseUrl() + heroUrl
+      deals.push(buildRoundupDeal(article, { heroUrl }))
       continue
     }
-    let heroUrl = resolveHeroUrl(
-      supabase,
-      article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
-    )
-    if (heroUrl && heroUrl.startsWith('/')) heroUrl = siteBaseUrl() + heroUrl
-    deals.push(buildRoundupDeal(article, { heroUrl }))
+    // Not a brief — try a freeform post.
+    const post = await getPostBySlug(slug)
+    if (post) {
+      const raw = post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null
+      const heroUrl = raw && raw.startsWith('/') ? siteBaseUrl() + raw : raw
+      deals.push(buildRoundupDealFromPost(post, { heroUrl }))
+      continue
+    }
+    missing.push(slug)
   }
   const html = await render(
     <RoundupEmail
