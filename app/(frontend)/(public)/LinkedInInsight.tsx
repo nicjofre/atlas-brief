@@ -1,20 +1,24 @@
-import Script from 'next/script'
+'use client'
 
-// LinkedIn Insight Tag (David's ad account, partner id 9605532). Standard
-// LinkedIn advertising/retargeting pixel — the LinkedIn equivalent of the Meta
-// Pixel. Loaded on the public site only (not the internal admin/editor), so ad
-// audiences and conversions reflect real visitors, not David's own sessions.
-//
-// The partner id must be set before the loader runs, so both steps live in a
-// single inline script to guarantee order. next/script injects it after
-// hydration (afterInteractive). The <noscript> pixel covers JS-disabled clients.
+import Script from 'next/script'
+import { useEffect, useState } from 'react'
+
+// LinkedIn Insight Tag (David's ad account, partner id 9605532) — advertising /
+// retargeting pixel. Public pages only, and ONLY on the production host so
+// Vercel previews + localhost don't fire it and skew the ad data.
 const LINKEDIN_PARTNER_ID = '9605532'
+const PROD_HOSTS = new Set(['atlasbrief.la', 'www.atlasbrief.la'])
 
 export default function LinkedInInsight() {
+  const [enabled, setEnabled] = useState(false)
+  useEffect(() => {
+    if (PROD_HOSTS.has(window.location.hostname)) setEnabled(true)
+  }, [])
+
+  if (!enabled) return null
   return (
-    <>
-      <Script id="linkedin-insight" strategy="afterInteractive">
-        {`_linkedin_partner_id = "${LINKEDIN_PARTNER_ID}";
+    <Script id="linkedin-insight" strategy="afterInteractive">
+      {`_linkedin_partner_id = "${LINKEDIN_PARTNER_ID}";
 window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
 window._linkedin_data_partner_ids.push(_linkedin_partner_id);
 (function(l) {
@@ -25,16 +29,6 @@ var b = document.createElement("script");
 b.type = "text/javascript";b.async = true;
 b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
 s.parentNode.insertBefore(b, s);})(window.lintrk);`}
-      </Script>
-      <noscript>
-        <img
-          height="1"
-          width="1"
-          style={{ display: 'none' }}
-          alt=""
-          src={`https://px.ads.linkedin.com/collect/?pid=${LINKEDIN_PARTNER_ID}&fmt=gif`}
-        />
-      </noscript>
-    </>
+    </Script>
   )
 }
