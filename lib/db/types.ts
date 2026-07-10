@@ -1182,6 +1182,7 @@ export type Database = {
           title: string
           detail: string | null
           minutes: number
+          done: boolean
           paid: boolean
           paid_at: string | null
           created_at: string
@@ -1191,6 +1192,7 @@ export type Database = {
           title: string
           detail?: string | null
           minutes?: number
+          done?: boolean
           paid?: boolean
           paid_at?: string | null
           created_at?: string
@@ -1200,6 +1202,7 @@ export type Database = {
           title?: string
           detail?: string | null
           minutes?: number
+          done?: boolean
           paid?: boolean
           paid_at?: string | null
           created_at?: string

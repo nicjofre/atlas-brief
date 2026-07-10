@@ -9,6 +9,7 @@ export type DevTask = {
   title: string
   detail: string | null
   minutes: number
+  done: boolean
   paid: boolean
   paid_at: string | null
 }
@@ -49,6 +50,11 @@ export default function DevelopmentBoard({ tasks }: { tasks: DevTask[] }) {
   const setMinutes = (t: DevTask, minutes: number) =>
     run(async () => { await supabase.from('dev_tasks').update({ minutes: Math.max(0, Math.round(minutes)) }).eq('id', t.id) })
   const deleteTask = (id: string) => run(async () => { await supabase.from('dev_tasks').delete().eq('id', id) })
+  const setDone = (ids: string[], done: boolean) =>
+    run(async () => {
+      await supabase.from('dev_tasks').update({ done }).in('id', ids)
+      setSelected(new Set())
+    })
   const setPaid = (ids: string[], paid: boolean) =>
     run(async () => {
       await supabase.from('dev_tasks').update({ paid, paid_at: paid ? new Date().toISOString() : null }).in('id', ids)
@@ -65,9 +71,11 @@ export default function DevelopmentBoard({ tasks }: { tasks: DevTask[] }) {
           <p style={{ color: '#888', fontSize: 13, marginTop: 4 }}>Tasks and time. Log as you go; mark paid once David settles.</p>
         </div>
         {selected.size > 0 && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Btn onClick={() => setPaid([...selected], true)} disabled={busy}>Mark {selected.size} paid</Btn>
-            <Btn ghost onClick={() => setPaid([...selected], false)} disabled={busy}>Mark unpaid</Btn>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <Btn onClick={() => setDone([...selected], true)} disabled={busy}>Mark {selected.size} done</Btn>
+            <Btn ghost onClick={() => setDone([...selected], false)} disabled={busy}>Reopen</Btn>
+            <Btn onClick={() => setPaid([...selected], true)} disabled={busy}>Mark paid</Btn>
+            <Btn ghost onClick={() => setPaid([...selected], false)} disabled={busy}>Unpaid</Btn>
           </div>
         )}
       </div>
@@ -78,10 +86,10 @@ export default function DevelopmentBoard({ tasks }: { tasks: DevTask[] }) {
         {tasks.length === 0 ? (
           <div style={{ padding: '18px 16px', color: '#999', fontSize: 14 }}>No tasks yet. Add one above.</div>
         ) : tasks.map((t) => (
-          <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderBottom: '1px solid #f3f3f3', background: t.paid ? '#FAFAF8' : '#fff' }}>
+          <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderBottom: '1px solid #f3f3f3', background: t.paid ? '#F3F7F3' : t.done ? '#FAFAF8' : '#fff', opacity: t.done ? 0.72 : 1 }}>
             <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleSel(t.id)} style={{ width: 16, height: 16, marginTop: 3 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, color: '#111' }}>{t.title}</div>
+              <div style={{ fontSize: 15, color: '#111', textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</div>
               {t.detail && <div style={{ fontSize: 13, color: '#777', marginTop: 2, whiteSpace: 'pre-wrap' }}>{t.detail}</div>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -90,6 +98,7 @@ export default function DevelopmentBoard({ tasks }: { tasks: DevTask[] }) {
               <MiniBtn onClick={() => bumpMinutes(t, 30)} disabled={busy}>+30m</MiniBtn>
               <MiniBtn onClick={() => bumpMinutes(t, 60)} disabled={busy}>+1h</MiniBtn>
               <MiniBtn onClick={() => bumpMinutes(t, -15)} disabled={busy || t.minutes === 0} muted>−15m</MiniBtn>
+              {t.done && <span style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: '#666', border: '1px solid #ddd', borderRadius: 4, padding: '3px 7px' }}>Done</span>}
               {t.paid && <span style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: '#2E7D32', border: '1px solid #B7DBB9', borderRadius: 4, padding: '3px 7px' }}>Paid</span>}
               <DeleteX onClick={() => confirm('Delete this task?') && deleteTask(t.id)} />
             </div>
