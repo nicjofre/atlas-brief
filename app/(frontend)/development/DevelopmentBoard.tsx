@@ -84,10 +84,23 @@ export default function DevelopmentBoard({ tasks }: { tasks: DevTask[] }) {
 
   const sel = [...selected]
   const rows = tab === 'backlog' ? order.map((id) => taskById.get(id)).filter((t): t is DevTask => !!t) : current
+  const toBillMinutes = toBill.reduce((s, t) => s + t.minutes, 0)
+  const toBillHours = round1(toBillMinutes / 60)
+  const RATE = 150
+  const amount = Math.round((toBillMinutes / 60) * RATE)
 
   return (
     <div style={{ maxWidth: 940, margin: '0 auto', padding: '32px 24px', fontFamily: 'Georgia, serif' }}>
-      <h1 style={{ fontSize: 28, margin: 0 }}>Development</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <h1 style={{ fontSize: 28, margin: 0 }}>Development</h1>
+        <div style={{ border: `1px solid ${ACCENT}`, borderRadius: 8, padding: '10px 20px', textAlign: 'right' }}>
+          <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#999' }}>Current bill</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, justifyContent: 'flex-end' }}>
+            <span style={{ fontSize: 26, fontFamily: 'Georgia, serif', color: ACCENT }}>${amount.toLocaleString()}</span>
+            <span style={{ fontSize: 13, color: '#888' }}>{toBillHours}h @ $150/hr</span>
+          </div>
+        </div>
+      </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 0, marginTop: 18, borderBottom: '1px solid #ddd' }}>
