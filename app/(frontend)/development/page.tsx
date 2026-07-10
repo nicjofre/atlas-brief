@@ -12,8 +12,9 @@ export default async function DevelopmentPage() {
 
   const { data: tasks } = await supabase
     .from('dev_tasks')
-    .select('id, title, detail, minutes, done, paid, paid_at, created_at')
+    .select('id, title, detail, minutes, done, paid, paid_at, sort_order, created_at')
     .order('done', { ascending: true })
+    .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
 
   const taskRows: DevTask[] = (tasks ?? []).map((t) => ({

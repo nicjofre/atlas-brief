@@ -1185,6 +1185,7 @@ export type Database = {
           done: boolean
           paid: boolean
           paid_at: string | null
+          sort_order: number
           created_at: string
         }
         Insert: {
@@ -1195,6 +1196,7 @@ export type Database = {
           done?: boolean
           paid?: boolean
           paid_at?: string | null
+          sort_order?: number
           created_at?: string
         }
         Update: {
@@ -1205,6 +1207,7 @@ export type Database = {
           done?: boolean
           paid?: boolean
           paid_at?: string | null
+          sort_order?: number
           created_at?: string
         }
         Relationships: []
