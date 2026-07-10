@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
 
 type State = 'idle' | 'submitting' | 'done' | 'error'
 
@@ -33,6 +34,7 @@ export default function WaitlistForm() {
         setMessage(data?.error || 'Something went wrong. Please try again.')
         return
       }
+      trackConversion(CONVERSIONS.taxWaitlist)
       setState('done')
     } catch {
       setState('error')

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
 
 // Friday dispatch signup. Two steps so we can collect a little context without
 // walling off the email:
@@ -60,6 +61,7 @@ export default function DispatchForm() {
         setState('modal')
         return
       }
+      trackConversion(CONVERSIONS.newsletterSignup)
       setState('sent')
     } catch {
       setError('Something went wrong. Please try again.')
