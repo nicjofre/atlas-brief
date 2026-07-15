@@ -176,6 +176,31 @@ export function sendDealNotification(args: {
   })
 }
 
+// Notify David when someone downloads the Survival Guide white paper — a warm
+// lead. reply_to is the requester so David can follow up directly.
+export function sendLeadNotification(args: {
+  name: string
+  email: string
+  company: string | null
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const rows: [string, string][] = [['Name', args.name], ['Email', args.email]]
+  if (args.company) rows.push(['Company', args.company])
+  const html =
+    `<div style="font-family:Georgia,serif;font-size:15px;color:#1a1a1a;line-height:1.6">` +
+    `<p style="margin:0 0 14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#8B5A2B">New Survival Guide download</p>` +
+    rows.map(([k, v]) => `<p style="margin:0 0 10px"><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('') +
+    `<p style="margin:18px 0 0;font-size:13px;color:#777">Reply to this email to reach ${escapeHtml(args.name)} directly.</p>` +
+    `</div>`
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: [DEAL_NOTIFY_TO],
+    reply_to: args.email,
+    subject: `Survival Guide download: ${args.name}`,
+    html,
+  })
+}
+
 // Create a broadcast against the configured audience. Keep the live
 // {{{FIRST_NAME}}} / unsubscribe tokens in the html so Resend fills them.
 export function createDispatchBroadcast(args: {

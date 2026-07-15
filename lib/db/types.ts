@@ -1176,6 +1176,33 @@ export type Database = {
         }
         Relationships: []
       }
+      white_paper_leads: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          company: string | null
+          source: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          company?: string | null
+          source?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          company?: string | null
+          source?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       dev_tasks: {
         Row: {
           id: string

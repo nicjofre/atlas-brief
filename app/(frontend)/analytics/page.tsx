@@ -9,6 +9,7 @@ const TABS = [
   { id: 'dispatch', label: 'Dispatch engagement' },
   { id: 'waitlist', label: 'Tax waitlist' },
   { id: 'deals', label: 'Deal submissions' },
+  { id: 'guide', label: 'Guide leads' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -31,12 +32,13 @@ type LinkRow = { deal: string; clicks: number }
 type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
 type DealRow = { name: string; email: string; deal: string; note: string | null; created_at: string }
+type GuideRow = { name: string; email: string; company: string | null; created_at: string }
 
 async function loadAnalytics() {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   try {
-    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist, deals, postTitleRows] = await Promise.all([
+    const [posts, totals, broadcasts, links, emailCount, emailTotals, waitlist, deals, guideLeads, postTitleRows] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
@@ -83,6 +85,9 @@ async function loadAnalytics() {
       c.query<DealRow>(`
         select name, email, deal, note, created_at
         from deal_submissions order by created_at desc limit 500`),
+      c.query<GuideRow>(`
+        select name, email, company, created_at
+        from white_paper_leads order by created_at desc limit 500`),
       // Freeform post titles (they live in the Payload schema, not `articles`),
       // so "By post" can show a real title instead of the bare slug.
       c.query<{ slug: string; title: string }>(`
@@ -105,6 +110,7 @@ async function loadAnalytics() {
       emailTotals: emailTotals.rows[0] ?? { delivered: 0, opens: 0, clicks: 0, untracked: 0 },
       waitlist: waitlist.rows,
       deals: deals.rows,
+      guideLeads: guideLeads.rows,
     }
   } finally {
     await c.end().catch(() => {})
@@ -139,7 +145,7 @@ export default async function AnalyticsPage({
   const sp = await searchParams
   const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
 
-  const { posts, totals, broadcasts, links, hasEmail, emailTotals, waitlist, deals } = await loadAnalytics()
+  const { posts, totals, broadcasts, links, hasEmail, emailTotals, waitlist, deals, guideLeads } = await loadAnalytics()
 
   return (
     <>
@@ -368,6 +374,45 @@ export default async function AnalyticsPage({
                     <td style={{ ...TD, color: '#666', fontSize: 13 }}>{d.note || <span style={{ color: '#bbb' }}>—</span>}</td>
                     <td style={{ ...TD, textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#666' }}>
                       {new Date(d.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        </>
+        )}
+
+        {tab === 'guide' && (
+        <>
+        <div style={{ display: 'flex', gap: 16, marginTop: 20, marginBottom: 8, flexWrap: 'wrap' }}>
+          <Stat label="Guide downloads" value={guideLeads.length.toLocaleString()} />
+        </div>
+        <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Survival Guide leads</h2>
+        {guideLeads.length === 0 ? (
+          <p style={{ color: '#999', fontSize: 14 }}>
+            No downloads yet. Leads captured on the <Link href="/survival-guide" style={{ color: '#9A6B3F' }}>Survival Guide</Link> page show here.
+          </p>
+        ) : (
+          <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={TH}>Name</th>
+                  <th style={TH}>Email</th>
+                  <th style={TH}>Company</th>
+                  <th style={{ ...TH, textAlign: 'right' }}>Downloaded</th>
+                </tr>
+              </thead>
+              <tbody>
+                {guideLeads.map((g, i) => (
+                  <tr key={`${g.email}-${i}`}>
+                    <td style={TD}>{g.name}</td>
+                    <td style={TD}><a href={`mailto:${g.email}`} style={{ color: '#9A6B3F' }}>{g.email}</a></td>
+                    <td style={{ ...TD, color: '#666' }}>{g.company || <span style={{ color: '#bbb' }}>—</span>}</td>
+                    <td style={{ ...TD, textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#666' }}>
+                      {new Date(g.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

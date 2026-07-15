@@ -1,0 +1,82 @@
+/* Survival Guide lead-gen landing page. Uses the global atlas-v2 tokens
+   (--bg, --ink, --accent, --serif, etc.). */
+
+.sg { background: var(--bg); color: var(--ink); font-family: var(--sans); }
+.sg-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad-x); }
+
+/* Hero */
+.sg-hero { padding: clamp(40px, 6vw, 88px) 0; border-bottom: 1px solid var(--rule); }
+.sg-hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+.sg-eyebrow {
+  font-family: var(--mono); font-size: var(--eyebrow); letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--accent-ink); margin: 0 0 20px;
+}
+.sg-h1 {
+  font-family: var(--serif); font-weight: 500; font-size: clamp(34px, 4.4vw, 60px);
+  line-height: 1.04; letter-spacing: -0.01em; margin: 0; max-width: 16ch;
+}
+.sg-h1 em { font-style: italic; color: var(--accent-ink); }
+.sg-lede {
+  font-family: var(--serif); font-size: clamp(17px, 1.5vw, 21px); line-height: 1.55;
+  color: var(--ink-soft); margin: 24px 0 0; max-width: 52ch;
+}
+.sg-kicker {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--muted);
+  margin: 22px 0 0;
+}
+
+/* Form card */
+.sg-card {
+  background: var(--bg-alt); border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+  border-radius: 8px; padding: clamp(24px, 3vw, 34px);
+}
+.sg-card-head { font-family: var(--serif); font-weight: 600; font-size: 24px; }
+.sg-card-sub { font-family: var(--sans); font-size: 14px; color: var(--muted); margin: 6px 0 18px; }
+.sg-form { display: flex; flex-direction: column; gap: 10px; }
+.sg-input {
+  font-family: var(--sans); font-size: 15px; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 13px 14px; transition: border-color .15s;
+}
+.sg-input::placeholder { color: var(--muted-2); }
+.sg-input:focus { outline: none; border-color: var(--accent); }
+.sg-btn {
+  display: inline-block; text-align: center; font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 20px; border-radius: 4px;
+  cursor: pointer; transition: background .15s, border-color .15s;
+}
+.sg-btn-primary { background: var(--accent); color: var(--bg); border: 1px solid var(--accent); }
+.sg-btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.sg-btn-primary:disabled { opacity: 0.6; cursor: default; }
+.sg-fine { font-family: var(--sans); font-size: 12px; color: var(--muted-2); margin: 8px 0 0; text-align: center; }
+.sg-err { font-family: var(--sans); font-size: 13px; color: #B23B2E; margin: 0; }
+.sg-done { display: flex; flex-direction: column; gap: 10px; }
+.sg-done strong { font-family: var(--serif); font-size: 20px; }
+.sg-done span { font-family: var(--sans); font-size: 14px; color: var(--muted); }
+
+/* What's inside */
+.sg-inside { padding: clamp(44px, 6vw, 88px) 0; border-bottom: 1px solid var(--rule); }
+.sg-section-kicker {
+  font-family: var(--mono); font-size: var(--eyebrow); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent-ink); display: block; margin-bottom: 32px;
+}
+.sg-inside-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 3vw, 44px); }
+.sg-inside-item { display: flex; gap: 18px; align-items: flex-start; }
+.sg-num {
+  font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 4px 8px; flex-shrink: 0;
+}
+.sg-inside-item h3 { font-family: var(--serif); font-weight: 600; font-size: 19px; margin: 0 0 6px; line-height: 1.2; }
+.sg-inside-item p { font-family: var(--sans); font-size: 15px; line-height: 1.55; color: var(--muted); margin: 0; }
+
+/* Quote band */
+.sg-quote-band { padding: clamp(48px, 7vw, 96px) 0; background: var(--ink); color: var(--bg); }
+.sg-quote-band blockquote {
+  font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 3vw, 38px); line-height: 1.25;
+  letter-spacing: -0.01em; margin: 0; max-width: 22ch;
+}
+.sg-quote-band p { font-family: var(--sans); font-size: 15px; line-height: 1.5; color: #E8DCC6; margin: 22px 0 0; max-width: 48ch; }
+
+@media (max-width: 860px) {
+  .sg-hero-grid { grid-template-columns: 1fr; }
+  .sg-inside-grid { grid-template-columns: 1fr; }
+}

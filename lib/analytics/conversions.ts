@@ -16,6 +16,10 @@ declare global {
 export const CONVERSIONS = {
   newsletterSignup: 'AW-18292132689/MFHDCM7ekM0cENGWr5JE',
   taxWaitlist: 'AW-18292132689/r7gNCIuiq80cENGWr5JE',
+  // Survival Guide download. Reuses the newsletter-signup action until David
+  // creates a dedicated "White paper download" conversion in Google Ads —
+  // swap in that label here when he sends it.
+  whitePaper: 'AW-18292132689/MFHDCM7ekM0cENGWr5JE',
 } as const
 
 export function trackConversion(sendTo: string): void {
