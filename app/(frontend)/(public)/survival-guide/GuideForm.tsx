@@ -62,7 +62,9 @@ export default function GuideForm() {
       <button type="submit" className="sg-btn sg-btn-primary" disabled={state === 'submitting'}>
         {state === 'submitting' ? 'Sending…' : 'Email me the guide'}
       </button>
-      <p className="sg-fine">I&rsquo;ll email you the PDF. No spam.</p>
+      <p className="sg-fine">
+        I&rsquo;ll email you the PDF and add you to the Friday dispatch &mdash; one note a week. Unsubscribe anytime.
+      </p>
     </form>
   )
 }

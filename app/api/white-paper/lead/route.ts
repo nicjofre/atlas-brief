@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { sendGuideEmail, sendLeadNotification } from '@/lib/resend'
+import { sendGuideEmail, sendLeadNotification, syncContactToResend } from '@/lib/resend'
 
 export const runtime = 'nodejs'
 
@@ -44,6 +44,22 @@ export async function POST(req: Request) {
   if (error) {
     console.error('[white-paper] insert failed', error)
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
+  }
+
+  // Also add them to the Friday dispatch list (disclosed on the form). The
+  // subscribers table has a unique email, so an existing subscriber just
+  // no-ops on 23505 — no duplicate, no status change.
+  const firstName = name.split(/\s+/)[0] || null
+  const lastName = name.split(/\s+/).slice(1).join(' ') || null
+  const { error: subErr } = await supabase
+    .from('subscribers')
+    .insert({ email, status: 'subscribed', source: 'survival_guide', first_name: firstName, last_name: lastName })
+  if (subErr && subErr.code !== '23505') {
+    console.error('[white-paper] subscribe failed', subErr)
+  } else if (!subErr) {
+    // Only mirror brand-new subscribers into the Resend audience.
+    const sync = await syncContactToResend(email, { firstName, lastName })
+    if (sync.ok === false && !sync.skipped) console.error('[white-paper] resend sync failed', sync.error)
   }
 
   // Email the guide (PDF attached) to the requester, and notify David. Both are
