@@ -63,7 +63,7 @@ export default function GuideForm() {
         {state === 'submitting' ? 'Sending…' : 'Email me the guide'}
       </button>
       <p className="sg-fine">
-        I&rsquo;ll email you the PDF and add you to the Friday dispatch &mdash; one note a week. Unsubscribe anytime.
+        I&rsquo;ll email you the PDF and add you to the Friday dispatch, one note a week. Unsubscribe anytime.
       </p>
     </form>
   )
