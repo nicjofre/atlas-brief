@@ -54,7 +54,7 @@
 .sg-done span { font-family: var(--sans); font-size: 14px; color: var(--muted); }
 
 /* What's inside */
-.sg-inside { padding: clamp(44px, 6vw, 88px) 0; border-bottom: 1px solid var(--rule); }
+.sg-inside { padding: clamp(44px, 6vw, 88px) 0; }
 .sg-section-kicker {
   font-family: var(--mono); font-size: var(--eyebrow); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--accent-ink); display: block; margin-bottom: 32px;
