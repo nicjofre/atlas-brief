@@ -54,7 +54,10 @@
 .sg-done span { font-family: var(--sans); font-size: 14px; color: var(--muted); }
 
 /* What's inside */
-.sg-inside { padding: clamp(44px, 6vw, 88px) 0; }
+.sg-inside { padding: clamp(44px, 6vw, 88px) 0 clamp(28px, 3vw, 44px); }
+/* The global footer adds a big top margin meant for the homepage; trim it here
+   so there isn't a huge gap after the last item. */
+.sg + .footer { margin-top: 0; }
 .sg-section-kicker {
   font-family: var(--mono); font-size: var(--eyebrow); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--accent-ink); display: block; margin-bottom: 32px;
