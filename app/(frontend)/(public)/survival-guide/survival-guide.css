@@ -68,14 +68,6 @@
 .sg-inside-item h3 { font-family: var(--serif); font-weight: 600; font-size: 19px; margin: 0 0 6px; line-height: 1.2; }
 .sg-inside-item p { font-family: var(--sans); font-size: 15px; line-height: 1.55; color: var(--muted); margin: 0; }
 
-/* Quote band */
-.sg-quote-band { padding: clamp(48px, 7vw, 96px) 0; background: var(--ink); color: var(--bg); }
-.sg-quote-band blockquote {
-  font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 3vw, 38px); line-height: 1.25;
-  letter-spacing: -0.01em; margin: 0; max-width: 22ch;
-}
-.sg-quote-band p { font-family: var(--sans); font-size: 15px; line-height: 1.5; color: #E8DCC6; margin: 22px 0 0; max-width: 48ch; }
-
 @media (max-width: 860px) {
   .sg-hero-grid { grid-template-columns: 1fr; }
   .sg-inside-grid { grid-template-columns: 1fr; }

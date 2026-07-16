@@ -61,15 +61,6 @@ export default function SurvivalGuidePage() {
           </div>
         </section>
 
-        <section className="sg-quote-band">
-          <div className="sg-wrap">
-            <blockquote>
-              &ldquo;The operators who survive eventually buy from the ones who don&rsquo;t.&rdquo;
-            </blockquote>
-            <p>Written by David Safai — operator, developer, and general contractor, after buying, renovating, and holding through multiple LA cycles.</p>
-            <a href="#top" className="sg-btn sg-btn-ghost" style={{ display: 'none' }}>x</a>
-          </div>
-        </section>
       </main>
       <Footer />
     </>
