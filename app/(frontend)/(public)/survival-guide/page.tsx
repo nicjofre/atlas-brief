@@ -29,9 +29,9 @@ export default function SurvivalGuidePage() {
                 One bad deal can undo <em>ten good years.</em>
               </h1>
               <p className="sg-lede">
-                The thing that sinks most apartment deals is simple: too much debt, then one bad year. I&rsquo;ve
-                owned and held in LA through multiple cycles, and I wrote this guide to help you figure out how to
-                look at a deal and know it&rsquo;ll hold up when the market turns on you.
+                Too much debt and one bad year can blow up decades of hard work. I wrote down what I&rsquo;ve
+                figured out about avoiding it, and how to look at a deal and actually know it&rsquo;ll hold up
+                when the market turns on you.
               </p>
               <p className="sg-kicker">
                 A short guide to underwriting deals that survive the worst-case.
