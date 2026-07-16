@@ -29,12 +29,12 @@ export default function SurvivalGuidePage() {
                 One bad deal can undo <em>ten good years.</em>
               </h1>
               <p className="sg-lede">
-                Most apartment blow-ups trace back to the same thing: too much debt meeting a bad year. This
-                guide is the underwriting discipline that keeps a rough year from becoming a forced sale &mdash;
-                the rules, the risks to price in, and the test every deal has to pass.
+                Most apartment blow-ups come from the same place: too much debt meeting a bad year. This guide
+                walks through how to underwrite around it &mdash; the rules that keep leverage in check, the
+                risks to account for, and a simple test for whether a deal holds up in a bad market.
               </p>
               <p className="sg-kicker">
-                Written by David Safai, after buying and holding through multiple LA cycles.
+                A short guide to underwriting deals that survive the worst-case.
               </p>
             </div>
 
