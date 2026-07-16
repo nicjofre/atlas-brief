@@ -29,9 +29,9 @@ export default function SurvivalGuidePage() {
                 How to not blow yourself up <em>buying apartments.</em>
               </h1>
               <p className="sg-lede">
-                The thing that sinks most apartment deals is simple: too much debt, then one bad year. I wrote
-                down what I&rsquo;ve figured out about avoiding it, and how to look at a deal and actually know
-                it&rsquo;ll hold up when the market turns on you.
+                The thing that sinks most apartment deals is simple: too much debt, then one bad year. I&rsquo;ve
+                owned and held in LA through multiple cycles, and I wrote this guide to help you figure out how to
+                look at a deal and know it&rsquo;ll hold up when the market turns on you.
               </p>
               <p className="sg-kicker">
                 A short guide to underwriting deals that survive the worst-case.
