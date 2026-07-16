@@ -9,7 +9,6 @@ type State = 'idle' | 'submitting' | 'done' | 'error'
 export default function GuideForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [company, setCompany] = useState('')
   const [state, setState] = useState<State>('idle')
   const [message, setMessage] = useState('')
 
@@ -24,7 +23,7 @@ export default function GuideForm() {
       const res = await fetch('/api/white-paper/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, company }),
+        body: JSON.stringify({ name, email }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) { setState('error'); setMessage(data?.error || 'Something went wrong. Please try again.'); return }
@@ -53,8 +52,6 @@ export default function GuideForm() {
         value={name} onChange={(e) => setName(e.target.value)} />
       <input className="sg-input" type="email" placeholder="Email address *" aria-label="Email address"
         value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="sg-input" type="text" placeholder="Company (optional)" aria-label="Company"
-        value={company} onChange={(e) => setCompany(e.target.value)} />
       {state === 'error' && <p className="sg-err">{message}</p>}
       <button type="submit" className="sg-btn sg-btn-primary" disabled={state === 'submitting'}>
         {state === 'submitting' ? 'Sending…' : 'Get the guide'}
