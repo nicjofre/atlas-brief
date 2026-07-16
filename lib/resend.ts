@@ -176,6 +176,34 @@ export function sendDealNotification(args: {
   })
 }
 
+// Email the Survival Guide PDF to the person who requested it. The PDF is
+// attached by URL (Resend fetches the public /atlas-survival-guide.pdf), so we
+// don't have to bundle the file into the serverless function. reply_to is David
+// so a reply reaches him.
+export function sendGuideEmail(args: {
+  to: string
+  name: string
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://atlasbrief.la').replace(/\/$/, '')
+  const first = args.name.trim().split(/\s+/)[0] || 'there'
+  const html =
+    `<div style="font-family:Georgia,serif;font-size:16px;color:#1a1a1a;line-height:1.6">` +
+    `<p style="margin:0 0 14px">Hi ${escapeHtml(first)},</p>` +
+    `<p style="margin:0 0 14px">Here's the Atlas Brief Survival Guide you asked for. It's attached as a PDF.</p>` +
+    `<p style="margin:0 0 14px">It's the stuff I've figured out about not blowing yourself up on an apartment deal, in one place. If a question comes up, just reply to this email.</p>` +
+    `<p style="margin:18px 0 0">David Safai<br/><span style="color:#8B5A2B">Atlas Brief</span></p>` +
+    `</div>`
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: [args.to],
+    reply_to: DISPATCH_REPLY_TO,
+    subject: 'Your Atlas Brief Survival Guide',
+    html,
+    attachments: [{ filename: 'Atlas-Brief-Survival-Guide.pdf', path: `${base}/atlas-survival-guide.pdf` }],
+  })
+}
+
 // Notify David when someone downloads the Survival Guide white paper — a warm
 // lead. reply_to is the requester so David can follow up directly.
 export function sendLeadNotification(args: {

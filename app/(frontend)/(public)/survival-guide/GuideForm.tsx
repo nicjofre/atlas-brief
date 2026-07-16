@@ -11,6 +11,7 @@ export default function GuideForm() {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<State>('idle')
   const [message, setMessage] = useState('')
+  const [emailed, setEmailed] = useState(true)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,9 +29,8 @@ export default function GuideForm() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) { setState('error'); setMessage(data?.error || 'Something went wrong. Please try again.'); return }
       trackConversion(CONVERSIONS.whitePaper)
+      setEmailed(data?.emailed !== false)
       setState('done')
-      // Kick off the download immediately.
-      if (typeof window !== 'undefined') window.open(PDF_URL, '_blank', 'noopener')
     } catch {
       setState('error'); setMessage('Something went wrong. Please try again.')
     }
@@ -39,9 +39,15 @@ export default function GuideForm() {
   if (state === 'done') {
     return (
       <div className="sg-done">
-        <strong>Your guide is ready.</strong>
-        <span>The download should have opened in a new tab. If it didn&rsquo;t:</span>
-        <a href={PDF_URL} target="_blank" rel="noopener noreferrer" className="sg-btn sg-btn-primary">Download the guide (PDF)</a>
+        <strong>Check your inbox.</strong>
+        {emailed ? (
+          <span>I just emailed the guide to <b>{email}</b>. It&rsquo;s attached as a PDF. (Give it a minute, and peek in spam if you don&rsquo;t see it.)</span>
+        ) : (
+          <>
+            <span>You&rsquo;re on the list. The email is on its way — or grab it right here:</span>
+            <a href={PDF_URL} target="_blank" rel="noopener noreferrer" className="sg-btn sg-btn-primary">Download the guide (PDF)</a>
+          </>
+        )}
       </div>
     )
   }
@@ -54,9 +60,9 @@ export default function GuideForm() {
         value={email} onChange={(e) => setEmail(e.target.value)} />
       {state === 'error' && <p className="sg-err">{message}</p>}
       <button type="submit" className="sg-btn sg-btn-primary" disabled={state === 'submitting'}>
-        {state === 'submitting' ? 'Sending…' : 'Get the guide'}
+        {state === 'submitting' ? 'Sending…' : 'Email me the guide'}
       </button>
-      <p className="sg-fine">Free. One email, no spam. Unsubscribe anytime.</p>
+      <p className="sg-fine">I&rsquo;ll email you the PDF. No spam.</p>
     </form>
   )
 }

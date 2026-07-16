@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { sendLeadNotification } from '@/lib/resend'
+import { sendGuideEmail, sendLeadNotification } from '@/lib/resend'
 
 export const runtime = 'nodejs'
 
@@ -46,9 +46,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 
-  // Notify David (non-blocking — the row is the durable record).
-  const notify = await sendLeadNotification({ name, email, company })
+  // Email the guide (PDF attached) to the requester, and notify David. Both are
+  // best-effort: the lead row is the durable record. If the guide email fails,
+  // tell the client so it can offer the direct download as a fallback.
+  const [guide, notify] = await Promise.all([
+    sendGuideEmail({ to: email, name }),
+    sendLeadNotification({ name, email, company }),
+  ])
   if (!notify.ok) console.error('[white-paper] notify failed', notify.error)
+  if (!guide.ok) {
+    console.error('[white-paper] guide email failed', guide.error)
+    return NextResponse.json({ ok: true, emailed: false })
+  }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, emailed: true })
 }
