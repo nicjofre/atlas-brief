@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import InternalNav from '@/app/InternalNav'
-import DevelopmentBoard, { type DevTask } from './DevelopmentBoard'
+import { getAtlasDevData } from '@/lib/ops/dev'
+import DevelopmentBoard from './DevelopmentBoard'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,27 +11,13 @@ export default async function DevelopmentPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: tasks } = await supabase
-    .from('dev_tasks')
-    .select('id, title, detail, minutes, done, paid, paid_at, sort_order, created_at')
-    .order('done', { ascending: true })
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true })
-
-  const taskRows: DevTask[] = (tasks ?? []).map((t) => ({
-    id: t.id,
-    title: t.title,
-    detail: t.detail,
-    minutes: t.minutes,
-    done: t.done,
-    paid: t.paid,
-    paid_at: t.paid_at,
-  }))
+  // Backed by the shared Forward Deployed Brothers ops DB (Atlas Brief's slice).
+  const { hourlyRate, tasks } = await getAtlasDevData()
 
   return (
     <>
       <InternalNav active="development" />
-      <DevelopmentBoard tasks={taskRows} />
+      <DevelopmentBoard tasks={tasks} hourlyRate={hourlyRate} />
     </>
   )
 }
