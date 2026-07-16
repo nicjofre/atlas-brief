@@ -26,7 +26,7 @@ export default function SurvivalGuidePage() {
             <div className="sg-hero-copy">
               <p className="sg-eyebrow">Atlas Brief · Free guide</p>
               <h1 className="sg-h1">
-                How to not blow yourself up <em>buying apartments.</em>
+                One bad deal can undo <em>ten good years.</em>
               </h1>
               <p className="sg-lede">
                 The thing that sinks most apartment deals is simple: too much debt, then one bad year. I&rsquo;ve
