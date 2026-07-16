@@ -26,14 +26,16 @@ export default function SurvivalGuidePage() {
             <div className="sg-hero-copy">
               <p className="sg-eyebrow">Atlas Brief · Free guide</p>
               <h1 className="sg-h1">
-                How apartment investors protect their equity through <em>every market cycle.</em>
+                One bad deal can undo <em>ten good years.</em>
               </h1>
               <p className="sg-lede">
-                Most investors don&rsquo;t fail because they can&rsquo;t find deals. They fail because they
-                eventually buy the one deal that wipes out years of hard-earned equity. This is how you avoid
-                becoming that investor.
+                Apartment owners rarely get wiped out by a bad market call. They get wiped out by their own
+                balance sheet: too much debt meeting one bad year. Fix that, and most of the danger in this
+                business disappears.
               </p>
-              <p className="sg-kicker">Protect your equity · Survive every market · Compound over decades</p>
+              <p className="sg-kicker">
+                A short guide to underwriting deals that survive the worst-case, not just the spreadsheet.
+              </p>
             </div>
 
             <div className="sg-card">
