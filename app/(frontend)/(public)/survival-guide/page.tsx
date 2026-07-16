@@ -26,12 +26,12 @@ export default function SurvivalGuidePage() {
             <div className="sg-hero-copy">
               <p className="sg-eyebrow">Atlas Brief · Free guide</p>
               <h1 className="sg-h1">
-                One bad deal can undo <em>ten good years.</em>
+                How to not blow yourself up <em>buying apartments.</em>
               </h1>
               <p className="sg-lede">
-                Most apartment blow-ups come from the same place: too much debt meeting a bad year. This guide
-                walks through how to underwrite around it &mdash; the rules that keep leverage in check, the
-                risks to account for, and a simple test for whether a deal holds up in a bad market.
+                The thing that sinks most apartment deals is simple: too much debt, then one bad year. I wrote
+                down what I&rsquo;ve figured out about avoiding it, and how to look at a deal and actually know
+                it&rsquo;ll hold up when the market turns on you.
               </p>
               <p className="sg-kicker">
                 A short guide to underwriting deals that survive the worst-case.
@@ -40,7 +40,7 @@ export default function SurvivalGuidePage() {
 
             <div className="sg-card">
               <div className="sg-card-head">Get the guide</div>
-              <p className="sg-card-sub">Enter your details and the PDF is yours instantly.</p>
+              <p className="sg-card-sub">Tell me who you are and it&rsquo;s yours.</p>
               <GuideForm />
             </div>
           </div>
