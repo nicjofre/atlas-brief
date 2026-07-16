@@ -39,8 +39,6 @@ export default function SurvivalGuidePage() {
             </div>
 
             <div className="sg-card">
-              <div className="sg-card-head">Get the guide</div>
-              <p className="sg-card-sub">Tell me who you are and it&rsquo;s yours.</p>
               <GuideForm />
             </div>
           </div>

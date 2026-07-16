@@ -54,6 +54,8 @@ export default function GuideForm() {
 
   return (
     <form className="sg-form" onSubmit={onSubmit} noValidate>
+      <div className="sg-card-head">Get the guide</div>
+      <p className="sg-card-sub">Tell me who you are and it&rsquo;s yours.</p>
       <input className="sg-input" type="text" placeholder="Full name *" aria-label="Full name"
         value={name} onChange={(e) => setName(e.target.value)} />
       <input className="sg-input" type="email" placeholder="Email address *" aria-label="Email address"

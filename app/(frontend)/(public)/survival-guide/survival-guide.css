@@ -30,8 +30,8 @@
   background: var(--bg-alt); border: 1px solid var(--rule); border-left: 4px solid var(--accent);
   border-radius: 8px; padding: clamp(24px, 3vw, 34px);
 }
-.sg-card-head { font-family: var(--serif); font-weight: 600; font-size: 24px; }
-.sg-card-sub { font-family: var(--sans); font-size: 14px; color: var(--muted); margin: 6px 0 18px; }
+.sg-card-head { font-family: var(--serif); font-weight: 600; font-size: 24px; margin: 0; }
+.sg-card-sub { font-family: var(--sans); font-size: 14px; color: var(--muted); margin: 0 0 6px; }
 .sg-form { display: flex; flex-direction: column; gap: 10px; }
 .sg-input {
   font-family: var(--sans); font-size: 15px; color: var(--ink); background: var(--bg);
