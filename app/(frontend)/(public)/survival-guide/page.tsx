@@ -29,12 +29,12 @@ export default function SurvivalGuidePage() {
                 One bad deal can undo <em>ten good years.</em>
               </h1>
               <p className="sg-lede">
-                Apartment owners rarely get wiped out by a bad market call. They get wiped out by their own
-                balance sheet: too much debt meeting one bad year. Fix that, and most of the danger in this
-                business disappears.
+                Most apartment blow-ups trace back to the same thing: too much debt meeting a bad year. This
+                guide is the underwriting discipline that keeps a rough year from becoming a forced sale &mdash;
+                the rules, the risks to price in, and the test every deal has to pass.
               </p>
               <p className="sg-kicker">
-                A short guide to underwriting deals that survive the worst-case, not just the spreadsheet.
+                Written by David Safai, after buying and holding through multiple LA cycles.
               </p>
             </div>
 
