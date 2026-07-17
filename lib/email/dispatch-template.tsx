@@ -340,6 +340,21 @@ export function DispatchEmail({
                 Unsubscribe
               </Link>
             </Text>
+            <Text
+              style={{
+                fontFamily: C.serif,
+                fontSize: '10px',
+                lineHeight: '1.5',
+                color: C.muted,
+                margin: '16px 0 0',
+                paddingTop: '14px',
+                borderTop: `1px solid ${C.rule}`,
+              }}
+            >
+              <b>DISCLAIMER:</b> These analyses represent operator observations and opinions based on market
+              research and deal data. This is not investment advice, financial advice, or a recommendation to
+              buy or sell any property. Consult qualified professionals before making investment decisions.
+            </Text>
           </Section>
         </Container>
       </Body>
