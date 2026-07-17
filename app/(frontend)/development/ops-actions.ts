@@ -19,26 +19,21 @@ async function requireUser() {
   if (!user) throw new Error('unauthorized')
 }
 
-export async function addDevTask(title: string, detail: string) {
+export async function addDevTask(title: string, detail: string, parentId?: string | null) {
   await requireUser()
   const t = title.trim()
   if (!t) return
   const clientId = await atlasClientId()
   if (!clientId) return
-  await opsClient().from('tasks').insert({ client_id: clientId, title: t, detail: detail.trim() || null, status: 'backlog' })
-  revalidatePath('/development')
-}
-
-export async function addDevSubtask(parentId: string, title: string) {
-  await requireUser()
-  const t = title.trim()
-  if (!t) return
-  const clientId = await atlasClientId()
-  if (!clientId) return
-  // Guard: the parent must belong to Atlas Brief.
-  const { data: parent } = await opsClient().from('tasks').select('id').eq('id', parentId).eq('client_id', clientId).maybeSingle()
-  if (!parent) return
-  await opsClient().from('tasks').insert({ client_id: clientId, parent_id: parentId, title: t, status: 'backlog' })
+  const db = opsClient()
+  // If nesting, the parent must belong to Atlas Brief.
+  let parent: string | null = null
+  if (parentId) {
+    const { data } = await db.from('tasks').select('id').eq('id', parentId).eq('client_id', clientId).maybeSingle()
+    if (!data) return
+    parent = parentId
+  }
+  await db.from('tasks').insert({ client_id: clientId, parent_id: parent, title: t, detail: detail.trim() || null, status: 'backlog' })
   revalidatePath('/development')
 }
 
@@ -64,5 +59,18 @@ export async function reorderDevTasks(ids: string[]) {
   if (!clientId) return
   const db = opsClient()
   await Promise.all(ids.map((id, i) => db.from('tasks').update({ sort_order: i }).eq('id', id).eq('client_id', clientId)))
+  revalidatePath('/development')
+}
+
+// Drag-to-nest / reorder in one move: re-parent the task and rewrite the order
+// of its destination level. Mirrors the FDB dashboard's moveTask, scoped to
+// Atlas Brief.
+export async function moveDevTask(input: { id: string; parentId: string | null; siblingIds: string[] }) {
+  await requireUser()
+  const clientId = await atlasClientId()
+  if (!clientId) return
+  const db = opsClient()
+  await db.from('tasks').update({ parent_id: input.parentId }).eq('id', input.id).eq('client_id', clientId)
+  await Promise.all(input.siblingIds.map((id, i) => db.from('tasks').update({ sort_order: i }).eq('id', id).eq('client_id', clientId)))
   revalidatePath('/development')
 }

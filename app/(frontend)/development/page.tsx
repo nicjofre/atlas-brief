@@ -12,12 +12,12 @@ export default async function DevelopmentPage() {
   if (!user) redirect('/login')
 
   // Backed by the shared Forward Deployed Brothers ops DB (Atlas Brief's slice).
-  const { hourlyRate, tasks } = await getAtlasDevData()
+  const { hourlyRate, tasks, people } = await getAtlasDevData()
 
   return (
     <>
       <InternalNav active="development" />
-      <DevelopmentBoard tasks={tasks} hourlyRate={hourlyRate} />
+      <DevelopmentBoard tasks={tasks} people={people} hourlyRate={hourlyRate} />
     </>
   )
 }
