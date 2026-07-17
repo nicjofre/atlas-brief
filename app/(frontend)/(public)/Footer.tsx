@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Disclaimer from './Disclaimer'
 
 // Social links. Paste the real URLs to switch each icon on — an empty string
 // hides that icon (so nothing broken ships before the accounts exist).
@@ -56,6 +57,9 @@ export default function Footer() {
               </div>
             )}
           </div>
+        </div>
+        <div style={{ margin: '20px 0', paddingTop: 20, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+          <Disclaimer />
         </div>
         <div className="footer-legal">
           <span>© MMXXVI Atlas Brief · A publication of Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>

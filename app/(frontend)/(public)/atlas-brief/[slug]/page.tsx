@@ -12,6 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Comments from './Comments'
+import Disclaimer from '../../Disclaimer'
 import TrackView from './TrackView'
 import './post.css'
 
@@ -274,6 +275,9 @@ export default async function PostPage(
           <div>
             Los Angeles &middot;{' '}
             <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
+          </div>
+          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+            <Disclaimer />
           </div>
         </div>
       </footer>

@@ -4,6 +4,7 @@ import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Comments from './Comments'
 import TrackView from './TrackView'
+import Disclaimer from '../../Disclaimer'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -83,6 +84,9 @@ export default function FreeformPost({ post, preview = false }: { post: Post; pr
             &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
           </div>
           <div>{[kicker, dateStr].filter(Boolean).join(' · ')}</div>
+          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+            <Disclaimer />
+          </div>
         </div>
       </footer>
     </>
