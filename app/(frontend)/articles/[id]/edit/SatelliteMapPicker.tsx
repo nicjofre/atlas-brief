@@ -23,6 +23,21 @@ function loadMaps(): Promise<any> {
   return mapsPromise
 }
 
+// Mirror the server's stored-image URL so the "what will be saved" preview is
+// exact — same center, zoom, and optional pin.
+function staticSatUrl(center: { lat: number; lng: number }, zoom: number, marker: { lat: number; lng: number } | null, showPin: boolean) {
+  const p = new URLSearchParams({
+    center: `${center.lat},${center.lng}`,
+    zoom: String(zoom),
+    size: '320x192',
+    scale: '2',
+    maptype: 'satellite',
+    key: MAPS_KEY!,
+  })
+  if (showPin && marker) p.set('markers', `color:red|${marker.lat},${marker.lng}`)
+  return `https://maps.googleapis.com/maps/api/staticmap?${p}`
+}
+
 // Fall back to Street View metadata (already enabled) for a starting point when
 // the property has no coordinates yet — no Geocoding API needed.
 async function metadataCenter(address: string | null): Promise<{ lat: number; lng: number } | null> {
@@ -60,6 +75,8 @@ export default function SatelliteMapPicker({
   const [saving, setSaving] = useState(false)
   const [showPin, setShowPin] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  // Live view state so the "what will be saved" preview tracks the map.
+  const [view, setView] = useState<{ center: { lat: number; lng: number }; zoom: number; marker: { lat: number; lng: number } } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -83,9 +100,19 @@ export default function SatelliteMapPicker({
           rotateControl: false,
         })
         const marker = new maps.Marker({ position: center, map, draggable: true })
-        map.addListener('click', (e: any) => marker.setPosition(e.latLng))
         mapObj.current = map
         markerObj.current = marker
+
+        const sync = () => {
+          const c = map.getCenter()
+          const m = marker.getPosition()
+          if (!c || !m) return
+          setView({ center: { lat: c.lat(), lng: c.lng() }, zoom: Math.round(map.getZoom()), marker: { lat: m.lat(), lng: m.lng() } })
+        }
+        map.addListener('click', (e: any) => { marker.setPosition(e.latLng); sync() })
+        map.addListener('idle', sync)
+        marker.addListener('dragend', sync)
+        sync()
         setReady(true)
       } catch (e) {
         setErr(e instanceof Error ? e.message : 'Map failed to load')
@@ -136,11 +163,23 @@ export default function SatelliteMapPicker({
       {!ready && !err && (
         <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: '#888', marginTop: 8 }}>Loading map…</div>
       )}
+
+      {/* What will actually be saved — updates as you pan and toggle the pin. */}
+      {ready && view && (
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 12 }}>
+          <div style={{ width: 160, flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={staticSatUrl(view.center, view.zoom, view.marker, showPin)} alt="" style={{ width: '100%', height: 'auto', border: '1px solid #0A0A0A', display: 'block' }} />
+            <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#999', marginTop: 4 }}>Saved photo</div>
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: '#4F4F4B', cursor: 'pointer', paddingTop: 2 }}>
+            <input type="checkbox" checked={showPin} onChange={e => setShowPin(e.target.checked)} disabled={saving} />
+            Show red pin on the saved photo
+          </label>
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: '#4F4F4B', cursor: 'pointer' }}>
-          <input type="checkbox" checked={showPin} onChange={e => setShowPin(e.target.checked)} disabled={saving} />
-          Show pin on the photo
-        </label>
         <div style={{ flex: 1 }} />
         <button onClick={onCancel} disabled={saving} style={btn}>Cancel</button>
         <button onClick={save} disabled={saving || !ready} style={{ ...btn, background: '#0A0A0A', color: '#fff', borderColor: '#0A0A0A' }}>
