@@ -11,14 +11,17 @@ const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 // Client-side preview URLs (mirror the server route's sizes). The key is
 // referrer-locked to our domains, so these only load in the browser. `location`
 // is either "lat,lng" or a plain address — Google geocodes the address itself.
-function googlePreviewUrl(source: 'streetview' | 'satellite', location: string, heading: number) {
+function googlePreviewUrl(source: 'streetview' | 'satellite', location: string, heading: number, size = '640x384') {
   if (source === 'streetview') {
-    const p = new URLSearchParams({ size: '640x384', location, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
+    const p = new URLSearchParams({ size, location, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
     return `https://maps.googleapis.com/maps/api/streetview?${p}`
   }
-  const p = new URLSearchParams({ center: location, zoom: '19', size: '640x384', scale: '2', maptype: 'satellite', key: MAPS_KEY! })
+  const p = new URLSearchParams({ center: location, zoom: '19', size, scale: '2', maptype: 'satellite', key: MAPS_KEY! })
   return `https://maps.googleapis.com/maps/api/staticmap?${p}`
 }
+
+// The 8 compass headings for the Street View contact sheet.
+const HEADINGS = [0, 45, 90, 135, 180, 225, 270, 315]
 
 export default function HeroPhotoEditor({
   articleId,
@@ -233,22 +236,47 @@ export default function HeroPhotoEditor({
       {picker && hasCoords && (
         <div style={{ marginTop: 12, border: '1px solid #D6CBB3', background: '#FFFDF7', padding: 12 }}>
           <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4F4F4B', marginBottom: 8 }}>
-            {picker === 'streetview' ? 'Google Street View' : 'Google Satellite'} preview
+            {picker === 'streetview' ? `Google Street View · facing ${heading}°` : 'Google Satellite'} preview
           </div>
+          {/* Large preview of the currently-selected angle. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={googlePreviewUrl(picker, location, heading)}
             alt=""
             style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
           />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-            {picker === 'streetview' && (
-              <>
-                <button onClick={() => setHeading(h => (h + 315) % 360)} disabled={uploading} style={pickerBtnStyle}>↺ Rotate left</button>
-                <button onClick={() => setHeading(h => (h + 45) % 360)} disabled={uploading} style={pickerBtnStyle}>Rotate right ↻</button>
-                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>facing {heading}°</span>
-              </>
-            )}
+
+          {picker === 'streetview' && (
+            <>
+              {/* Contact sheet: every 45° angle at once — click one to select it. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 4, marginTop: 8 }}>
+                {HEADINGS.map(h => (
+                  <button
+                    key={h}
+                    onClick={() => setHeading(h)}
+                    disabled={uploading}
+                    title={`${h}°`}
+                    style={{ padding: 0, border: heading === h ? '2px solid #0A0A0A' : '1px solid #D6CBB3', borderRadius: 2, cursor: 'pointer', background: 'none', lineHeight: 0 }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={googlePreviewUrl('streetview', location, h, '160x100')} alt={`${h}°`} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  </button>
+                ))}
+              </div>
+              {/* Fine-tune between the 45° steps. */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Fine-tune</span>
+                <input
+                  type="range" min={0} max={345} step={15} value={heading}
+                  onChange={e => setHeading(Number(e.target.value))}
+                  disabled={uploading}
+                  style={{ flex: 1 }}
+                />
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
             <div style={{ flex: 1 }} />
             <button onClick={() => setPicker(null)} disabled={uploading} style={pickerBtnStyle}>Cancel</button>
             <button onClick={useGoogleImage} disabled={uploading} style={{ ...pickerBtnStyle, background: '#0A0A0A', color: '#fff', borderColor: '#0A0A0A' }}>
