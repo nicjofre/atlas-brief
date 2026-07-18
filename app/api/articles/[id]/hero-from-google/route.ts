@@ -16,21 +16,21 @@ const REFERER = 'https://atlasbrief.la/'
 // Street View Static tops out at 640px; Satellite (Static Maps) supports
 // scale=2 for a crisper 1280px-wide hero. `location` is either "lat,lng" or a
 // plain address string, which Google geocodes itself.
-function streetViewUrl(location: string, heading: number) {
+function streetViewUrl(location: string, heading: number, fov: number) {
   const p = new URLSearchParams({
     size: '640x384',
     location,
     heading: String(heading),
-    fov: '80',
+    fov: String(fov),
     pitch: '0',
     key: KEY!,
   })
   return `https://maps.googleapis.com/maps/api/streetview?${p}`
 }
-function satelliteUrl(location: string) {
+function satelliteUrl(location: string, zoom: number) {
   const p = new URLSearchParams({
     center: location,
-    zoom: '19',
+    zoom: String(zoom),
     size: '640x384',
     scale: '2',
     maptype: 'satellite',
@@ -55,9 +55,14 @@ export async function POST(
   const body = (await req.json().catch(() => ({}))) as {
     source?: 'streetview' | 'satellite'
     heading?: number
+    fov?: number
+    zoom?: number
   }
   const source = body.source
   const heading = Number.isFinite(body.heading) ? Math.round(body.heading as number) % 360 : 0
+  // Clamp to Google's supported ranges.
+  const fov = Number.isFinite(body.fov) ? Math.min(120, Math.max(10, Math.round(body.fov as number))) : 80
+  const zoom = Number.isFinite(body.zoom) ? Math.min(21, Math.max(16, Math.round(body.zoom as number))) : 19
   if (source !== 'streetview' && source !== 'satellite') {
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 })
   }
@@ -90,7 +95,7 @@ export async function POST(
     }
   }
 
-  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading) : satelliteUrl(location)
+  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading, fov) : satelliteUrl(location, zoom)
   const res = await fetch(imgUrl, { headers: { Referer: REFERER } })
   if (!res.ok) {
     return NextResponse.json({ error: `Google returned ${res.status}` }, { status: 502 })

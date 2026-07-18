@@ -11,17 +11,26 @@ const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 // Client-side preview URLs (mirror the server route's sizes). The key is
 // referrer-locked to our domains, so these only load in the browser. `location`
 // is either "lat,lng" or a plain address — Google geocodes the address itself.
-function googlePreviewUrl(source: 'streetview' | 'satellite', location: string, heading: number, size = '640x384') {
+function googlePreviewUrl(
+  source: 'streetview' | 'satellite',
+  location: string,
+  opts: { heading?: number; fov?: number; zoom?: number; size?: string } = {}
+) {
+  const { heading = 0, fov = 80, zoom = 19, size = '640x384' } = opts
   if (source === 'streetview') {
-    const p = new URLSearchParams({ size, location, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
+    const p = new URLSearchParams({ size, location, heading: String(heading), fov: String(fov), pitch: '0', key: MAPS_KEY! })
     return `https://maps.googleapis.com/maps/api/streetview?${p}`
   }
-  const p = new URLSearchParams({ center: location, zoom: '19', size, scale: '2', maptype: 'satellite', key: MAPS_KEY! })
+  const p = new URLSearchParams({ center: location, zoom: String(zoom), size, scale: '2', maptype: 'satellite', key: MAPS_KEY! })
   return `https://maps.googleapis.com/maps/api/staticmap?${p}`
 }
 
 // The 8 compass headings for the Street View contact sheet.
 const HEADINGS = [0, 45, 90, 135, 180, 225, 270, 315]
+// Street View field of view: higher = wider = more zoomed out (Google max 120).
+const FOVS = [{ label: 'Normal', v: 80 }, { label: 'Wide', v: 100 }, { label: 'Widest', v: 120 }]
+// Satellite zoom bounds (higher = closer).
+const SAT_MIN = 16, SAT_MAX = 21
 
 export default function HeroPhotoEditor({
   articleId,
@@ -55,6 +64,8 @@ export default function HeroPhotoEditor({
   // which Google geocodes itself.
   const [picker, setPicker] = useState<'streetview' | 'satellite' | null>(null)
   const [heading, setHeading] = useState(0)
+  const [fov, setFov] = useState(80)
+  const [satZoom, setSatZoom] = useState(19)
   const location = lat != null && lng != null ? `${lat},${lng}` : (address ?? '')
   const hasCoords = !!MAPS_KEY && !!location
 
@@ -66,7 +77,7 @@ export default function HeroPhotoEditor({
       const res = await fetch(`/api/articles/${articleId}/hero-from-google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: picker, heading }),
+        body: JSON.stringify({ source: picker, heading, fov, zoom: satZoom }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to fetch image')
@@ -238,10 +249,10 @@ export default function HeroPhotoEditor({
           <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4F4F4B', marginBottom: 8 }}>
             {picker === 'streetview' ? `Google Street View · facing ${heading}°` : 'Google Satellite'} preview
           </div>
-          {/* Large preview of the currently-selected angle. */}
+          {/* Large preview of the currently-selected angle/zoom. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={googlePreviewUrl(picker, location, heading)}
+            src={googlePreviewUrl(picker, location, { heading, fov, zoom: satZoom })}
             alt=""
             style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
           />
@@ -259,13 +270,23 @@ export default function HeroPhotoEditor({
                     style={{ padding: 0, border: heading === h ? '2px solid #0A0A0A' : '1px solid #D6CBB3', borderRadius: 2, cursor: 'pointer', background: 'none', lineHeight: 0 }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={googlePreviewUrl('streetview', location, h, '160x100')} alt={`${h}°`} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    <img src={googlePreviewUrl('streetview', location, { heading: h, fov, size: '160x100' })} alt={`${h}°`} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  </button>
+                ))}
+              </div>
+              {/* Zoom out = wider field of view. */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Zoom</span>
+                {FOVS.map(f => (
+                  <button key={f.v} onClick={() => setFov(f.v)} disabled={uploading}
+                    style={{ ...pickerBtnStyle, padding: '5px 10px', background: fov === f.v ? '#0A0A0A' : '#fff', color: fov === f.v ? '#fff' : '#111', borderColor: fov === f.v ? '#0A0A0A' : '#D6CBB3' }}>
+                    {f.label}
                   </button>
                 ))}
               </div>
               {/* Fine-tune between the 45° steps. */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Fine-tune</span>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Angle</span>
                 <input
                   type="range" min={0} max={345} step={15} value={heading}
                   onChange={e => setHeading(Number(e.target.value))}
@@ -274,6 +295,15 @@ export default function HeroPhotoEditor({
                 />
               </div>
             </>
+          )}
+
+          {picker === 'satellite' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Zoom</span>
+              <button onClick={() => setSatZoom(z => Math.max(SAT_MIN, z - 1))} disabled={uploading || satZoom <= SAT_MIN} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>− Out</button>
+              <button onClick={() => setSatZoom(z => Math.min(SAT_MAX, z + 1))} disabled={uploading || satZoom >= SAT_MAX} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>In +</button>
+              <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>level {satZoom}</span>
+            </div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
