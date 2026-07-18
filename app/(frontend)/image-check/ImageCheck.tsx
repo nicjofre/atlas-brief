@@ -13,14 +13,15 @@ function streetView(p: { address: string; lat?: number | null; lng?: number | nu
   const loc = p.lat != null && p.lng != null ? `${p.lat},${p.lng}` : encodeURIComponent(p.address)
   return `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${loc}&fov=80&key=${KEY}`
 }
-function satellite(p: { address: string; lat?: number | null; lng?: number | null }, size = '600x360') {
+function satellite(p: { address: string; lat?: number | null; lng?: number | null }, maptype: 'satellite' | 'hybrid' = 'satellite', size = '600x360') {
   const c = p.lat != null && p.lng != null ? `${p.lat},${p.lng}` : encodeURIComponent(p.address)
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${c}&zoom=18&size=${size}&maptype=satellite&key=${KEY}`
+  return `https://maps.googleapis.com/maps/api/staticmap?center=${c}&zoom=18&size=${size}&maptype=${maptype}&key=${KEY}`
 }
 
 export default function ImageCheck({ props, hasKey }: { props: Prop[]; hasKey: boolean }) {
   const [addr, setAddr] = useState('')
   const [query, setQuery] = useState<{ address: string } | null>(null)
+  const [maptype, setMaptype] = useState<'satellite' | 'hybrid'>('satellite')
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px', fontFamily: 'Georgia, serif' }}>
@@ -49,17 +50,32 @@ export default function ImageCheck({ props, hasKey }: { props: Prop[]; hasKey: b
           <div style={{ fontSize: 14, color: '#333', marginBottom: 8 }}>{query.address}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Shot label="Street View" url={hasKey ? streetView(query, '800x480') : null} />
-            <Shot label="Satellite" url={hasKey ? satellite(query, '800x480') : null} />
+            <Shot label={maptype === 'hybrid' ? 'Hybrid' : 'Satellite'} url={hasKey ? satellite(query, maptype, '800x480') : null} />
           </div>
         </div>
       )}
 
-      <h2 style={{ fontSize: 18, marginTop: 8 }}>Recent listings</h2>
-      <p style={{ color: '#888', fontSize: 13, marginTop: -4 }}>Street View coverage across real properties (some will be missing — that&rsquo;s the coverage gap).</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+        <h2 style={{ fontSize: 18, margin: 0 }}>Recent listings</h2>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['satellite', 'hybrid'] as const).map((m) => (
+            <button key={m} onClick={() => setMaptype(m)}
+              style={{
+                border: '1px solid #ddd', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer',
+                background: maptype === m ? '#9A6B3F' : '#fff', color: maptype === m ? '#fff' : '#555',
+                borderColor: maptype === m ? '#9A6B3F' : '#ddd', textTransform: 'capitalize',
+              }}>{m}</button>
+          ))}
+        </div>
+      </div>
+      <p style={{ color: '#888', fontSize: 13, marginTop: 4 }}>Street View + aerial per property. Gray/blank Street View = a genuine coverage gap for that address.</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14, marginTop: 12 }}>
         {props.map((p, i) => (
           <div key={i} style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
-            <Shot label="" url={hasKey ? streetView(p) : null} compact />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#eee' }}>
+              <Shot label="" url={hasKey ? streetView(p) : null} compact />
+              <Shot label="" url={hasKey ? satellite(p, maptype) : null} compact />
+            </div>
             <div style={{ padding: '8px 10px', fontSize: 12.5, color: '#333' }}>{p.address}</div>
           </div>
         ))}
