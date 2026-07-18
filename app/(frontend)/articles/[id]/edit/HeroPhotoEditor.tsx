@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { uploadPropertyAsset } from '@/lib/upload-image'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
+import SatelliteMapPicker from './SatelliteMapPicker'
 
 const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
@@ -67,8 +68,23 @@ export default function HeroPhotoEditor({
   const [fov, setFov] = useState(80)
   const [pitch, setPitch] = useState(0)
   const [satZoom, setSatZoom] = useState(19)
+  const [mapOpen, setMapOpen] = useState(false)
   const location = lat != null && lng != null ? `${lat},${lng}` : (address ?? '')
   const hasCoords = !!MAPS_KEY && !!location
+
+  // Shared: apply a saved Google hero URL — swap the preview, credit Google in
+  // the caption, close the picker.
+  function applyGoogleHero(url: string, kind: 'streetview' | 'satellite') {
+    setLocalUrl(url)
+    if (!/google/i.test(caption)) {
+      const label = kind === 'streetview' ? 'Google Street View' : 'Google satellite imagery'
+      const base = caption.replace(/\s*(image|photo|listing photo)\s+via\s+.*$/i, '').trim()
+      onCaptionChange(`${base}${base ? ' ' : ''}Image via ${label}.`)
+    }
+    setPicker(null)
+    setMapOpen(false)
+    router.refresh()
+  }
 
   async function useGoogleImage() {
     if (picker == null) return
@@ -82,15 +98,7 @@ export default function HeroPhotoEditor({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to fetch image')
-      setLocalUrl(data.url)
-      // Add attribution to the caption if it isn't already credited to Google.
-      if (!/google/i.test(caption)) {
-        const label = picker === 'streetview' ? 'Google Street View' : 'Google satellite imagery'
-        const base = caption.replace(/\s*(image|photo|listing photo)\s+via\s+.*$/i, '').trim()
-        onCaptionChange(`${base}${base ? ' ' : ''}Image via ${label}.`)
-      }
-      setPicker(null)
-      router.refresh()
+      applyGoogleHero(data.url, picker)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch image')
     } finally {
@@ -247,6 +255,17 @@ export default function HeroPhotoEditor({
       {/* Google image picker: preview + (Street View) rotate + confirm. */}
       {picker && hasCoords && (
         <div style={{ marginTop: 12, border: '1px solid #D6CBB3', background: '#FFFDF7', padding: 12 }}>
+          {picker === 'satellite' && mapOpen ? (
+            <SatelliteMapPicker
+              articleId={articleId}
+              address={address}
+              initialLat={lat}
+              initialLng={lng}
+              onSaved={url => applyGoogleHero(url, 'satellite')}
+              onCancel={() => setMapOpen(false)}
+            />
+          ) : (
+          <>
           <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4F4F4B', marginBottom: 8 }}>
             {picker === 'streetview' ? `Google Street View · facing ${heading}°` : 'Google Satellite'} preview
           </div>
@@ -311,21 +330,25 @@ export default function HeroPhotoEditor({
           )}
 
           {picker === 'satellite' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
               <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Zoom</span>
               <button onClick={() => setSatZoom(z => Math.max(SAT_MIN, z - 1))} disabled={uploading || satZoom <= SAT_MIN} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>− Out</button>
               <button onClick={() => setSatZoom(z => Math.min(SAT_MAX, z + 1))} disabled={uploading || satZoom >= SAT_MAX} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>In +</button>
               <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>level {satZoom}</span>
+              <div style={{ flex: 1 }} />
+              <button onClick={() => setMapOpen(true)} disabled={uploading} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>Position on map &amp; drop pin ▸</button>
             </div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
             <div style={{ flex: 1 }} />
-            <button onClick={() => setPicker(null)} disabled={uploading} style={pickerBtnStyle}>Cancel</button>
+            <button onClick={() => { setPicker(null); setMapOpen(false) }} disabled={uploading} style={pickerBtnStyle}>Cancel</button>
             <button onClick={useGoogleImage} disabled={uploading} style={{ ...pickerBtnStyle, background: '#0A0A0A', color: '#fff', borderColor: '#0A0A0A' }}>
               {uploading ? 'Saving…' : 'Use this photo'}
             </button>
           </div>
+          </>
+          )}
         </div>
       )}
 

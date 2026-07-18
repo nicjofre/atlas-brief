@@ -27,17 +27,21 @@ function streetViewUrl(location: string, heading: number, fov: number, pitch: nu
   })
   return `https://maps.googleapis.com/maps/api/streetview?${p}`
 }
-function satelliteUrl(location: string, zoom: number) {
+function satelliteUrl(center: string, zoom: number, marker: string | null, showPin: boolean) {
   const p = new URLSearchParams({
-    center: location,
+    center,
     zoom: String(zoom),
     size: '640x384',
     scale: '2',
     maptype: 'satellite',
     key: KEY!,
   })
+  // Draw a pin on the exact building when David has placed one.
+  if (showPin && marker) p.set('markers', `color:red|${marker}`)
   return `https://maps.googleapis.com/maps/api/staticmap?${p}`
 }
+
+const LATLNG_RE = /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/
 
 export async function POST(
   req: Request,
@@ -58,6 +62,11 @@ export async function POST(
     fov?: number
     pitch?: number
     zoom?: number
+    // Satellite "position on map" mode: an explicit center + pin from the
+    // interactive map, so the stored image matches what David framed.
+    center?: string
+    marker?: string
+    showPin?: boolean
   }
   const source = body.source
   const heading = Number.isFinite(body.heading) ? Math.round(body.heading as number) % 360 : 0
@@ -65,6 +74,9 @@ export async function POST(
   const fov = Number.isFinite(body.fov) ? Math.min(120, Math.max(10, Math.round(body.fov as number))) : 80
   const pitch = Number.isFinite(body.pitch) ? Math.min(90, Math.max(-90, Math.round(body.pitch as number))) : 0
   const zoom = Number.isFinite(body.zoom) ? Math.min(21, Math.max(16, Math.round(body.zoom as number))) : 19
+  const centerOverride = typeof body.center === 'string' && LATLNG_RE.test(body.center) ? body.center : null
+  const marker = typeof body.marker === 'string' && LATLNG_RE.test(body.marker) ? body.marker : null
+  const showPin = body.showPin === true
   if (source !== 'streetview' && source !== 'satellite') {
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 })
   }
@@ -73,17 +85,18 @@ export async function POST(
   // them, otherwise the street address (Google geocodes it).
   const { data: article } = await supabase
     .from('articles')
-    .select('id, listing:listings (property:properties (lat, lng, street_address, city, state))')
+    .select('id, listing:listings (property:properties (id, lat, lng, street_address, city, state))')
     .eq('id', id)
     .maybeSingle()
 
   const property = (article?.listing as {
-    property?: { lat: number | null; lng: number | null; street_address: string | null; city: string | null; state: string | null }
+    property?: { id: string; lat: number | null; lng: number | null; street_address: string | null; city: string | null; state: string | null }
   } | null)?.property
   const location = property?.lat != null && property?.lng != null
     ? `${property.lat},${property.lng}`
     : [property?.street_address, property?.city, property?.state].filter(Boolean).join(', ')
-  if (!location) {
+  // Satellite map mode passes an explicit center, so it doesn't need a stored location.
+  if (!location && !centerOverride) {
     return NextResponse.json({ error: 'This property has no address or coordinates on file' }, { status: 422 })
   }
 
@@ -97,7 +110,9 @@ export async function POST(
     }
   }
 
-  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading, fov, pitch) : satelliteUrl(location, zoom)
+  const imgUrl = source === 'streetview'
+    ? streetViewUrl(location, heading, fov, pitch)
+    : satelliteUrl(centerOverride ?? location, zoom, marker, showPin)
   const res = await fetch(imgUrl, { headers: { Referer: REFERER } })
   if (!res.ok) {
     return NextResponse.json({ error: `Google returned ${res.status}` }, { status: 502 })
@@ -121,5 +136,18 @@ export async function POST(
     return NextResponse.json({ error: `DB update failed: ${updErr.message}` }, { status: 500 })
   }
 
-  return NextResponse.json({ url: publicUrl })
+  // When David drops a pin, persist those exact coordinates to the property so
+  // every future Street View / Satellite / map read is precise (not just this
+  // article). Best-effort — a failure here shouldn't fail the hero save.
+  let savedCoords = false
+  if (marker && property?.id) {
+    const [mlat, mlng] = marker.split(',').map(Number)
+    const { error: coordErr } = await supabase
+      .from('properties')
+      .update({ lat: mlat, lng: mlng })
+      .eq('id', property.id)
+    savedCoords = !coordErr
+  }
+
+  return NextResponse.json({ url: publicUrl, savedCoords })
 }
