@@ -35,6 +35,8 @@ export default function ArticleEditor({
   listingAddress,
   listingCity,
   listingState,
+  listingLat,
+  listingLng,
 }: {
   articleId: string
   slug: string
@@ -46,6 +48,8 @@ export default function ArticleEditor({
   listingAddress: string | null
   listingCity: string | null
   listingState: string | null
+  listingLat: number | null
+  listingLng: number | null
 }) {
   const router = useRouter()
   const supabase = createClient()
@@ -265,6 +269,8 @@ export default function ArticleEditor({
             listingState={listingState}
             articleHeroPhotoUrl={articleHeroPhotoUrl}
             listingHeroPhotoUrl={listingHeroPhotoUrl}
+            listingLat={listingLat}
+            listingLng={listingLng}
           />
         </div>
 
@@ -425,6 +431,8 @@ function Tape3Surface({
   listingState,
   articleHeroPhotoUrl,
   listingHeroPhotoUrl,
+  listingLat,
+  listingLng,
 }: {
   tape: NonNullable<AIDraftShape['tape_3']>
   onChange: (t: NonNullable<AIDraftShape['tape_3']>) => void
@@ -434,6 +442,8 @@ function Tape3Surface({
   listingState: string | null
   articleHeroPhotoUrl: string | null
   listingHeroPhotoUrl: string | null
+  listingLat: number | null
+  listingLng: number | null
 }) {
   const takeaways = tape.takeaways ?? []
   return (
@@ -471,6 +481,8 @@ function Tape3Surface({
         listingHeroUrl={listingHeroPhotoUrl}
         caption={tape.hero_caption}
         onCaptionChange={v => onChange({ ...tape, hero_caption: v })}
+        lat={listingLat}
+        lng={listingLng}
       />
 
       {/* Status tag */}

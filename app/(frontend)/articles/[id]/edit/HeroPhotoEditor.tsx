@@ -6,18 +6,35 @@ import { createClient } from '@/lib/supabase/client'
 import { uploadPropertyAsset } from '@/lib/upload-image'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 
+const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+// Client-side preview URLs (mirror the server route's sizes). The key is
+// referrer-locked to our domains, so these only load in the browser.
+function googlePreviewUrl(source: 'streetview' | 'satellite', lat: number, lng: number, heading: number) {
+  if (source === 'streetview') {
+    const p = new URLSearchParams({ size: '640x384', location: `${lat},${lng}`, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
+    return `https://maps.googleapis.com/maps/api/streetview?${p}`
+  }
+  const p = new URLSearchParams({ center: `${lat},${lng}`, zoom: '19', size: '640x384', scale: '2', maptype: 'satellite', key: MAPS_KEY! })
+  return `https://maps.googleapis.com/maps/api/staticmap?${p}`
+}
+
 export default function HeroPhotoEditor({
   articleId,
   articleHeroUrl,
   listingHeroUrl,
   caption,
   onCaptionChange,
+  lat,
+  lng,
 }: {
   articleId: string
   articleHeroUrl: string | null
   listingHeroUrl: string | null
   caption: string
   onCaptionChange: (v: string) => void
+  lat: number | null
+  lng: number | null
 }) {
   const router = useRouter()
   const supabase = createClient()
@@ -27,6 +44,39 @@ export default function HeroPhotoEditor({
   // Local override so the preview updates immediately after upload, without
   // round-tripping through router.refresh().
   const [localUrl, setLocalUrl] = useState<string | null>(articleHeroUrl)
+
+  // Google image picker state.
+  const [picker, setPicker] = useState<'streetview' | 'satellite' | null>(null)
+  const [heading, setHeading] = useState(0)
+  const hasCoords = lat != null && lng != null && !!MAPS_KEY
+
+  async function useGoogleImage() {
+    if (picker == null) return
+    setUploading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/articles/${articleId}/hero-from-google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: picker, heading }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch image')
+      setLocalUrl(data.url)
+      // Add attribution to the caption if it isn't already credited to Google.
+      if (!/google/i.test(caption)) {
+        const label = picker === 'streetview' ? 'Google Street View' : 'Google satellite imagery'
+        const base = caption.replace(/\s*(image|photo|listing photo)\s+via\s+.*$/i, '').trim()
+        onCaptionChange(`${base}${base ? ' ' : ''}Image via ${label}.`)
+      }
+      setPicker(null)
+      router.refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to fetch image')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const rawUrl = localUrl ?? articleHeroUrl ?? listingHeroUrl
   const displayedUrl = resolveHeroUrl(supabase, rawUrl)
@@ -125,6 +175,16 @@ export default function HeroPhotoEditor({
             <button onClick={() => fileRef.current?.click()} disabled={uploading} style={overlayButtonStyle}>
               {uploading ? 'Uploading…' : 'Replace photo'}
             </button>
+            {hasCoords && (
+              <>
+                <button onClick={() => { setHeading(0); setPicker('streetview') }} disabled={uploading} style={overlayButtonStyle}>
+                  Street View
+                </button>
+                <button onClick={() => setPicker('satellite')} disabled={uploading} style={overlayButtonStyle}>
+                  Satellite
+                </button>
+              </>
+            )}
             {isOverride && (
               <button onClick={revertToListing} disabled={uploading} style={overlayButtonStyle}>
                 Revert to listing photo
@@ -133,9 +193,7 @@ export default function HeroPhotoEditor({
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
+        <div
           style={{
             width: '100%',
             aspectRatio: '16/9',
@@ -143,9 +201,10 @@ export default function HeroPhotoEditor({
             background: '#F7E9CE',
             border: '2px dashed #D6CBB3',
             display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: uploading ? 'not-allowed' : 'pointer',
             fontFamily: 'ui-monospace, Menlo, monospace',
             fontSize: 12,
             letterSpacing: '0.16em',
@@ -153,8 +212,45 @@ export default function HeroPhotoEditor({
             color: '#8B5A2B',
           }}
         >
-          {uploading ? 'Uploading…' : '+ Upload hero photo'}
-        </button>
+          <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ ...emptyBtnStyle, background: 'none', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', color: '#8B5A2B' }}>
+            {uploading ? 'Uploading…' : '+ Upload hero photo'}
+          </button>
+          {hasCoords && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setHeading(0); setPicker('streetview') }} disabled={uploading} style={emptyBtnStyle}>Street View</button>
+              <button onClick={() => setPicker('satellite')} disabled={uploading} style={emptyBtnStyle}>Satellite</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Google image picker: preview + (Street View) rotate + confirm. */}
+      {picker && hasCoords && (
+        <div style={{ marginTop: 12, border: '1px solid #D6CBB3', background: '#FFFDF7', padding: 12 }}>
+          <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4F4F4B', marginBottom: 8 }}>
+            {picker === 'streetview' ? 'Google Street View' : 'Google Satellite'} preview
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={googlePreviewUrl(picker, lat!, lng!, heading)}
+            alt=""
+            style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+            {picker === 'streetview' && (
+              <>
+                <button onClick={() => setHeading(h => (h + 315) % 360)} disabled={uploading} style={pickerBtnStyle}>↺ Rotate left</button>
+                <button onClick={() => setHeading(h => (h + 45) % 360)} disabled={uploading} style={pickerBtnStyle}>Rotate right ↻</button>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>facing {heading}°</span>
+              </>
+            )}
+            <div style={{ flex: 1 }} />
+            <button onClick={() => setPicker(null)} disabled={uploading} style={pickerBtnStyle}>Cancel</button>
+            <button onClick={useGoogleImage} disabled={uploading} style={{ ...pickerBtnStyle, background: '#0A0A0A', color: '#fff', borderColor: '#0A0A0A' }}>
+              {uploading ? 'Saving…' : 'Use this photo'}
+            </button>
+          </div>
+        </div>
       )}
 
       <figcaption style={{
@@ -207,6 +303,32 @@ const overlayButtonStyle: React.CSSProperties = {
   background: '#fff',
   color: '#111',
   border: 'none',
+  borderRadius: 2,
+  cursor: 'pointer',
+  fontFamily: 'ui-monospace, Menlo, monospace',
+}
+
+const emptyBtnStyle: React.CSSProperties = {
+  padding: '6px 12px',
+  fontSize: 11,
+  letterSpacing: 1.4,
+  textTransform: 'uppercase',
+  background: '#fff',
+  color: '#8B5A2B',
+  border: '1px solid #D6CBB3',
+  borderRadius: 2,
+  cursor: 'pointer',
+  fontFamily: 'ui-monospace, Menlo, monospace',
+}
+
+const pickerBtnStyle: React.CSSProperties = {
+  padding: '7px 13px',
+  fontSize: 11,
+  letterSpacing: 1.4,
+  textTransform: 'uppercase',
+  background: '#fff',
+  color: '#111',
+  border: '1px solid #D6CBB3',
   borderRadius: 2,
   cursor: 'pointer',
   fontFamily: 'ui-monospace, Menlo, monospace',

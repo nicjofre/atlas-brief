@@ -24,7 +24,7 @@ export default async function ArticleEditPage(
         id, status, list_price, sale_price, sale_date, list_date,
         price_per_unit, cap_rate_current, cap_rate_market, grm_current,
         hero_photo_url,
-        property:properties (street_address, city, state, zip, year_built, unit_count, gross_sf),
+        property:properties (street_address, city, state, zip, year_built, unit_count, gross_sf, lat, lng),
         listing_broker:brokers!listings_listing_broker_id_fkey (name, firm, phone, email)
       )
     `)
@@ -153,6 +153,8 @@ export default async function ArticleEditPage(
           listingAddress={article.listing?.property?.street_address ?? null}
           listingCity={article.listing?.property?.city ?? null}
           listingState={article.listing?.property?.state ?? null}
+          listingLat={article.listing?.property?.lat ?? null}
+          listingLng={article.listing?.property?.lng ?? null}
         />
       </div>
     </PageShell>
