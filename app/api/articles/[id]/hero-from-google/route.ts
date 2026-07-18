@@ -16,13 +16,13 @@ const REFERER = 'https://atlasbrief.la/'
 // Street View Static tops out at 640px; Satellite (Static Maps) supports
 // scale=2 for a crisper 1280px-wide hero. `location` is either "lat,lng" or a
 // plain address string, which Google geocodes itself.
-function streetViewUrl(location: string, heading: number, fov: number) {
+function streetViewUrl(location: string, heading: number, fov: number, pitch: number) {
   const p = new URLSearchParams({
     size: '640x384',
     location,
     heading: String(heading),
     fov: String(fov),
-    pitch: '0',
+    pitch: String(pitch),
     key: KEY!,
   })
   return `https://maps.googleapis.com/maps/api/streetview?${p}`
@@ -56,12 +56,14 @@ export async function POST(
     source?: 'streetview' | 'satellite'
     heading?: number
     fov?: number
+    pitch?: number
     zoom?: number
   }
   const source = body.source
   const heading = Number.isFinite(body.heading) ? Math.round(body.heading as number) % 360 : 0
   // Clamp to Google's supported ranges.
   const fov = Number.isFinite(body.fov) ? Math.min(120, Math.max(10, Math.round(body.fov as number))) : 80
+  const pitch = Number.isFinite(body.pitch) ? Math.min(90, Math.max(-90, Math.round(body.pitch as number))) : 0
   const zoom = Number.isFinite(body.zoom) ? Math.min(21, Math.max(16, Math.round(body.zoom as number))) : 19
   if (source !== 'streetview' && source !== 'satellite') {
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 })
@@ -95,7 +97,7 @@ export async function POST(
     }
   }
 
-  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading, fov) : satelliteUrl(location, zoom)
+  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading, fov, pitch) : satelliteUrl(location, zoom)
   const res = await fetch(imgUrl, { headers: { Referer: REFERER } })
   if (!res.ok) {
     return NextResponse.json({ error: `Google returned ${res.status}` }, { status: 502 })

@@ -14,11 +14,11 @@ const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 function googlePreviewUrl(
   source: 'streetview' | 'satellite',
   location: string,
-  opts: { heading?: number; fov?: number; zoom?: number; size?: string } = {}
+  opts: { heading?: number; fov?: number; pitch?: number; zoom?: number; size?: string } = {}
 ) {
-  const { heading = 0, fov = 80, zoom = 19, size = '640x384' } = opts
+  const { heading = 0, fov = 80, pitch = 0, zoom = 19, size = '640x384' } = opts
   if (source === 'streetview') {
-    const p = new URLSearchParams({ size, location, heading: String(heading), fov: String(fov), pitch: '0', key: MAPS_KEY! })
+    const p = new URLSearchParams({ size, location, heading: String(heading), fov: String(fov), pitch: String(pitch), key: MAPS_KEY! })
     return `https://maps.googleapis.com/maps/api/streetview?${p}`
   }
   const p = new URLSearchParams({ center: location, zoom: String(zoom), size, scale: '2', maptype: 'satellite', key: MAPS_KEY! })
@@ -65,6 +65,7 @@ export default function HeroPhotoEditor({
   const [picker, setPicker] = useState<'streetview' | 'satellite' | null>(null)
   const [heading, setHeading] = useState(0)
   const [fov, setFov] = useState(80)
+  const [pitch, setPitch] = useState(0)
   const [satZoom, setSatZoom] = useState(19)
   const location = lat != null && lng != null ? `${lat},${lng}` : (address ?? '')
   const hasCoords = !!MAPS_KEY && !!location
@@ -77,7 +78,7 @@ export default function HeroPhotoEditor({
       const res = await fetch(`/api/articles/${articleId}/hero-from-google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: picker, heading, fov, zoom: satZoom }),
+        body: JSON.stringify({ source: picker, heading, fov, pitch, zoom: satZoom }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to fetch image')
@@ -252,7 +253,7 @@ export default function HeroPhotoEditor({
           {/* Large preview of the currently-selected angle/zoom. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={googlePreviewUrl(picker, location, { heading, fov, zoom: satZoom })}
+            src={googlePreviewUrl(picker, location, { heading, fov, pitch, zoom: satZoom })}
             alt=""
             style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
           />
@@ -270,7 +271,7 @@ export default function HeroPhotoEditor({
                     style={{ padding: 0, border: heading === h ? '2px solid #0A0A0A' : '1px solid #D6CBB3', borderRadius: 2, cursor: 'pointer', background: 'none', lineHeight: 0 }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={googlePreviewUrl('streetview', location, { heading: h, fov, size: '160x100' })} alt={`${h}°`} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    <img src={googlePreviewUrl('streetview', location, { heading: h, fov, pitch, size: '160x100' })} alt={`${h}°`} style={{ width: '100%', height: 'auto', display: 'block' }} />
                   </button>
                 ))}
               </div>
@@ -293,6 +294,18 @@ export default function HeroPhotoEditor({
                   disabled={uploading}
                   style={{ flex: 1 }}
                 />
+              </div>
+              {/* Tilt up (more sky) or down (more ground). */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Tilt</span>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, color: '#aaa' }}>ground</span>
+                <input
+                  type="range" min={-30} max={40} step={5} value={pitch}
+                  onChange={e => setPitch(Number(e.target.value))}
+                  disabled={uploading}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, color: '#aaa' }}>sky</span>
               </div>
             </>
           )}
