@@ -26,16 +26,9 @@ function loadMaps(): Promise<any> {
 // Mirror the server's stored-image URL so the "what will be saved" preview is
 // exact — same center, zoom, and optional pin.
 function staticSatUrl(center: { lat: number; lng: number }, zoom: number, marker: { lat: number; lng: number } | null, showPin: boolean) {
-  const p = new URLSearchParams({
-    center: `${center.lat},${center.lng}`,
-    zoom: String(zoom),
-    size: '320x192',
-    scale: '2',
-    maptype: 'satellite',
-    key: MAPS_KEY!,
-  })
-  if (showPin && marker) p.set('markers', `color:red|${marker.lat},${marker.lng}`)
-  return `https://maps.googleapis.com/maps/api/staticmap?${p}`
+  const qs = new URLSearchParams({ t: 'sat', c: `${center.lat},${center.lng}`, z: String(zoom), s: '320x192' })
+  if (showPin && marker) { qs.set('pin', '1'); qs.set('m', `${marker.lat},${marker.lng}`) }
+  return `/api/maps?${qs}`
 }
 
 // Fall back to Street View metadata (already enabled) for a starting point when

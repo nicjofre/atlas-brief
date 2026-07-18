@@ -12,6 +12,9 @@ const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 // Client-side preview URLs (mirror the server route's sizes). The key is
 // referrer-locked to our domains, so these only load in the browser. `location`
 // is either "lat,lng" or a plain address — Google geocodes the address itself.
+// Route previews through our own /api/maps proxy so the browser never calls
+// Google directly (ad/privacy blockers and referrer rules can't break them, and
+// the key stays server-side).
 function googlePreviewUrl(
   source: 'streetview' | 'satellite',
   location: string,
@@ -19,11 +22,11 @@ function googlePreviewUrl(
 ) {
   const { heading = 0, fov = 80, pitch = 0, zoom = 19, size = '640x384' } = opts
   if (source === 'streetview') {
-    const p = new URLSearchParams({ size, location, heading: String(heading), fov: String(fov), pitch: String(pitch), key: MAPS_KEY! })
-    return `https://maps.googleapis.com/maps/api/streetview?${p}`
+    const qs = new URLSearchParams({ t: 'sv', loc: location, h: String(heading), f: String(fov), p: String(pitch), s: size })
+    return `/api/maps?${qs}`
   }
-  const p = new URLSearchParams({ center: location, zoom: String(zoom), size, scale: '2', maptype: 'satellite', key: MAPS_KEY! })
-  return `https://maps.googleapis.com/maps/api/staticmap?${p}`
+  const qs = new URLSearchParams({ t: 'sat', c: location, z: String(zoom), s: size })
+  return `/api/maps?${qs}`
 }
 
 // The 8 compass headings for the Street View contact sheet.
