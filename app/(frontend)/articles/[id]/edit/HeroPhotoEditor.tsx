@@ -9,13 +9,14 @@ import { resolveHeroUrl } from '@/lib/db/hero-url'
 const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 // Client-side preview URLs (mirror the server route's sizes). The key is
-// referrer-locked to our domains, so these only load in the browser.
-function googlePreviewUrl(source: 'streetview' | 'satellite', lat: number, lng: number, heading: number) {
+// referrer-locked to our domains, so these only load in the browser. `location`
+// is either "lat,lng" or a plain address — Google geocodes the address itself.
+function googlePreviewUrl(source: 'streetview' | 'satellite', location: string, heading: number) {
   if (source === 'streetview') {
-    const p = new URLSearchParams({ size: '640x384', location: `${lat},${lng}`, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
+    const p = new URLSearchParams({ size: '640x384', location, heading: String(heading), fov: '80', pitch: '0', key: MAPS_KEY! })
     return `https://maps.googleapis.com/maps/api/streetview?${p}`
   }
-  const p = new URLSearchParams({ center: `${lat},${lng}`, zoom: '19', size: '640x384', scale: '2', maptype: 'satellite', key: MAPS_KEY! })
+  const p = new URLSearchParams({ center: location, zoom: '19', size: '640x384', scale: '2', maptype: 'satellite', key: MAPS_KEY! })
   return `https://maps.googleapis.com/maps/api/staticmap?${p}`
 }
 
@@ -27,6 +28,7 @@ export default function HeroPhotoEditor({
   onCaptionChange,
   lat,
   lng,
+  address,
 }: {
   articleId: string
   articleHeroUrl: string | null
@@ -35,6 +37,7 @@ export default function HeroPhotoEditor({
   onCaptionChange: (v: string) => void
   lat: number | null
   lng: number | null
+  address: string | null
 }) {
   const router = useRouter()
   const supabase = createClient()
@@ -45,10 +48,12 @@ export default function HeroPhotoEditor({
   // round-tripping through router.refresh().
   const [localUrl, setLocalUrl] = useState<string | null>(articleHeroUrl)
 
-  // Google image picker state.
+  // Google image picker state. Prefer precise coords; fall back to the address,
+  // which Google geocodes itself.
   const [picker, setPicker] = useState<'streetview' | 'satellite' | null>(null)
   const [heading, setHeading] = useState(0)
-  const hasCoords = lat != null && lng != null && !!MAPS_KEY
+  const location = lat != null && lng != null ? `${lat},${lng}` : (address ?? '')
+  const hasCoords = !!MAPS_KEY && !!location
 
   async function useGoogleImage() {
     if (picker == null) return
@@ -232,7 +237,7 @@ export default function HeroPhotoEditor({
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={googlePreviewUrl(picker, lat!, lng!, heading)}
+            src={googlePreviewUrl(picker, location, heading)}
             alt=""
             style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
           />

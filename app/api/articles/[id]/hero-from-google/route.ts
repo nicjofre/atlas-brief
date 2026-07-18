@@ -14,11 +14,12 @@ const KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 const REFERER = 'https://atlasbrief.la/'
 
 // Street View Static tops out at 640px; Satellite (Static Maps) supports
-// scale=2 for a crisper 1280px-wide hero.
-function streetViewUrl(lat: number, lng: number, heading: number) {
+// scale=2 for a crisper 1280px-wide hero. `location` is either "lat,lng" or a
+// plain address string, which Google geocodes itself.
+function streetViewUrl(location: string, heading: number) {
   const p = new URLSearchParams({
     size: '640x384',
-    location: `${lat},${lng}`,
+    location,
     heading: String(heading),
     fov: '80',
     pitch: '0',
@@ -26,9 +27,9 @@ function streetViewUrl(lat: number, lng: number, heading: number) {
   })
   return `https://maps.googleapis.com/maps/api/streetview?${p}`
 }
-function satelliteUrl(lat: number, lng: number) {
+function satelliteUrl(location: string) {
   const p = new URLSearchParams({
-    center: `${lat},${lng}`,
+    center: location,
     zoom: '19',
     size: '640x384',
     scale: '2',
@@ -61,31 +62,35 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid source' }, { status: 400 })
   }
 
-  // Resolve the property's coordinates from the article's listing.
+  // Resolve a location from the article's listing: precise coords if we have
+  // them, otherwise the street address (Google geocodes it).
   const { data: article } = await supabase
     .from('articles')
-    .select('id, listing:listings (property:properties (lat, lng))')
+    .select('id, listing:listings (property:properties (lat, lng, street_address, city, state))')
     .eq('id', id)
     .maybeSingle()
 
-  const property = (article?.listing as { property?: { lat: number | null; lng: number | null } } | null)?.property
-  const lat = property?.lat
-  const lng = property?.lng
-  if (lat == null || lng == null) {
-    return NextResponse.json({ error: 'This property has no coordinates on file' }, { status: 422 })
+  const property = (article?.listing as {
+    property?: { lat: number | null; lng: number | null; street_address: string | null; city: string | null; state: string | null }
+  } | null)?.property
+  const location = property?.lat != null && property?.lng != null
+    ? `${property.lat},${property.lng}`
+    : [property?.street_address, property?.city, property?.state].filter(Boolean).join(', ')
+  if (!location) {
+    return NextResponse.json({ error: 'This property has no address or coordinates on file' }, { status: 422 })
   }
 
   // For Street View, verify coverage first so we never store the gray "no
   // imagery" placeholder. Satellite is available everywhere.
   if (source === 'streetview') {
-    const metaUrl = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${lat},${lng}&key=${KEY}`
+    const metaUrl = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${encodeURIComponent(location)}&key=${KEY}`
     const meta = await fetch(metaUrl, { headers: { Referer: REFERER } }).then(r => r.json()).catch(() => null)
     if (!meta || meta.status !== 'OK') {
       return NextResponse.json({ error: 'No Street View coverage at this location' }, { status: 422 })
     }
   }
 
-  const imgUrl = source === 'streetview' ? streetViewUrl(lat, lng, heading) : satelliteUrl(lat, lng)
+  const imgUrl = source === 'streetview' ? streetViewUrl(location, heading) : satelliteUrl(location)
   const res = await fetch(imgUrl, { headers: { Referer: REFERER } })
   if (!res.ok) {
     return NextResponse.json({ error: `Google returned ${res.status}` }, { status: 502 })

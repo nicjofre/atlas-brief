@@ -483,6 +483,7 @@ function Tape3Surface({
         onCaptionChange={v => onChange({ ...tape, hero_caption: v })}
         lat={listingLat}
         lng={listingLng}
+        address={[listingAddress, listingCity, listingState].filter(Boolean).join(', ') || null}
       />
 
       {/* Status tag */}
