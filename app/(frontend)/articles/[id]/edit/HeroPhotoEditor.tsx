@@ -30,8 +30,6 @@ function googlePreviewUrl(
 const HEADINGS = [0, 45, 90, 135, 180, 225, 270, 315]
 // Street View field of view: higher = wider = more zoomed out (Google max 120).
 const FOVS = [{ label: 'Normal', v: 80 }, { label: 'Wide', v: 100 }, { label: 'Widest', v: 120 }]
-// Satellite zoom bounds (higher = closer).
-const SAT_MIN = 16, SAT_MAX = 21
 
 export default function HeroPhotoEditor({
   articleId,
@@ -67,7 +65,6 @@ export default function HeroPhotoEditor({
   const [heading, setHeading] = useState(0)
   const [fov, setFov] = useState(80)
   const [pitch, setPitch] = useState(0)
-  const [satZoom, setSatZoom] = useState(19)
   const [mapOpen, setMapOpen] = useState(false)
   const location = lat != null && lng != null ? `${lat},${lng}` : (address ?? '')
   const hasCoords = !!MAPS_KEY && !!location
@@ -94,7 +91,7 @@ export default function HeroPhotoEditor({
       const res = await fetch(`/api/articles/${articleId}/hero-from-google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: picker, heading, fov, pitch, zoom: satZoom }),
+        body: JSON.stringify({ source: picker, heading, fov, pitch }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to fetch image')
@@ -208,7 +205,7 @@ export default function HeroPhotoEditor({
                 <button onClick={() => { setHeading(0); setPicker('streetview') }} disabled={uploading} style={overlayButtonStyle}>
                   Street View
                 </button>
-                <button onClick={() => setPicker('satellite')} disabled={uploading} style={overlayButtonStyle}>
+                <button onClick={() => { setPicker('satellite'); setMapOpen(true) }} disabled={uploading} style={overlayButtonStyle}>
                   Satellite
                 </button>
               </>
@@ -246,7 +243,7 @@ export default function HeroPhotoEditor({
           {hasCoords && (
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setHeading(0); setPicker('streetview') }} disabled={uploading} style={emptyBtnStyle}>Street View</button>
-              <button onClick={() => setPicker('satellite')} disabled={uploading} style={emptyBtnStyle}>Satellite</button>
+              <button onClick={() => { setPicker('satellite'); setMapOpen(true) }} disabled={uploading} style={emptyBtnStyle}>Satellite</button>
             </div>
           )}
         </div>
@@ -262,7 +259,7 @@ export default function HeroPhotoEditor({
               initialLat={lat}
               initialLng={lng}
               onSaved={url => applyGoogleHero(url, 'satellite')}
-              onCancel={() => setMapOpen(false)}
+              onCancel={() => { setMapOpen(false); setPicker(null) }}
             />
           ) : (
           <>
@@ -272,7 +269,7 @@ export default function HeroPhotoEditor({
           {/* Large preview of the currently-selected angle/zoom. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={googlePreviewUrl(picker, location, { heading, fov, pitch, zoom: satZoom })}
+            src={googlePreviewUrl(picker, location, { heading, fov, pitch })}
             alt=""
             style={{ width: '100%', height: 'auto', maxHeight: 340, objectFit: 'cover', border: '1px solid #0A0A0A', opacity: uploading ? 0.5 : 1 }}
           />
@@ -327,17 +324,6 @@ export default function HeroPhotoEditor({
                 <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, color: '#aaa' }}>sky</span>
               </div>
             </>
-          )}
-
-          {picker === 'satellite' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>Zoom</span>
-              <button onClick={() => setSatZoom(z => Math.max(SAT_MIN, z - 1))} disabled={uploading || satZoom <= SAT_MIN} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>− Out</button>
-              <button onClick={() => setSatZoom(z => Math.min(SAT_MAX, z + 1))} disabled={uploading || satZoom >= SAT_MAX} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>In +</button>
-              <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: '#888' }}>level {satZoom}</span>
-              <div style={{ flex: 1 }} />
-              <button onClick={() => setMapOpen(true)} disabled={uploading} style={{ ...pickerBtnStyle, padding: '5px 12px' }}>Position on map &amp; drop pin ▸</button>
-            </div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
