@@ -18,6 +18,15 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  // Canonicalize the host: send www.* to the apex so the whole site lives on one
+  // origin. Without this, both hosts serve the app, which splits referrers
+  // (breaking Google Maps image previews on www), cookies, and analytics.
+  const host = request.headers.get('host') ?? ''
+  if (host.startsWith('www.')) {
+    const dest = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `https://${host.slice(4)}`)
+    return NextResponse.redirect(dest, 308)
+  }
+
   // Payload CMS (admin at /cms, REST/GraphQL at /cms-api) handles its own
   // authentication, separate from Supabase. Let those routes through
   // untouched so the proxy doesn't bounce them to the Supabase /login.
