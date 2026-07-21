@@ -5,6 +5,7 @@ import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Comments from './Comments'
 import TrackView from './TrackView'
 import Disclaimer from '../../Disclaimer'
+import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -22,13 +23,14 @@ function asMedia(v: unknown): Media | null {
 // Public render for a freeform Post. Shares the article chrome (post.css) with
 // briefs — crumb, kicker, headline, deck, byline, hero — but the body is the
 // composed block layout instead of the fixed brief sections.
-export default function FreeformPost({ post, preview = false }: { post: Post; preview?: boolean }) {
+export default function FreeformPost({ post, preview = false, showBar = false }: { post: Post; preview?: boolean; showBar?: boolean }) {
   const hero = asMedia(post.heroImage)
   const kicker = post.kicker || 'Dispatch'
   const dateStr = fmtDate(post.publishedAt)
 
   return (
     <>
+      {showBar && <ArticleSubscribeBar />}
       {/* In the CMS Live Preview iframe, refresh the render on save. Not
           rendered on the public page — only in preview. */}
       {preview && <RefreshRouteOnSave />}

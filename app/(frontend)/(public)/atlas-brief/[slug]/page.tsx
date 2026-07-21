@@ -14,6 +14,7 @@ import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Comments from './Comments'
 import Disclaimer from '../../Disclaimer'
 import TrackView from './TrackView'
+import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -74,13 +75,18 @@ export default async function PostPage(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
+  // One auth check up front: hide the reader capture bar from signed-in admins.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const showBar = !user
+
   const article = await getArticleBySlug(slug)
   if (!article) {
     // Not a brief — try a freeform post before 404ing. In CMS draft mode, show
     // the in-progress draft (for Live Preview).
     const { isEnabled: draft } = await draftMode()
     const post = await getPostBySlug(slug, draft)
-    if (post) return <FreeformPost post={post} preview={draft} />
+    if (post) return <FreeformPost post={post} preview={draft} showBar={showBar && !draft} />
     notFound()
   }
 
@@ -97,8 +103,7 @@ export default async function PostPage(
   const dateline = [property?.city, property?.state].filter(Boolean).join(', ')
 
   // Resolve hero photo — handles local paths, full URLs, and Supabase storage
-  // paths uniformly.
-  const supabase = await createClient()
+  // paths uniformly. (supabase client created up top.)
   const heroUrl = resolveHeroUrl(
     supabase,
     article.hero_photo_url ?? listing?.hero_photo_url ?? null
@@ -125,6 +130,7 @@ export default async function PostPage(
 
   return (
     <>
+      {showBar && <ArticleSubscribeBar />}
       <TrackView slug={article.slug} />
       <header className="art-top">
         <div className="wrap">

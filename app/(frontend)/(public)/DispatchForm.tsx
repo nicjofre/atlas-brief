@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
+import { markSubscribed } from '@/lib/subscribe-flag'
 
 // Friday dispatch signup. Two steps so we can collect a little context without
 // walling off the email:
@@ -62,6 +63,7 @@ export default function DispatchForm() {
         return
       }
       trackConversion(CONVERSIONS.newsletterSignup)
+      markSubscribed()
       setState('sent')
     } catch {
       setError('Something went wrong. Please try again.')

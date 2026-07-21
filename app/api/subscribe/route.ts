@@ -30,6 +30,7 @@ export async function POST(req: Request) {
   let firstName: string | null = null
   let lastName: string | null = null
   let role: string | null = null
+  let source = 'home_dispatch_form'
   try {
     const body = await req.json()
     email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     lastName = cleanText(body?.last_name, 80)
     const r = cleanText(body?.role, 40)
     role = r && ROLES.includes(r) ? r : null
+    source = cleanText(body?.source, 40) ?? source
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
@@ -48,15 +50,9 @@ export async function POST(req: Request) {
     )
   }
 
-  // First + last name are required (the signup pop-up enforces this; the API
-  // guards it too so direct posts can't create nameless rows). Role stays
-  // optional.
-  if (!firstName || !lastName) {
-    return NextResponse.json(
-      { error: 'Please enter your first and last name.' },
-      { status: 400 }
-    )
-  }
+  // Name is optional: the richer pop-up collects it, but low-friction capture
+  // surfaces (the article bar) take email only. The dispatch greeting falls back
+  // to "there" when there's no first name.
 
   const supabase = await createClient()
 
@@ -69,7 +65,7 @@ export async function POST(req: Request) {
   // revealing whether an address is already on the list.
   const { error } = await supabase
     .from('subscribers')
-    .insert({ email, status: 'subscribed', source: 'home_dispatch_form', first_name: firstName, last_name: lastName, role })
+    .insert({ email, status: 'subscribed', source, first_name: firstName, last_name: lastName, role })
 
   if (error && error.code !== '23505') {
     console.error('[subscribe] insert failed', error)
