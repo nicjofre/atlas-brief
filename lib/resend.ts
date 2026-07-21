@@ -81,6 +81,53 @@ export async function syncContactToResend(
   }
 }
 
+// RFC 2606 / 6761 reserved domains plus Resend's blocked placeholder. None can
+// receive mail, and Resend HARD-REJECTS a whole broadcast if any @example.com
+// address is in the audience — so we keep these out of signup and sweep any that
+// slipped in before a send.
+const RESERVED_EMAIL_DOMAINS = new Set(['example.com', 'example.org', 'example.net', 'localhost'])
+const RESERVED_EMAIL_TLDS = ['.test', '.example', '.invalid', '.localhost']
+
+export function isReservedEmail(email: string): boolean {
+  const at = email.lastIndexOf('@')
+  if (at < 0) return false
+  const domain = email.slice(at + 1).toLowerCase()
+  return RESERVED_EMAIL_DOMAINS.has(domain) || RESERVED_EMAIL_TLDS.some(t => domain.endsWith(t))
+}
+
+// List all contacts in the configured audience (used to sweep reserved ones).
+export async function listResendContacts(): Promise<{ ok: boolean; contacts: { id: string; email: string }[]; error?: string }> {
+  if (!resendConfigured()) return { ok: false, contacts: [], error: 'not configured' }
+  try {
+    const res = await fetch(`${RESEND_API}/audiences/${resendAudienceId()}/contacts`, {
+      headers: { Authorization: `Bearer ${resendKey()}` },
+    })
+    const data = (await res.json().catch(() => ({}))) as { data?: { id: string; email: string }[]; message?: string }
+    if (!res.ok) return { ok: false, contacts: [], error: data.message || `HTTP ${res.status}` }
+    return { ok: true, contacts: (data.data ?? []).map(c => ({ id: c.id, email: c.email })) }
+  } catch (err) {
+    return { ok: false, contacts: [], error: err instanceof Error ? err.message : 'unknown error' }
+  }
+}
+
+// Remove a contact from the audience by email. A 404 (already gone) is success.
+export async function removeContactFromResend(email: string): Promise<{ ok: boolean; error?: string }> {
+  if (!resendConfigured()) return { ok: false, error: 'not configured' }
+  try {
+    const res = await fetch(`${RESEND_API}/audiences/${resendAudienceId()}/contacts/${encodeURIComponent(email)}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${resendKey()}` },
+    })
+    if (!res.ok && res.status !== 404) {
+      const data = (await res.json().catch(() => ({}))) as { message?: string }
+      return { ok: false, error: data.message || `HTTP ${res.status}` }
+    }
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'unknown error' }
+  }
+}
+
 // ===================================================================
 // Sending the dispatch
 // ===================================================================

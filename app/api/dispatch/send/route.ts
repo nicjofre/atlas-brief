@@ -11,6 +11,9 @@ import {
   createDispatchBroadcast,
   sendDispatchBroadcast,
   DISPATCH_REPLY_TO,
+  isReservedEmail,
+  listResendContacts,
+  removeContactFromResend,
 } from '@/lib/resend'
 
 export const runtime = 'nodejs'
@@ -87,6 +90,17 @@ export async function POST(req: Request) {
     dateline: formatDispatchDate(sendDate),
   })
   if (count === 0) return NextResponse.json({ error: 'None of the selected deals could be rendered.' }, { status: 400 })
+
+  // Resend hard-rejects the whole broadcast if the audience contains a reserved
+  // domain (e.g. @example.com). Sweep any out of the audience — and our table —
+  // so the send self-heals instead of failing.
+  const list = await listResendContacts()
+  if (list.ok) {
+    for (const c of list.contacts.filter(c => isReservedEmail(c.email))) {
+      await removeContactFromResend(c.email)
+      await supabase.from('subscribers').delete().ilike('email', c.email)
+    }
+  }
 
   const created = await createDispatchBroadcast({ subject, html, name: `${subject} (${formatDispatchDate(sendDate)})` })
   if (!created.ok) return NextResponse.json({ error: `Could not create broadcast: ${created.error}` }, { status: 502 })
