@@ -18,12 +18,15 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
-  // Canonicalize the host: send www.* to the apex so the whole site lives on one
-  // origin. Without this, both hosts serve the app, which splits referrers
-  // (breaking Google Maps image previews on www), cookies, and analytics.
+  // Canonicalize the host: send www.* and the raw *.vercel.app deployment alias
+  // to the primary domain so the whole site lives on one origin. Without this,
+  // multiple hosts serve the app, which splits referrers (the Google Maps
+  // JavaScript API rejects any host not in the key's allowlist — e.g. the
+  // vercel.app URL — with RefererNotAllowedMapError), cookies, and analytics.
+  const CANONICAL_HOST = 'atlasbrief.la'
   const host = request.headers.get('host') ?? ''
-  if (host.startsWith('www.')) {
-    const dest = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `https://${host.slice(4)}`)
+  if (host !== CANONICAL_HOST && (host.startsWith('www.') || host.endsWith('.vercel.app'))) {
+    const dest = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `https://${CANONICAL_HOST}`)
     return NextResponse.redirect(dest, 308)
   }
 
