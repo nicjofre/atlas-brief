@@ -19,10 +19,20 @@ export default function ArticleSubscribeBar() {
   useEffect(() => {
     setMounted(true)
     setSuppressed(captureSuppressed())
-    const onScroll = () => setScrolledIn(window.scrollY > 520)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const REVEAL = 520
+    const check = () => {
+      // On pages too short to scroll (About/Contact), reveal outright; on long
+      // reads, wait until the reader has scrolled in.
+      const scrollable = document.documentElement.scrollHeight > window.innerHeight + REVEAL
+      setScrolledIn(!scrollable || window.scrollY > REVEAL)
+    }
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+    }
   }, [])
 
   // After a successful signup, hold the confirmation briefly, then retire.

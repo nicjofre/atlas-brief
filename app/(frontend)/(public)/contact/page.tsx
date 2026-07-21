@@ -4,6 +4,8 @@ import Footer from '../Footer'
 import RenderBlocks from '../_blocks/RenderBlocks'
 import { RefreshRouteOnSave } from '../_blocks/RefreshRouteOnSave'
 import { getPageBySlug } from '@/lib/getPage'
+import ArticleSubscribeBar from '../ArticleSubscribeBar'
+import { createClient } from '@/lib/supabase/server'
 import './contact.css'
 
 export const dynamic = 'force-dynamic'
@@ -16,8 +18,11 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const page = await getPageBySlug('contact')
   if (!page) notFound()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   return (
     <>
+      {!user && <ArticleSubscribeBar />}
       <RefreshRouteOnSave />
       <RenderBlocks blocks={page.layout} />
       <Footer />
