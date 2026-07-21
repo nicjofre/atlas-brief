@@ -116,6 +116,12 @@ export default async function PostPage(
   // body we actually render, so it never links a removed section.
   const cleanBody = brokerGroups.length > 0 ? stripBrokersBlock(article.body_html) : (article.body_html ?? '')
   const toc = extractTOCFromHtml(cleanBody)
+  // Whether the body has anything worth rendering — visible text, or structural
+  // / media content. Empty briefs skip the body section so it doesn't leave a
+  // big blank gap above the footer.
+  const hasBody =
+    /\S/.test(cleanBody.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ')) ||
+    /<(img|table|figure|blockquote|ul|ol|iframe)\b/i.test(cleanBody)
 
   return (
     <>
@@ -209,29 +215,31 @@ export default async function PostPage(
         </section>
       )}
 
-      <section className="art-body">
-        <div className="wrap">
-          <div className="body-grid">
-            {toc.length > 0 && (
-              <aside>
-                <div className="k">In this piece</div>
-                <ol>
-                  {toc.map(item => (
-                    <li key={item.id}>
-                      <a href={`#${item.id}`}>{item.text}</a>
-                    </li>
-                  ))}
-                </ol>
-              </aside>
-            )}
+      {hasBody && (
+        <section className="art-body">
+          <div className="wrap">
+            <div className="body-grid">
+              {toc.length > 0 && (
+                <aside>
+                  <div className="k">In this piece</div>
+                  <ol>
+                    {toc.map(item => (
+                      <li key={item.id}>
+                        <a href={`#${item.id}`}>{item.text}</a>
+                      </li>
+                    ))}
+                  </ol>
+                </aside>
+              )}
 
-            <article
-              className="prose"
-              dangerouslySetInnerHTML={{ __html: cleanBody }}
-            />
+              <article
+                className="prose"
+                dangerouslySetInnerHTML={{ __html: cleanBody }}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {brokerGroups.length > 0 && <BrokerBlock groups={brokerGroups} />}
 
