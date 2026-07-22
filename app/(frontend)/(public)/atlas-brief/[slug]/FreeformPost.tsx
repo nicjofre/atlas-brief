@@ -2,7 +2,6 @@ import Link from 'next/link'
 import type { Post, Media } from '@/payload-types'
 import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
-import Comments from './Comments'
 import TrackView from './TrackView'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
@@ -77,8 +76,6 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           </div>
         </div>
       </section>
-
-      {!preview && <Comments slug={post.slug} title={post.title} />}
 
       <footer className="site-footer">
         <div className="wrap">

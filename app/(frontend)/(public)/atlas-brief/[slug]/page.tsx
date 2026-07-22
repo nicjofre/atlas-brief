@@ -11,7 +11,6 @@ import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
-import Comments from './Comments'
 import Disclaimer from '../../Disclaimer'
 import TrackView from './TrackView'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
@@ -274,8 +273,6 @@ export default async function PostPage(
           </div>
         </div>
       </section>
-
-      <Comments slug={article.slug} title={(article.headline ?? '').replace(/\*/g, '')} />
 
       <footer className="site-footer">
         <div className="wrap">
