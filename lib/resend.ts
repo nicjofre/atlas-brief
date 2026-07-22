@@ -252,18 +252,21 @@ export function sendGuideEmail(args: {
 }
 
 // Notify David when someone downloads the Survival Guide white paper — a warm
-// lead. reply_to is the requester so David can follow up directly.
+// lead. reply_to is the requester so David can follow up directly. `kind` labels
+// which lead magnet it was (Survival Guide, RSO Briefing, …).
 export function sendLeadNotification(args: {
   name: string
   email: string
   company: string | null
+  kind?: string
 }): Promise<SendResult<{ id: string }>> {
   if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const kind = args.kind ?? 'Survival Guide'
   const rows: [string, string][] = [['Name', args.name], ['Email', args.email]]
   if (args.company) rows.push(['Company', args.company])
   const html =
     `<div style="font-family:Georgia,serif;font-size:15px;color:#1a1a1a;line-height:1.6">` +
-    `<p style="margin:0 0 14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#8B5A2B">New Survival Guide download</p>` +
+    `<p style="margin:0 0 14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#8B5A2B">New ${escapeHtml(kind)} download</p>` +
     rows.map(([k, v]) => `<p style="margin:0 0 10px"><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('') +
     `<p style="margin:18px 0 0;font-size:13px;color:#777">Reply to this email to reach ${escapeHtml(args.name)} directly.</p>` +
     `</div>`
@@ -271,8 +274,36 @@ export function sendLeadNotification(args: {
     from: DISPATCH_FROM,
     to: [DEAL_NOTIFY_TO],
     reply_to: args.email,
-    subject: `Survival Guide download: ${args.name}`,
+    subject: `${kind} download: ${args.name}`,
     html,
+  })
+}
+
+// Email the RSO Intelligence Briefing PDF. David built desktop + mobile layouts;
+// we attach the one matching the reader's device.
+export function sendBriefingEmail(args: {
+  to: string
+  name: string
+  device?: 'mobile' | 'desktop'
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://atlasbrief.la').replace(/\/$/, '')
+  const first = args.name.trim().split(/\s+/)[0] || 'there'
+  const file = args.device === 'mobile' ? 'atlas-rso-briefing-mobile.pdf' : 'atlas-rso-briefing-desktop.pdf'
+  const html =
+    `<div style="font-family:Georgia,serif;font-size:16px;color:#1a1a1a;line-height:1.6">` +
+    `<p style="margin:0 0 14px">Hi ${escapeHtml(first)},</p>` +
+    `<p style="margin:0 0 14px">Here's the RSO Intelligence Briefing you asked for — the three laws stacked above every LA apartment, in plain English. It's attached as a PDF.</p>` +
+    `<p style="margin:0 0 14px">Every number traces back to LAHD, DCBA, or the statute, so you can verify any line. If a question comes up, just reply to this email.</p>` +
+    `<p style="margin:18px 0 0">David Safai<br/><span style="color:#8B5A2B">Atlas Brief</span></p>` +
+    `</div>`
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: [args.to],
+    reply_to: DISPATCH_REPLY_TO,
+    subject: 'Your RSO Intelligence Briefing',
+    html,
+    attachments: [{ filename: 'Atlas-Brief-RSO-Intelligence-Briefing.pdf', path: `${base}/${file}` }],
   })
 }
 

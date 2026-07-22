@@ -6,8 +6,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 // reader-analytics beacon from the public article page), and
 // `/api/webhooks/resend` (Resend posts email events, verified by signature).
 // The admin-only `/api/dispatch/*` routes deliberately stay gated.
-const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact', '/tax-appeals', '/survival-guide']
-const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/webhooks/resend', '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead', '/atlas-survival-guide.pdf', '/next/preview', '/next/exit-preview'])
+const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact', '/tax-appeals', '/survival-guide', '/rso-briefing']
+const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/webhooks/resend', '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead', '/api/rso-briefing/lead', '/atlas-survival-guide.pdf', '/atlas-rso-briefing-desktop.pdf', '/atlas-rso-briefing-mobile.pdf', '/next/preview', '/next/exit-preview'])
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true
