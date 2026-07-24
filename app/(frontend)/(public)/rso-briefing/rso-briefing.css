@@ -38,11 +38,14 @@
 
 /* the building + stacked strata composition */
 .abx-stage{position:relative;margin-top:54px;border-radius:14px;overflow:hidden;
-  border:1px solid var(--espresso-hair);box-shadow:0 14px 40px rgba(43,33,23,0.18);}
-/* Nudge the building up within the frame (bottom-anchored zoom) so it's better
-   centered above the strata, without changing the frame or leaving a gap. */
+  border:1px solid var(--espresso-hair);box-shadow:0 14px 40px rgba(43,33,23,0.18);
+  background:#221A12;}
+/* Slide the photo up so the street + parked car rise into the strip above the
+   strata bars (which overlay the bottom of the image). The empty space this
+   leaves at the bottom sits behind the bars; the dark stage background covers
+   any sliver. Mobile shifts further because the bars wrap and take more room. */
 .abx-stage img{width:100%;display:block;filter:saturate(0.92) contrast(1.02);
-  transform:scale(1.2);transform-origin:50% 100%;}
+  transform:translateY(-38%);transform-origin:50% 0%;}
 .abx-stage::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg, rgba(36,27,18,0.05) 0%, rgba(36,27,18,0.28) 55%, rgba(36,27,18,0.42) 100%);}
 /* the three law-strata pinned to the bottom of the photo, physically stacked */
@@ -135,6 +138,9 @@
   .abx-stratum .lv{width:66px;font-size:9px;}
   .abx-stratum .nm{font-size:15px;}
   .abx-stratum .fx{font-size:11px;}
+  /* Bars wrap and take more of the frame on mobile — shift further so the car
+     still clears them. */
+  .abx-stage img{transform:translateY(-52%);}
 }
 @media(prefers-reduced-motion:no-preference){
   .abx-cut{transition:background .2s;}
