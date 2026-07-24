@@ -279,21 +279,20 @@ export function sendLeadNotification(args: {
   })
 }
 
-// Email the RSO Intelligence Briefing PDF. David built desktop + mobile layouts;
-// we attach the one matching the reader's device.
+// Email the RSO Intelligence Briefing. David built desktop + mobile layouts, so
+// we attach BOTH and tell the reader which is which.
 export function sendBriefingEmail(args: {
   to: string
   name: string
-  device?: 'mobile' | 'desktop'
 }): Promise<SendResult<{ id: string }>> {
   if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
   const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://atlasbrief.la').replace(/\/$/, '')
   const first = args.name.trim().split(/\s+/)[0] || 'there'
-  const file = args.device === 'mobile' ? 'atlas-rso-briefing-mobile.pdf' : 'atlas-rso-briefing-desktop.pdf'
   const html =
     `<div style="font-family:Georgia,serif;font-size:16px;color:#1a1a1a;line-height:1.6">` +
     `<p style="margin:0 0 14px">Hi ${escapeHtml(first)},</p>` +
-    `<p style="margin:0 0 14px">Here's the RSO Intelligence Briefing you asked for — the three laws stacked above every LA apartment, in plain English. It's attached as a PDF.</p>` +
+    `<p style="margin:0 0 14px">Here's the RSO Intelligence Briefing you asked for — the three laws stacked above every LA apartment, in plain English.</p>` +
+    `<p style="margin:0 0 14px">I've attached <b>two versions</b>: one formatted for desktop, and one sized for your phone. Open whichever fits the screen you're on.</p>` +
     `<p style="margin:0 0 14px">Every number traces back to LAHD, DCBA, or the statute, so you can verify any line. If a question comes up, just reply to this email.</p>` +
     `<p style="margin:18px 0 0">David Safai<br/><span style="color:#8B5A2B">Atlas Brief</span></p>` +
     `</div>`
@@ -303,7 +302,10 @@ export function sendBriefingEmail(args: {
     reply_to: DISPATCH_REPLY_TO,
     subject: 'Your RSO Intelligence Briefing',
     html,
-    attachments: [{ filename: 'Atlas-Brief-RSO-Intelligence-Briefing.pdf', path: `${base}/${file}` }],
+    attachments: [
+      { filename: 'Atlas-Brief-Three-Laws-Desktop.pdf', path: `${base}/atlas-rso-briefing-desktop.pdf` },
+      { filename: 'Atlas-Brief-Three-Laws-Mobile.pdf', path: `${base}/atlas-rso-briefing-mobile.pdf` },
+    ],
   })
 }
 

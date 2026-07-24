@@ -20,12 +20,10 @@ function cleanText(v: unknown, max: number): string | null {
 export async function POST(req: Request) {
   let email: string
   let name: string | null = null
-  let device: 'mobile' | 'desktop' = 'desktop'
   try {
     const body = await req.json()
     email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
     name = cleanText(body?.name, 120)
-    device = body?.device === 'mobile' ? 'mobile' : 'desktop'
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
@@ -64,7 +62,7 @@ export async function POST(req: Request) {
   // Email the briefing (device-matched PDF) and notify David. Best-effort — the
   // lead row is the durable record.
   const [briefing, notify] = await Promise.all([
-    sendBriefingEmail({ to: email, name, device }),
+    sendBriefingEmail({ to: email, name }),
     sendLeadNotification({ name, email, company: null, kind: 'RSO Briefing' }),
   ])
   if (!notify.ok) console.error('[rso-briefing] notify failed', notify.error)

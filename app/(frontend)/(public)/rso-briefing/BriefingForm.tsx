@@ -20,14 +20,11 @@ export default function BriefingForm() {
     if (!email.trim()) { setState('error'); setMessage('Please enter your email.'); return }
     setState('submitting')
     setMessage('')
-    // David built desktop + mobile versions of the PDF; send the one that fits
-    // the device the reader signed up on.
-    const device = typeof window !== 'undefined' && window.matchMedia('(max-width: 860px)').matches ? 'mobile' : 'desktop'
     try {
       const res = await fetch('/api/rso-briefing/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, device }),
+        body: JSON.stringify({ name, email }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) { setState('error'); setMessage(data?.error || 'Something went wrong. Please try again.'); return }
@@ -45,7 +42,7 @@ export default function BriefingForm() {
       <div className="abx-done">
         <strong>Check your inbox.</strong>
         {emailed ? (
-          <span>I just emailed the briefing to <b>{email}</b> as a PDF. Give it a minute, and peek in spam if it&rsquo;s not there.</span>
+          <span>I just emailed the briefing to <b>{email}</b> — two PDFs, one for desktop and one for phone. Give it a minute, and peek in spam if it&rsquo;s not there.</span>
         ) : (
           <span>
             You&rsquo;re on the list — the email is on its way, or grab it here:{' '}
@@ -73,7 +70,7 @@ export default function BriefingForm() {
       <button type="submit" disabled={state === 'submitting'}>
         {state === 'submitting' ? 'Sending…' : 'Send me the briefing'}
       </button>
-      <p className="abx-fine">Arrives as a PDF, readable on phone or desk. You&rsquo;ll also join the Friday dispatch — unsubscribe anytime.</p>
+      <p className="abx-fine">Arrives as two PDFs — one for desktop, one for phone. You&rsquo;ll also join the Friday dispatch — unsubscribe anytime.</p>
     </form>
   )
 }
