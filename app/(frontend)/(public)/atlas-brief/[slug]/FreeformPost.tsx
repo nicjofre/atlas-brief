@@ -2,7 +2,6 @@ import Link from 'next/link'
 import type { Post, Media } from '@/payload-types'
 import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
-import TrackView from './TrackView'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import './post.css'
@@ -33,8 +32,6 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
       {/* In the CMS Live Preview iframe, refresh the render on save. Not
           rendered on the public page — only in preview. */}
       {preview && <RefreshRouteOnSave />}
-      {/* Don't log a reader view while previewing a draft in the CMS. */}
-      {!preview && <TrackView slug={post.slug} />}
 
       <header className="art-top">
         <div className="wrap">

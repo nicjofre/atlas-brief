@@ -12,7 +12,6 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Disclaimer from '../../Disclaimer'
-import TrackView from './TrackView'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import './post.css'
 
@@ -130,7 +129,6 @@ export default async function PostPage(
   return (
     <>
       {showBar && <ArticleSubscribeBar />}
-      <TrackView slug={article.slug} />
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">

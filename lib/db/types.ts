@@ -1018,8 +1018,10 @@ export type Database = {
         Row: {
           article_id: string | null
           id: string
+          kind: string
+          path: string | null
           referrer: string | null
-          slug: string
+          slug: string | null
           source: string | null
           viewed_at: string
           visitor_hash: string | null
@@ -1027,8 +1029,10 @@ export type Database = {
         Insert: {
           article_id?: string | null
           id?: string
+          kind?: string
+          path?: string | null
           referrer?: string | null
-          slug: string
+          slug?: string | null
           source?: string | null
           viewed_at?: string
           visitor_hash?: string | null
@@ -1036,8 +1040,10 @@ export type Database = {
         Update: {
           article_id?: string | null
           id?: string
+          kind?: string
+          path?: string | null
           referrer?: string | null
-          slug?: string
+          slug?: string | null
           source?: string | null
           viewed_at?: string
           visitor_hash?: string | null
