@@ -112,7 +112,51 @@ type ReaderDetail = {
   truncated: boolean
 }
 
+// ---- one dispatch, recipient by recipient ----
+type BroadcastSummary = {
+  broadcast_id: string
+  first_seen: string
+  recipients: number
+  delivered: number
+  opens: number
+  clicks: number
+  bounces: number
+  complaints: number
+  // Clicks landing within 90 seconds of the send. Corporate mail gateways
+  // pre-fetch every link in a message to scan it, which registers as a
+  // recipient clicking everything at once. Counted so the UI can say so
+  // instead of quietly reporting scanners as readers.
+  burst_clicks: number
+  burst_people: number
+}
+type RecipientRow = {
+  email: string
+  subscriber_id: string | null
+  first_name: string | null
+  last_name: string | null
+  role: string | null
+  delivered_at: string | null
+  first_open: string | null
+  opens: number
+  first_click: string | null
+  clicks: number
+  bounced: boolean
+  complained: boolean
+  // Which deals this person clicked, resolved to headlines.
+  clicked: string[]
+}
+type BroadcastDetail = {
+  summary: BroadcastSummary
+  recipients: RecipientRow[]
+  deals: { label: string; clicks: number; people: number }[]
+  truncated: boolean
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Resend broadcast ids are uuids, but a hand-set id (a test send) can be any
+// slug — so validate shape loosely and rely on the parameterized query.
+const BROADCAST_ID_RE = /^[A-Za-z0-9_-]{1,64}$/
+const RECIPIENT_LIMIT = 1000
 // Enough to read a reader's whole relationship with the brief without letting
 // one very active subscriber pull an unbounded result set.
 const TIMELINE_LIMIT = 300
@@ -203,7 +247,94 @@ async function loadReaderDetail(
   }
 }
 
-async function loadAnalytics(days: number | null, readerId: string | null) {
+// Everyone one dispatch reached, and what each of them did with it.
+//
+// Deliberately NOT windowed: once you've drilled into a specific dispatch you
+// want that dispatch's whole story, not the slice of it that happens to fall
+// inside the page's date filter. A 7-day view of a 3-week-old send would show
+// an empty recipient list next to real headline numbers.
+async function loadBroadcastDetail(
+  c: Client,
+  broadcastId: string,
+  labelForPath: (path: string) => string
+): Promise<BroadcastDetail | null> {
+  const p = [broadcastId]
+
+  const summary = await c.query<BroadcastSummary>(`
+    select broadcast_id, min(created_at) first_seen,
+      count(distinct email)::int recipients,
+      count(*) filter (where type = 'delivered')::int delivered,
+      count(distinct email) filter (where type = 'opened')::int opens,
+      count(distinct email) filter (where type = 'clicked')::int clicks,
+      count(distinct email) filter (where type = 'bounced')::int bounces,
+      count(distinct email) filter (where type = 'complained')::int complaints,
+      count(*) filter (
+        where type = 'clicked'
+          and created_at < (select min(created_at) + interval '90 seconds'
+                            from email_events where broadcast_id = $1)
+      )::int burst_clicks,
+      count(distinct email) filter (
+        where type = 'clicked'
+          and created_at < (select min(created_at) + interval '90 seconds'
+                            from email_events where broadcast_id = $1)
+      )::int burst_people
+    from email_events where broadcast_id = $1
+    group by broadcast_id`, p)
+  if (!summary.rows[0]) return null
+
+  const [recipients, clickedLinks, deals] = await Promise.all([
+    // One row per address. Subscribers are joined on the address because that's
+    // all Resend reports; a recipient with no subscriber row (removed since the
+    // send) still shows, just without a name.
+    c.query<Omit<RecipientRow, 'clicked'>>(`
+      select lower(e.email) as email,
+        s.id as subscriber_id, s.first_name, s.last_name, s.role,
+        min(e.created_at) filter (where e.type = 'delivered') as delivered_at,
+        min(e.created_at) filter (where e.type = 'opened') as first_open,
+        count(*) filter (where e.type = 'opened')::int opens,
+        min(e.created_at) filter (where e.type = 'clicked') as first_click,
+        count(*) filter (where e.type = 'clicked')::int clicks,
+        bool_or(e.type = 'bounced') as bounced,
+        bool_or(e.type = 'complained') as complained
+      from email_events e
+      left join subscribers s on lower(s.email) = lower(e.email)
+      where e.broadcast_id = $1 and e.email is not null
+      group by lower(e.email), s.id, s.first_name, s.last_name, s.role
+      order by clicks desc, opens desc, lower(e.email)
+      limit ${RECIPIENT_LIMIT}`, p),
+    c.query<{ email: string; link: string }>(`
+      select distinct lower(email) as email, link
+      from email_events
+      where broadcast_id = $1 and type = 'clicked' and link is not null`, p),
+    c.query<{ link: string; clicks: number; people: number }>(`
+      select link, count(*)::int clicks, count(distinct email)::int people
+      from email_events
+      where broadcast_id = $1 and type = 'clicked' and link is not null
+      group by link order by clicks desc limit 30`, p),
+  ])
+
+  // A tracked link is a full URL; reduce it to the path so it resolves to a
+  // headline the same way an on-site read does.
+  const toLabel = (link: string) =>
+    labelForPath(link.replace(/^https?:\/\/[^/]+/, '').split('?')[0] || link)
+
+  const byEmail = new Map<string, string[]>()
+  for (const r of clickedLinks.rows) {
+    const list = byEmail.get(r.email) ?? []
+    const label = toLabel(r.link)
+    if (!list.includes(label)) list.push(label)
+    byEmail.set(r.email, list)
+  }
+
+  return {
+    summary: summary.rows[0],
+    recipients: recipients.rows.map(r => ({ ...r, clicked: byEmail.get(r.email) ?? [] })),
+    deals: deals.rows.map(d => ({ label: toLabel(d.link), clicks: d.clicks, people: d.people })),
+    truncated: recipients.rowCount === RECIPIENT_LIMIT,
+  }
+}
+
+async function loadAnalytics(days: number | null, readerId: string | null, broadcastId: string | null) {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   const p = [days]
@@ -373,10 +504,14 @@ async function loadAnalytics(days: number | null, readerId: string | null) {
     })
 
     const readerDetail = readerId ? await loadReaderDetail(c, days, readerId, labelForPath) : null
+    const broadcastDetail = broadcastId && !readerId
+      ? await loadBroadcastDetail(c, broadcastId, labelForPath)
+      : null
 
     const zero: Totals = { total_views: 0, unique_readers: 0, pieces: 0 }
     return {
       readerDetail,
+      broadcastDetail,
       posts: postsResolved,
       totals: totals.rows[0] ?? zero,
       pages: pages.rows,
@@ -439,10 +574,22 @@ function SourceCells({ r }: { r: SourceCols }) {
 
 const EMPTY: React.CSSProperties = { color: '#999', fontSize: 14 }
 
+// Recipient rows list the deals someone clicked, and a dispatch carries enough
+// deals that spelling out full headlines turns every row into a paragraph.
+// Trim each one and summarise the tail.
+function clickedSummary(labels: string[], shown = 2, width = 38): string {
+  if (labels.length === 0) return ''
+  const short = labels
+    .slice(0, shown)
+    .map(l => (l.length > width ? `${l.slice(0, width - 1).trimEnd()}…` : l))
+  const rest = labels.length - short.length
+  return rest > 0 ? `${short.join(' · ')} +${rest} more` : short.join(' · ')
+}
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; range?: string; reader?: string }>
+  searchParams: Promise<{ tab?: string; range?: string; reader?: string; broadcast?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -455,16 +602,23 @@ export default async function AnalyticsPage({
   // Validated before it reaches SQL — a malformed uuid is a Postgres error, not
   // an empty result.
   const readerId = sp.reader && UUID_RE.test(sp.reader) ? sp.reader : null
+  const broadcastId = sp.broadcast && BROADCAST_ID_RE.test(sp.broadcast) ? sp.broadcast : null
 
   const {
     posts, totals, pages, pageTotals, conversions,
     broadcasts, links, hasEmail, emailTotals, waitlist, deals, guideLeads,
-    readers, readerTotals, readerDetail,
-  } = await loadAnalytics(range.days, tab === 'dispatch' ? readerId : null)
+    readers, readerTotals, readerDetail, broadcastDetail,
+  } = await loadAnalytics(
+    range.days,
+    tab === 'dispatch' ? readerId : null,
+    tab === 'dispatch' ? broadcastId : null
+  )
 
-  // Switching range while reading one person keeps you on that person.
+  // Switching range while drilled into a person or a dispatch keeps you there.
   const rangeHref = (r: RangeId) =>
-    `/analytics?tab=${tab}&range=${r}${readerDetail ? `&reader=${readerDetail.profile.id}` : ''}`
+    `/analytics?tab=${tab}&range=${r}` +
+    (readerDetail ? `&reader=${readerDetail.profile.id}` : '') +
+    (broadcastDetail ? `&broadcast=${broadcastDetail.summary.broadcast_id}` : '')
   const readersHref = `/analytics?tab=dispatch&range=${rangeId}`
 
   const windowNote = range.days === null ? 'all time' : `last ${range.days} days`
@@ -640,6 +794,8 @@ export default async function AnalyticsPage({
 
         {tab === 'dispatch' && (
         <>
+        {!readerDetail && !broadcastDetail && (
+        <>
         <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Dispatch engagement</h2>
         {!hasEmail ? (
           <div style={{ background: '#FBF6EC', border: '1px solid #EADFC8', borderRadius: 8, padding: 16, fontSize: 14, color: '#555' }}>
@@ -680,7 +836,12 @@ export default async function AnalyticsPage({
                   {broadcasts.map((b) => (
                     <tr key={b.broadcast_id}>
                       <td style={{ ...TD, fontFamily: 'monospace', fontSize: 12 }}>
-                        {new Date(b.first_seen).toLocaleDateString()} · {b.broadcast_id.slice(0, 8)}…
+                        <Link
+                          href={`/analytics?tab=dispatch&range=${rangeId}&broadcast=${b.broadcast_id}`}
+                          style={{ color: '#0A0A0A' }}
+                        >
+                          {new Date(b.first_seen).toLocaleDateString()} · {b.broadcast_id.slice(0, 8)}…
+                        </Link>
                       </td>
                       <td style={NUM}>{b.delivered}</td>
                       <td style={NUM}>{b.opens}</td>
@@ -712,6 +873,151 @@ export default async function AnalyticsPage({
             )}
           </>
         )}
+        </>
+        )}
+
+        {/* ---- one dispatch, recipient by recipient ---- */}
+        {broadcastDetail && (() => {
+          const b = broadcastDetail.summary
+          const pct = (n: number) => (b.delivered ? `${Math.round((n / b.delivered) * 100)}%` : '—')
+          const quiet = broadcastDetail.recipients.filter(r => !r.opens && !r.clicks && !r.bounced).length
+          return (
+            <>
+              <div style={{ marginTop: 28 }}>
+                <Link href={readersHref} style={{ fontSize: 12, color: '#9A6B3F', textDecoration: 'none' }}>
+                  ← All dispatches
+                </Link>
+              </div>
+              <h2 style={{ fontSize: 22, marginTop: 12, marginBottom: 2 }}>
+                Dispatch · {new Date(b.first_seen).toLocaleDateString()}
+              </h2>
+              <p style={{ ...EMPTY, marginTop: 0, marginBottom: 16 }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{b.broadcast_id}</span>
+                {' · '}every event for this send, whatever date range is selected
+              </p>
+
+              <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+                <Stat label="Recipients" value={b.recipients.toLocaleString()} />
+                <Stat label="Delivered" value={b.delivered.toLocaleString()} />
+                <Stat label="Opened" value={`${b.opens} · ${pct(b.opens)}`} />
+                <Stat label="Clicked" value={`${b.clicks} · ${pct(b.clicks)}`} />
+                {b.bounces > 0 && <Stat label="Bounced" value={b.bounces.toLocaleString()} />}
+                {b.complaints > 0 && <Stat label="Complaints" value={b.complaints.toLocaleString()} />}
+              </div>
+
+              {b.burst_people > 0 && (
+                <div style={{
+                  background: '#FBF6EC', border: '1px solid #EADFC8', borderRadius: 8,
+                  padding: '12px 16px', fontSize: 13, color: '#5A4A33', marginBottom: 24,
+                }}>
+                  <b>{b.burst_clicks} of these clicks came from {b.burst_people} recipient
+                  {b.burst_people === 1 ? '' : 's'} within 90 seconds of the send.</b>{' '}
+                  That pattern is almost always corporate mail security scanning every link in the
+                  message, not people reading it. Treat the click figure above as an upper bound —
+                  the clicks spread out over the following hours are the real ones.
+                </div>
+              )}
+
+              {broadcastDetail.deals.length > 0 && (
+                <>
+                  <h3 style={{ fontSize: 14, color: '#666', margin: '0 0 8px' }}>What they clicked</h3>
+                  <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden', marginBottom: 24 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={TH}>Deal</th>
+                          <th style={{ ...TH, textAlign: 'right' }}>People</th>
+                          <th style={{ ...TH, textAlign: 'right' }}>Clicks</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {broadcastDetail.deals.map((d) => (
+                          <tr key={d.label}>
+                            <td style={TD}>{d.label}</td>
+                            <td style={NUM}>{d.people}</td>
+                            <td style={NUM}>{d.clicks}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+
+              <h3 style={{ fontSize: 14, color: '#666', margin: '0 0 8px' }}>
+                Recipients · clickers first
+                {quiet > 0 && (
+                  <span style={{ color: '#999', fontWeight: 400 }}>
+                    {' '}· {quiet} received it without opening
+                  </span>
+                )}
+              </h3>
+              {broadcastDetail.recipients.length === 0 ? (
+                <p style={EMPTY}>No recipient events recorded for this dispatch.</p>
+              ) : (
+                <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={TH}>Recipient</th>
+                        <th style={TH}>Clicked</th>
+                        <th style={{ ...TH, textAlign: 'right' }}>Opens</th>
+                        <th style={{ ...TH, textAlign: 'right' }}>Clicks</th>
+                        <th style={{ ...TH, textAlign: 'right' }}>First opened</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {broadcastDetail.recipients.map((r) => {
+                        const name = [r.first_name, r.last_name].filter(Boolean).join(' ')
+                        return (
+                          <tr key={r.email}>
+                            <td style={TD}>
+                              {r.subscriber_id ? (
+                                <Link
+                                  href={`/analytics?tab=dispatch&range=${rangeId}&reader=${r.subscriber_id}`}
+                                  style={{ color: '#0A0A0A' }}
+                                >
+                                  {name || r.email}
+                                </Link>
+                              ) : (
+                                <span>{name || r.email}</span>
+                              )}
+                              <div style={{ fontSize: 11, color: '#999' }}>
+                                {name ? r.email : ''}{name && r.role ? ' · ' : ''}{r.role || ''}
+                                {r.bounced ? ' · bounced' : ''}
+                                {r.complained ? ' · marked spam' : ''}
+                                {!r.subscriber_id ? ' · no longer on the list' : ''}
+                              </div>
+                            </td>
+                            <td style={{ ...TD, fontSize: 12, color: '#555' }} title={r.clicked.join('\n')}>
+                              {r.clicked.length
+                                ? clickedSummary(r.clicked)
+                                : <span style={{ color: '#ccc' }}>—</span>}
+                            </td>
+                            <td style={NUM}>{r.opens || ''}</td>
+                            <td style={NUM}>{r.clicks || ''}</td>
+                            <td style={{ ...NUM, fontSize: 12, color: '#666' }}>
+                              {r.first_open
+                                ? new Date(r.first_open).toLocaleString([], {
+                                    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                                  })
+                                : ''}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {broadcastDetail.truncated && (
+                <p style={{ ...EMPTY, marginTop: 8, fontSize: 12 }}>
+                  Showing the first {RECIPIENT_LIMIT} recipients.
+                </p>
+              )}
+            </>
+          )
+        })()}
 
         {/* ---- one reader, in full ---- */}
         {readerDetail ? (
@@ -791,7 +1097,7 @@ export default async function AnalyticsPage({
           )
         })()}
         </>
-        ) : (
+        ) : broadcastDetail ? null : (
         <>
         {/* ---- who read what ---- */}
         <h2 style={{ fontSize: 18, marginTop: 40, marginBottom: 4 }}>Reader activity</h2>
