@@ -66,6 +66,31 @@ function takeReaderId(): string {
   }
 }
 
+// A view only counts once the page has been open this long.
+//
+// Corporate mail gateways scan every link in a dispatch before delivering it,
+// and they do it with a real rendering engine — they run our JavaScript and
+// present a browser user-agent, so the user-agent bot filter never sees them.
+// On the Jul 20 dispatch that produced 114 phantom page views inside five
+// minutes, from 21 "visitors" who were mail scanners.
+//
+// What separates them from a reader is dwell: a scanner loads, inspects, and
+// leaves in about a second, while a person stays. So we wait before recording
+// anything and drop the view if the page is gone or hidden by then. This costs
+// us genuine sub-4-second visits, which is the right trade — those aren't reads.
+//
+// This matters most for attribution: without it, a scanner following
+// ?rid=jane@firm.com would file five articles under Jane, who never opened the
+// email at all.
+const DWELL_MS = 4000
+
+// The reader id survives a dropped beacon. If someone lands from a dispatch,
+// leaves that first page inside the dwell window, and settles on the next one,
+// their identity should still reach the server — otherwise the whole visit goes
+// anonymous. Module scope, so it persists across client-side navigations but
+// dies with the tab. Cleared once a beacon has actually gone out.
+let pendingRid = ''
+
 function send(payload: { path: string; source: string; referrer: string; rid?: string }): void {
   const body = JSON.stringify(payload)
   const url = '/api/track/view'
@@ -83,14 +108,17 @@ function send(payload: { path: string; source: string; referrer: string; rid?: s
 
 export default function TrackPageView() {
   const pathname = usePathname()
-  // The last path we reported. Still null means we haven't reported anything
-  // yet, which also tells us this is the visit's first page.
+  // The last path we actually SENT. Deliberately not set when the timer starts:
+  // an effect that gets torn down before the dwell elapses (a fast bounce, or
+  // React re-running the effect in development) must leave this untouched, or
+  // the retry sees the path as already reported and the view is lost. Still
+  // null also means nothing has been counted yet, i.e. this is the visit's
+  // first counted page.
   const reported = useRef<string | null>(null)
 
   useEffect(() => {
     if (!pathname || reported.current === pathname) return
     const isFirstOfVisit = reported.current === null
-    reported.current = pathname
 
     try {
       // Payload's Live Preview renders the public page inside an iframe. Don't
@@ -98,16 +126,44 @@ export default function TrackPageView() {
       // rejected server-side; this saves the round trip.)
       if (window.self !== window.top) return
 
-      // Only the landing page of a dispatch click carries rid; every page after
-      // it attributes off the cookie the server set on this first beacon.
-      const rid = isFirstOfVisit ? takeReaderId() : ''
+      // Automation drives itself with this flag set; a real browser doesn't.
+      // Catches the headless scanners that bother to spoof a user-agent.
+      if (navigator.webdriver) return
 
-      send({
-        path: pathname,
-        source: isFirstOfVisit ? classifyArrival() : 'internal',
-        referrer: isFirstOfVisit ? (document.referrer || '').slice(0, 400) : '',
-        ...(rid ? { rid } : {}),
-      })
+      // Read the identity out of the URL straight away — the scrub shouldn't
+      // wait on the dwell timer, or the address sits in the address bar where
+      // it can be copied or leaked. Holding it in pendingRid keeps it usable if
+      // this particular view never gets reported.
+      //
+      // Checked on every navigation, not just the first page. In practice only
+      // a dispatch link carries rid and that's always a fresh page load, but
+      // tying the scrub to "first page of the visit" means any path where that
+      // assumption breaks leaves the address sitting in the URL.
+      pendingRid = takeReaderId() || pendingRid
+
+      // Everything below is captured now but sent later; document.referrer is
+      // gone after a client-side navigation.
+      const source = isFirstOfVisit ? classifyArrival() : 'internal'
+      const referrer = isFirstOfVisit ? (document.referrer || '').slice(0, 400) : ''
+
+      const fire = () => {
+        if (reported.current === pathname || document.hidden) return
+        reported.current = pathname
+        const rid = pendingRid
+        pendingRid = ''
+        send({ path: pathname, source, referrer, ...(rid ? { rid } : {}) })
+      }
+      const timer = window.setTimeout(fire, DWELL_MS)
+
+      // Leaving early — closing the tab, backgrounding, or navigating on — means
+      // the dwell was never served, so the view is dropped.
+      const cancel = () => window.clearTimeout(timer)
+      window.addEventListener('pagehide', cancel)
+
+      return () => {
+        window.clearTimeout(timer)
+        window.removeEventListener('pagehide', cancel)
+      }
     } catch {
       // analytics must never break the page
     }
