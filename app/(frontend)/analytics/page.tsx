@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Client } from 'pg'
 import { createClient } from '@/lib/supabase/server'
 import InternalNav from '@/app/InternalNav'
+import UniqueReadersChart from './UniqueReadersChart'
 
 const TABS = [
   { id: 'posts', label: 'By post' },
@@ -22,6 +23,15 @@ const RANGES = [
   { id: 'all', label: 'All time', days: null },
 ] as const
 type RangeId = (typeof RANGES)[number]['id']
+
+// How the "By post" table is ordered. The SQL fragment is picked from this
+// table, never built from the query string.
+const POST_SORTS = {
+  reads: { label: 'Reads', order: 'total desc, uniques desc' },
+  unique: { label: 'Unique', order: 'uniques desc, total desc' },
+  date: { label: 'Published', order: 'published_at desc nulls last, total desc' },
+} as const
+type PostSort = keyof typeof POST_SORTS
 
 // Friendlier names for the pages we know about. Anything else (a section
 // index, a new page) falls back to showing the raw path.
@@ -57,10 +67,23 @@ type SourceCols = {
   internal_src: number
   other_src: number
 }
-type PostRow = SourceCols & { headline: string; slug: string; total: number; uniques: number }
+type PostRow = SourceCols & {
+  headline: string
+  slug: string
+  total: number
+  uniques: number
+  published_at: string | null
+}
 type PageRow = SourceCols & { path: string; total: number; uniques: number }
+// One day of reading, for the trend chart. `uniques` counts distinct visitor
+// hashes within that day — the hash already rotates daily, so a per-day unique
+// is exact in a way the window-wide figure isn't.
+type SeriesPoint = { day: string; uniques: number; reads: number }
 type Totals = { total_views: number; unique_readers: number; pieces: number }
-type BroadcastRow = { broadcast_id: string; first_seen: string; delivered: number; opens: number; clicks: number }
+type BroadcastRow = {
+  broadcast_id: string; first_seen: string; delivered: number
+  opens: number; clicks: number; scanners: number
+}
 type LinkRow = { deal: string; clicks: number }
 type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
@@ -142,6 +165,9 @@ type RecipientRow = {
   clicks: number
   bounced: boolean
   complained: boolean
+  // Their clicks bear the mail-scanner signature, so this row's engagement is
+  // their employer's security software, not them.
+  is_scanner: boolean
   // Which deals this person clicked, resolved to headlines.
   clicked: string[]
 }
@@ -164,6 +190,44 @@ const TIMELINE_LIMIT = 300
 // Reused window predicates. $1 is the day count (null = all time).
 const VIEW_WINDOW = `($1::int is null or pv.viewed_at > now() - make_interval(days => $1::int))`
 const CREATED_WINDOW = `($1::int is null or created_at > now() - make_interval(days => $1::int))`
+
+// ---- mail-scanner clicks ----
+//
+// Corporate mail security opens every link in a dispatch to scan it, which
+// Resend reports as the recipient clicking everything at once. Across the first
+// three dispatches that was 9 of 13, 2 of 7, and 17 of 21 "clickers" — enough
+// to roughly quadruple the reported click rate.
+//
+// The signature is unmistakable and nothing like a reader: several DISTINCT
+// links, within seconds of the send. A person clicks one, later. So a
+// (dispatch, recipient) pair is treated as a scanner when it hit 3+ distinct
+// links inside 90 seconds of that dispatch's first event.
+//
+// Nothing is deleted or rewritten — this is a read-time judgement, so it also
+// applies retroactively and can be retuned by changing these two numbers.
+const SCANNERS_CTE = `
+  sends as (
+    select broadcast_id, min(created_at) as send_at
+    from email_events where broadcast_id is not null group by broadcast_id
+  ),
+  scanners as (
+    select e.broadcast_id, lower(e.email) as email
+    from email_events e
+    join sends s on s.broadcast_id = e.broadcast_id
+    where e.type = 'clicked'
+    group by e.broadcast_id, lower(e.email), s.send_at
+    having count(distinct e.link) >= 3
+       and min(e.created_at) < s.send_at + interval '90 seconds'
+  )`
+
+// A clicked event that isn't one of those. Used everywhere a click is counted
+// so the headline numbers mean people.
+const HUMAN_CLICK = `
+  type = 'clicked' and not exists (
+    select 1 from scanners sc
+    where sc.broadcast_id = email_events.broadcast_id
+      and sc.email = lower(email_events.email)
+  )`
 
 const SOURCE_COLS = `
   count(*) filter (where pv.source = 'email')::int email_src,
@@ -199,10 +263,16 @@ async function loadReaderDetail(
       limit ${TIMELINE_LIMIT}`, p),
     // Joined on the address, which is how Resend identifies a recipient — the
     // webhook never sees our subscriber id.
+    // Scanner clicks are excluded so a reader's timeline shows what they did,
+    // not what their mail gateway did on their behalf.
     c.query<{ type: string; link: string | null; created_at: string }>(`
+      with ${SCANNERS_CTE}
       select e.type, e.link, e.created_at
       from email_events e
       where lower(e.email) = (select lower(email) from subscribers where id = $2)
+        and (e.type <> 'clicked' or not exists (
+          select 1 from scanners sc
+          where sc.broadcast_id = e.broadcast_id and sc.email = lower(e.email)))
         and ${CREATED_WINDOW.replace('created_at', 'e.created_at')}
       order by e.created_at desc
       limit ${TIMELINE_LIMIT}`, p),
@@ -261,22 +331,25 @@ async function loadBroadcastDetail(
   const p = [broadcastId]
 
   const summary = await c.query<BroadcastSummary>(`
+    with ${SCANNERS_CTE}
     select broadcast_id, min(created_at) first_seen,
       count(distinct email)::int recipients,
       count(*) filter (where type = 'delivered')::int delivered,
       count(distinct email) filter (where type = 'opened')::int opens,
-      count(distinct email) filter (where type = 'clicked')::int clicks,
+      count(distinct email) filter (where ${HUMAN_CLICK})::int clicks,
       count(distinct email) filter (where type = 'bounced')::int bounces,
       count(distinct email) filter (where type = 'complained')::int complaints,
       count(*) filter (
-        where type = 'clicked'
-          and created_at < (select min(created_at) + interval '90 seconds'
-                            from email_events where broadcast_id = $1)
+        where type = 'clicked' and exists (
+          select 1 from scanners sc
+          where sc.broadcast_id = email_events.broadcast_id
+            and sc.email = lower(email_events.email))
       )::int burst_clicks,
       count(distinct email) filter (
-        where type = 'clicked'
-          and created_at < (select min(created_at) + interval '90 seconds'
-                            from email_events where broadcast_id = $1)
+        where type = 'clicked' and exists (
+          select 1 from scanners sc
+          where sc.broadcast_id = email_events.broadcast_id
+            and sc.email = lower(email_events.email))
       )::int burst_people
     from email_events where broadcast_id = $1
     group by broadcast_id`, p)
@@ -287,6 +360,7 @@ async function loadBroadcastDetail(
     // all Resend reports; a recipient with no subscriber row (removed since the
     // send) still shows, just without a name.
     c.query<Omit<RecipientRow, 'clicked'>>(`
+      with ${SCANNERS_CTE}
       select lower(e.email) as email,
         s.id as subscriber_id, s.first_name, s.last_name, s.role,
         min(e.created_at) filter (where e.type = 'delivered') as delivered_at,
@@ -295,21 +369,28 @@ async function loadBroadcastDetail(
         min(e.created_at) filter (where e.type = 'clicked') as first_click,
         count(*) filter (where e.type = 'clicked')::int clicks,
         bool_or(e.type = 'bounced') as bounced,
-        bool_or(e.type = 'complained') as complained
+        bool_or(e.type = 'complained') as complained,
+        exists (
+          select 1 from scanners sc
+          where sc.broadcast_id = $1 and sc.email = lower(e.email)
+        ) as is_scanner
       from email_events e
       left join subscribers s on lower(s.email) = lower(e.email)
       where e.broadcast_id = $1 and e.email is not null
       group by lower(e.email), s.id, s.first_name, s.last_name, s.role
-      order by clicks desc, opens desc, lower(e.email)
+      order by is_scanner, clicks desc, opens desc, lower(e.email)
       limit ${RECIPIENT_LIMIT}`, p),
     c.query<{ email: string; link: string }>(`
       select distinct lower(email) as email, link
       from email_events
       where broadcast_id = $1 and type = 'clicked' and link is not null`, p),
+    // Deal ranking counts people, not scanners — otherwise a gateway that opens
+    // every link makes all deals look equally popular.
     c.query<{ link: string; clicks: number; people: number }>(`
+      with ${SCANNERS_CTE}
       select link, count(*)::int clicks, count(distinct email)::int people
       from email_events
-      where broadcast_id = $1 and type = 'clicked' and link is not null
+      where broadcast_id = $1 and ${HUMAN_CLICK} and link is not null
       group by link order by clicks desc limit 30`, p),
   ])
 
@@ -334,26 +415,63 @@ async function loadBroadcastDetail(
   }
 }
 
-async function loadAnalytics(days: number | null, readerId: string | null, broadcastId: string | null) {
+// Days with no reads have no rows, and a line drawn straight between two busy
+// days across a quiet week overstates what happened. Fill the gaps with zeros
+// so the shape is honest. Buckets are LA days, matching how the dates read
+// everywhere else on the page.
+function fillDays(rows: SeriesPoint[], days: number | null): SeriesPoint[] {
+  if (rows.length === 0) return []
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+  const dayMs = 86_400_000
+  const key = (t: number) => new Date(t).toISOString().slice(0, 10)
+  const at = (s: string) => Date.parse(`${s}T00:00:00Z`)
+
+  const first = days === null ? at(rows[0].day) : at(today) - (days - 1) * dayMs
+  const start = Math.min(first, at(rows[0].day))
+  const end = Math.max(at(today), at(rows[rows.length - 1].day))
+
+  const byDay = new Map(rows.map(r => [r.day, r]))
+  const out: SeriesPoint[] = []
+  for (let t = start; t <= end; t += dayMs) {
+    const d = key(t)
+    out.push(byDay.get(d) ?? { day: d, uniques: 0, reads: 0 })
+  }
+  return out
+}
+
+async function loadAnalytics(
+  days: number | null,
+  sort: PostSort,
+  readerId: string | null,
+  broadcastId: string | null
+) {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   const p = [days]
   try {
     const [
-      posts, totals, pages, pageTotals, landingViews, landingLeads,
+      posts, totals, series, pages, pageTotals, landingViews, landingLeads,
       broadcasts, links, emailCount, emailTotals, waitlist, deals, guideLeads, postTitleRows,
       readerRows, readerTotals, emailByAddress, articleTitleRows,
     ] = await Promise.all([
+      // The publish date comes from `articles`, falling back to a scalar
+      // subquery for freeform posts. A join to payload.posts would risk
+      // multiplying rows and inflating the very counts this table reports.
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
           count(*)::int total,
           count(distinct pv.visitor_hash)::int uniques,
+          coalesce(
+            max(a.published_at),
+            (select pp.published_at from payload.posts pp
+              where pp.slug = pv.slug and pp._status = 'published' limit 1)
+          ) as published_at,
           ${SOURCE_COLS}
         from post_views pv
         left join articles a on a.slug = pv.slug
         where pv.kind = 'article' and pv.slug is not null and ${VIEW_WINDOW}
         group by pv.slug, a.headline
-        order by total desc
+        order by ${POST_SORTS[sort].order}
         limit 100`, p),
       c.query<Totals>(`
         select count(*)::int total_views,
@@ -361,6 +479,16 @@ async function loadAnalytics(days: number | null, readerId: string | null, broad
           count(distinct pv.slug)::int pieces
         from post_views pv
         where pv.kind = 'article' and ${VIEW_WINDOW}`, p),
+      // Daily trend. Bucketed on the LA calendar day so the dates match the
+      // rest of the page; returned as text so no timezone gets applied twice
+      // on the way through the driver.
+      c.query<SeriesPoint>(`
+        select to_char(pv.viewed_at at time zone 'America/Los_Angeles', 'YYYY-MM-DD') as day,
+          count(distinct pv.visitor_hash)::int uniques,
+          count(*)::int reads
+        from post_views pv
+        where pv.kind = 'article' and ${VIEW_WINDOW}
+        group by 1 order by 1`, p),
       c.query<PageRow>(`
         select pv.path,
           count(*)::int total,
@@ -394,24 +522,33 @@ async function loadAnalytics(days: number | null, readerId: string | null, broad
         select 'tax_appeals', count(*)::int from tax_appeal_waitlist
           where ${CREATED_WINDOW}`, p),
       c.query<BroadcastRow>(`
+        with ${SCANNERS_CTE}
         select broadcast_id, min(created_at) first_seen,
           count(*) filter (where type = 'delivered')::int delivered,
           count(distinct email) filter (where type = 'opened')::int opens,
-          count(distinct email) filter (where type = 'clicked')::int clicks
+          count(distinct email) filter (where ${HUMAN_CLICK})::int clicks,
+          count(distinct email) filter (
+            where type = 'clicked' and exists (
+              select 1 from scanners sc
+              where sc.broadcast_id = email_events.broadcast_id
+                and sc.email = lower(email_events.email))
+          )::int scanners
         from email_events where broadcast_id is not null and ${CREATED_WINDOW}
         group by broadcast_id order by min(created_at) desc limit 50`, p),
       c.query<LinkRow>(`
+        with ${SCANNERS_CTE}
         select coalesce(substring(link from '/atlas-brief/([a-z0-9-]+)'), link) as deal,
           count(*)::int clicks
         from email_events
-        where type = 'clicked' and link is not null and ${CREATED_WINDOW}
+        where ${HUMAN_CLICK} and link is not null and ${CREATED_WINDOW}
         group by deal order by clicks desc limit 30`, p),
       c.query<{ n: number }>(`select count(*)::int n from email_events`),
       c.query<EmailTotals>(`
+        with ${SCANNERS_CTE}
         select
           count(*) filter (where type = 'delivered')::int delivered,
           count(distinct email) filter (where type = 'opened')::int opens,
-          count(distinct email) filter (where type = 'clicked')::int clicks,
+          count(distinct email) filter (where ${HUMAN_CLICK})::int clicks,
           count(*) filter (where broadcast_id is null)::int untracked
         from email_events where ${CREATED_WINDOW}`, p),
       c.query<WaitlistRow>(`
@@ -457,9 +594,10 @@ async function loadAnalytics(days: number | null, readerId: string | null, broad
         where ${VIEW_WINDOW}`, p),
       // Email engagement keyed by address, merged onto the reader rows in JS.
       c.query<{ email: string; opens: number; clicks: number }>(`
+        with ${SCANNERS_CTE}
         select lower(email) as email,
           count(*) filter (where type = 'opened')::int opens,
-          count(*) filter (where type = 'clicked')::int clicks
+          count(*) filter (where ${HUMAN_CLICK})::int clicks
         from email_events
         where email is not null and ${CREATED_WINDOW}
         group by lower(email)`, p),
@@ -514,6 +652,7 @@ async function loadAnalytics(days: number | null, readerId: string | null, broad
       broadcastDetail,
       posts: postsResolved,
       totals: totals.rows[0] ?? zero,
+      series: fillDays(series.rows, days),
       pages: pages.rows,
       pageTotals: pageTotals.rows[0] ?? zero,
       conversions,
@@ -574,6 +713,30 @@ function SourceCells({ r }: { r: SourceCols }) {
 
 const EMPTY: React.CSSProperties = { color: '#999', fontSize: 14 }
 
+// A sortable column head on "By post". Every sort is descending — there's no
+// reading of this table where you want the least-read post or the oldest deal
+// first, so a second click toggling to ascending would only be a way to get
+// somewhere useless.
+function SortHeader({
+  id, active, href,
+}: {
+  id: PostSort
+  active: PostSort
+  href: (s: PostSort) => string
+}) {
+  const on = active === id
+  return (
+    <th style={{ ...TH, textAlign: 'right', whiteSpace: 'nowrap' }} aria-sort={on ? 'descending' : 'none'}>
+      <Link
+        href={href(id)}
+        style={{ color: on ? '#111' : '#999', textDecoration: 'none', borderBottom: on ? '1px solid #111' : 'none', paddingBottom: 1 }}
+      >
+        {POST_SORTS[id].label}{on ? ' ↓' : ''}
+      </Link>
+    </th>
+  )
+}
+
 // Recipient rows list the deals someone clicked, and a dispatch carries enough
 // deals that spelling out full headlines turns every row into a paragraph.
 // Trim each one and summarise the tail.
@@ -589,7 +752,7 @@ function clickedSummary(labels: string[], shown = 2, width = 38): string {
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; range?: string; reader?: string; broadcast?: string }>
+  searchParams: Promise<{ tab?: string; range?: string; sort?: string; reader?: string; broadcast?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -599,17 +762,19 @@ export default async function AnalyticsPage({
   const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
   const range = RANGES.find(r => r.id === sp.range) ?? RANGES[1]
   const rangeId: RangeId = range.id
+  const sort: PostSort = sp.sort && sp.sort in POST_SORTS ? (sp.sort as PostSort) : 'reads'
   // Validated before it reaches SQL — a malformed uuid is a Postgres error, not
   // an empty result.
   const readerId = sp.reader && UUID_RE.test(sp.reader) ? sp.reader : null
   const broadcastId = sp.broadcast && BROADCAST_ID_RE.test(sp.broadcast) ? sp.broadcast : null
 
   const {
-    posts, totals, pages, pageTotals, conversions,
+    posts, totals, series, pages, pageTotals, conversions,
     broadcasts, links, hasEmail, emailTotals, waitlist, deals, guideLeads,
     readers, readerTotals, readerDetail, broadcastDetail,
   } = await loadAnalytics(
     range.days,
+    sort,
     tab === 'dispatch' ? readerId : null,
     tab === 'dispatch' ? broadcastId : null
   )
@@ -617,8 +782,10 @@ export default async function AnalyticsPage({
   // Switching range while drilled into a person or a dispatch keeps you there.
   const rangeHref = (r: RangeId) =>
     `/analytics?tab=${tab}&range=${r}` +
+    (tab === 'posts' ? `&sort=${sort}` : '') +
     (readerDetail ? `&reader=${readerDetail.profile.id}` : '') +
     (broadcastDetail ? `&broadcast=${broadcastDetail.summary.broadcast_id}` : '')
+  const sortHref = (s: PostSort) => `/analytics?tab=posts&range=${rangeId}&sort=${s}`
   const readersHref = `/analytics?tab=dispatch&range=${rangeId}`
 
   const windowNote = range.days === null ? 'all time' : `last ${range.days} days`
@@ -682,6 +849,17 @@ export default async function AnalyticsPage({
           <Stat label="Posts read" value={totals.pieces.toLocaleString()} />
         </div>
 
+        {series.length > 1 && (
+          <div style={{ border: '1px solid #eee', borderRadius: 8, padding: '16px 16px 8px', marginTop: 20 }}>
+            <h2 style={{ fontSize: 15, margin: '0 0 2px' }}>Unique readers per day</h2>
+            <p style={{ ...EMPTY, fontSize: 12, margin: '0 0 8px' }}>
+              Distinct readers of any post each day, {windowNote}. Someone who reads three deals in
+              one day counts once; the same person returning tomorrow counts again.
+            </p>
+            <UniqueReadersChart points={series} />
+          </div>
+        )}
+
         <h2 style={{ fontSize: 18, marginTop: 36, marginBottom: 8 }}>By post</h2>
         {posts.length === 0 ? (
           <p style={EMPTY}>No reads recorded in the {windowNote}.</p>
@@ -691,8 +869,9 @@ export default async function AnalyticsPage({
               <thead>
                 <tr>
                   <th style={TH}>Post</th>
-                  <th style={{ ...TH, textAlign: 'right' }}>Reads</th>
-                  <th style={{ ...TH, textAlign: 'right' }}>Unique</th>
+                  <SortHeader id="reads" active={sort} href={sortHref} />
+                  <SortHeader id="unique" active={sort} href={sortHref} />
+                  <SortHeader id="date" active={sort} href={sortHref} />
                   <SourceHeaders />
                 </tr>
               </thead>
@@ -704,6 +883,11 @@ export default async function AnalyticsPage({
                     </td>
                     <td style={NUM}>{p.total}</td>
                     <td style={NUM}>{p.uniques}</td>
+                    <td style={{ ...NUM, fontSize: 12, color: '#666', whiteSpace: 'nowrap' }}>
+                      {p.published_at
+                        ? new Date(p.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+                        : <span style={{ color: '#ccc' }}>—</span>}
+                    </td>
                     <SourceCells r={p} />
                   </tr>
                 ))}
@@ -828,6 +1012,7 @@ export default async function AnalyticsPage({
                     <th style={{ ...TH, textAlign: 'right' }}>Delivered</th>
                     <th style={{ ...TH, textAlign: 'right' }}>Opens</th>
                     <th style={{ ...TH, textAlign: 'right' }}>Clicks</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Scanners</th>
                     <th style={{ ...TH, textAlign: 'right' }}>Open %</th>
                     <th style={{ ...TH, textAlign: 'right' }}>Click %</th>
                   </tr>
@@ -846,6 +1031,7 @@ export default async function AnalyticsPage({
                       <td style={NUM}>{b.delivered}</td>
                       <td style={NUM}>{b.opens}</td>
                       <td style={NUM}>{b.clicks}</td>
+                      <td style={{ ...NUM, color: '#bbb' }}>{b.scanners || ''}</td>
                       <td style={NUM}>{b.delivered ? Math.round((b.opens / b.delivered) * 100) + '%' : '—'}</td>
                       <td style={NUM}>{b.delivered ? Math.round((b.clicks / b.delivered) * 100) + '%' : '—'}</td>
                     </tr>
@@ -910,11 +1096,11 @@ export default async function AnalyticsPage({
                   background: '#FBF6EC', border: '1px solid #EADFC8', borderRadius: 8,
                   padding: '12px 16px', fontSize: 13, color: '#5A4A33', marginBottom: 24,
                 }}>
-                  <b>{b.burst_clicks} of these clicks came from {b.burst_people} recipient
-                  {b.burst_people === 1 ? '' : 's'} within 90 seconds of the send.</b>{' '}
-                  That pattern is almost always corporate mail security scanning every link in the
-                  message, not people reading it. Treat the click figure above as an upper bound —
-                  the clicks spread out over the following hours are the real ones.
+                  <b>Already excluded: {b.burst_clicks} clicks from {b.burst_people} recipient
+                  {b.burst_people === 1 ? '' : 's'}</b> that opened three or more links within 90
+                  seconds of the send. That is corporate mail security scanning the message, not
+                  people reading it. The figures above count readers only; the scanned recipients
+                  are still listed below, marked, at the bottom of the table.
                 </div>
               )}
 
@@ -970,7 +1156,7 @@ export default async function AnalyticsPage({
                       {broadcastDetail.recipients.map((r) => {
                         const name = [r.first_name, r.last_name].filter(Boolean).join(' ')
                         return (
-                          <tr key={r.email}>
+                          <tr key={r.email} style={r.is_scanner ? { opacity: 0.55 } : undefined}>
                             <td style={TD}>
                               {r.subscriber_id ? (
                                 <Link
@@ -987,6 +1173,7 @@ export default async function AnalyticsPage({
                                 {r.bounced ? ' · bounced' : ''}
                                 {r.complained ? ' · marked spam' : ''}
                                 {!r.subscriber_id ? ' · no longer on the list' : ''}
+                                {r.is_scanner ? ' · clicks are their mail scanner' : ''}
                               </div>
                             </td>
                             <td style={{ ...TD, fontSize: 12, color: '#555' }} title={r.clicked.join('\n')}>
