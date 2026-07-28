@@ -85,7 +85,6 @@ type BroadcastRow = {
   opens: number; clicks: number; scanners: number
 }
 type LinkRow = { deal: string; clicks: number }
-type EmailTotals = { delivered: number; opens: number; clicks: number; untracked: number }
 type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
 type DealRow = { name: string; email: string; deal: string; note: string | null; created_at: string }
 type GuideRow = { name: string; email: string; company: string | null; source: string | null; created_at: string }
@@ -103,7 +102,6 @@ type ReaderRow = {
   opens: number
   clicks: number
 }
-type ReaderTotals = { identified: number; readers: number; total: number }
 
 // ---- one reader, in full ----
 type ReaderProfile = {
@@ -450,9 +448,9 @@ async function loadAnalytics(
   const p = [days]
   try {
     const [
-      posts, totals, series, pages, pageTotals, landingViews, landingLeads,
-      broadcasts, links, emailCount, emailTotals, waitlist, deals, guideLeads, postTitleRows,
-      readerRows, readerTotals, emailByAddress, articleTitleRows,
+      posts, series, pages, pageTotals, landingViews, landingLeads,
+      broadcasts, links, emailCount, waitlist, deals, guideLeads, postTitleRows,
+      readerRows, emailByAddress, articleTitleRows,
     ] = await Promise.all([
       // The publish date comes from `articles`, falling back to a scalar
       // subquery for freeform posts. A join to payload.posts would risk
@@ -473,12 +471,6 @@ async function loadAnalytics(
         group by pv.slug, a.headline
         order by ${POST_SORTS[sort].order}
         limit 100`, p),
-      c.query<Totals>(`
-        select count(*)::int total_views,
-          count(distinct pv.visitor_hash)::int unique_readers,
-          count(distinct pv.slug)::int pieces
-        from post_views pv
-        where pv.kind = 'article' and ${VIEW_WINDOW}`, p),
       // Daily trend. Bucketed on the LA calendar day so the dates match the
       // rest of the page; returned as text so no timezone gets applied twice
       // on the way through the driver.
@@ -543,14 +535,6 @@ async function loadAnalytics(
         where ${HUMAN_CLICK} and link is not null and ${CREATED_WINDOW}
         group by deal order by clicks desc limit 30`, p),
       c.query<{ n: number }>(`select count(*)::int n from email_events`),
-      c.query<EmailTotals>(`
-        with ${SCANNERS_CTE}
-        select
-          count(*) filter (where type = 'delivered')::int delivered,
-          count(distinct email) filter (where type = 'opened')::int opens,
-          count(distinct email) filter (where ${HUMAN_CLICK})::int clicks,
-          count(*) filter (where broadcast_id is null)::int untracked
-        from email_events where ${CREATED_WINDOW}`, p),
       c.query<WaitlistRow>(`
         select email, name, property, created_at
         from tax_appeal_waitlist where ${CREATED_WINDOW}
@@ -585,13 +569,6 @@ async function loadAnalytics(
         group by s.id, s.email, s.first_name, s.last_name, s.role
         order by views desc, last_seen desc
         limit 200`, p),
-      c.query<ReaderTotals>(`
-        select
-          count(*) filter (where pv.subscriber_id is not null)::int identified,
-          count(distinct pv.subscriber_id)::int readers,
-          count(*)::int total
-        from post_views pv
-        where ${VIEW_WINDOW}`, p),
       // Email engagement keyed by address, merged onto the reader rows in JS.
       c.query<{ email: string; opens: number; clicks: number }>(`
         with ${SCANNERS_CTE}
@@ -651,7 +628,6 @@ async function loadAnalytics(
       readerDetail,
       broadcastDetail,
       posts: postsResolved,
-      totals: totals.rows[0] ?? zero,
       series: fillDays(series.rows, days),
       pages: pages.rows,
       pageTotals: pageTotals.rows[0] ?? zero,
@@ -659,12 +635,10 @@ async function loadAnalytics(
       broadcasts: broadcasts.rows,
       links: links.rows,
       hasEmail: (emailCount.rows[0]?.n ?? 0) > 0,
-      emailTotals: emailTotals.rows[0] ?? { delivered: 0, opens: 0, clicks: 0, untracked: 0 },
       waitlist: waitlist.rows,
       deals: deals.rows,
       guideLeads: guideLeads.rows,
       readers,
-      readerTotals: readerTotals.rows[0] ?? { identified: 0, readers: 0, total: 0 },
     }
   } finally {
     await c.end().catch(() => {})
@@ -769,9 +743,9 @@ export default async function AnalyticsPage({
   const broadcastId = sp.broadcast && BROADCAST_ID_RE.test(sp.broadcast) ? sp.broadcast : null
 
   const {
-    posts, totals, series, pages, pageTotals, conversions,
-    broadcasts, links, hasEmail, emailTotals, waitlist, deals, guideLeads,
-    readers, readerTotals, readerDetail, broadcastDetail,
+    posts, series, pages, pageTotals, conversions,
+    broadcasts, links, hasEmail, waitlist, deals, guideLeads,
+    readers, readerDetail, broadcastDetail,
   } = await loadAnalytics(
     range.days,
     sort,
@@ -843,12 +817,6 @@ export default async function AnalyticsPage({
 
         {tab === 'posts' && (
         <>
-        <div style={{ display: 'flex', gap: 16, marginTop: 20, flexWrap: 'wrap' }}>
-          <Stat label="Total reads" value={totals.total_views.toLocaleString()} />
-          <Stat label="Unique readers" value={totals.unique_readers.toLocaleString()} />
-          <Stat label="Posts read" value={totals.pieces.toLocaleString()} />
-        </div>
-
         {series.length > 1 && (
           <div style={{ border: '1px solid #eee', borderRadius: 8, padding: '16px 16px 8px', marginTop: 20 }}>
             <h2 style={{ fontSize: 15, margin: '0 0 2px' }}>Unique readers per day</h2>
@@ -988,20 +956,10 @@ export default async function AnalyticsPage({
           </div>
         ) : (
           <>
-            {/* Email top-line — counts every event in the window, including
-                one-off test sends that have no broadcast_id and so never reach
-                the table below. */}
-            <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-              <Stat label="Delivered" value={emailTotals.delivered.toLocaleString()} />
-              <Stat label="Opens" value={emailTotals.opens.toLocaleString()} />
-              <Stat label="Clicks" value={emailTotals.clicks.toLocaleString()} />
-            </div>
-
             {broadcasts.length === 0 ? (
               <p style={{ ...EMPTY, marginBottom: 24 }}>
                 No full dispatches in the {windowNote} — the per-dispatch breakdown fills in once you
-                <b> Send now</b> or <b>Schedule</b> a dispatch. Test sends are counted in the totals
-                above but aren&rsquo;t broken out here.
+                <b> Send now</b> or <b>Schedule</b> a dispatch. Test sends aren&rsquo;t broken out here.
               </p>
             ) : (
             <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden', marginBottom: 24 }}>
@@ -1300,14 +1258,6 @@ export default async function AnalyticsPage({
           </div>
         ) : (
           <>
-            <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-              <Stat label="Named readers" value={readerTotals.readers.toLocaleString()} />
-              <Stat label="Attributed reads" value={readerTotals.identified.toLocaleString()} />
-              <Stat
-                label="Of all reads"
-                value={readerTotals.total ? `${Math.round((readerTotals.identified / readerTotals.total) * 100)}%` : '—'}
-              />
-            </div>
             <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
