@@ -357,26 +357,31 @@ async function loadBroadcastDetail(
     // One row per address. Subscribers are joined on the address because that's
     // all Resend reports; a recipient with no subscriber row (removed since the
     // send) still shows, just without a name.
+    // The scanner flag is joined on AFTER the aggregation, not computed inside
+    // it. A subquery referencing lower(e.email) alongside `group by
+    // lower(e.email)` reads to Postgres as an ungrouped column and the whole
+    // query errors out, which is exactly what broke this page.
     c.query<Omit<RecipientRow, 'clicked'>>(`
-      with ${SCANNERS_CTE}
-      select lower(e.email) as email,
-        s.id as subscriber_id, s.first_name, s.last_name, s.role,
-        min(e.created_at) filter (where e.type = 'delivered') as delivered_at,
-        min(e.created_at) filter (where e.type = 'opened') as first_open,
-        count(*) filter (where e.type = 'opened')::int opens,
-        min(e.created_at) filter (where e.type = 'clicked') as first_click,
-        count(*) filter (where e.type = 'clicked')::int clicks,
-        bool_or(e.type = 'bounced') as bounced,
-        bool_or(e.type = 'complained') as complained,
-        exists (
-          select 1 from scanners sc
-          where sc.broadcast_id = $1 and sc.email = lower(e.email)
-        ) as is_scanner
-      from email_events e
-      left join subscribers s on lower(s.email) = lower(e.email)
-      where e.broadcast_id = $1 and e.email is not null
-      group by lower(e.email), s.id, s.first_name, s.last_name, s.role
-      order by is_scanner, clicks desc, opens desc, lower(e.email)
+      with ${SCANNERS_CTE},
+      per_recipient as (
+        select lower(e.email) as email,
+          s.id as subscriber_id, s.first_name, s.last_name, s.role,
+          min(e.created_at) filter (where e.type = 'delivered') as delivered_at,
+          min(e.created_at) filter (where e.type = 'opened') as first_open,
+          count(*) filter (where e.type = 'opened')::int opens,
+          min(e.created_at) filter (where e.type = 'clicked') as first_click,
+          count(*) filter (where e.type = 'clicked')::int clicks,
+          bool_or(e.type = 'bounced') as bounced,
+          bool_or(e.type = 'complained') as complained
+        from email_events e
+        left join subscribers s on lower(s.email) = lower(e.email)
+        where e.broadcast_id = $1 and e.email is not null
+        group by lower(e.email), s.id, s.first_name, s.last_name, s.role
+      )
+      select r.*, (sc.email is not null) as is_scanner
+      from per_recipient r
+      left join scanners sc on sc.broadcast_id = $1 and sc.email = r.email
+      order by is_scanner, r.clicks desc, r.opens desc, r.email
       limit ${RECIPIENT_LIMIT}`, p),
     c.query<{ email: string; link: string }>(`
       select distinct lower(email) as email, link
