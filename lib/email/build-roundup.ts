@@ -8,6 +8,20 @@ import { articleUrl, RESEND_UNSUBSCRIBE_TOKEN } from './build-dispatch'
 export const RESEND_FIRST_NAME = '{{{FIRST_NAME|there}}}'
 export { RESEND_UNSUBSCRIBE_TOKEN }
 
+// The recipient's own address, filled per-recipient by Resend. Broadcasts pass
+// this as the reader token so a click can be tied to the subscriber who got the
+// email; preview and test renders pass nothing and get a plain link.
+export const RESEND_CONTACT_EMAIL = '{{{contact.email}}}'
+
+// ?ref=dispatch attributes the read to email in general; &rid=<recipient>
+// attributes it to one named subscriber. The landing page strips rid from the
+// URL immediately and never stores the address on the view row — it resolves to
+// a subscriber id and a cookie. See app/api/track/view/route.ts.
+function dispatchArticleUrl(slug: string, readerToken: string): string {
+  const rid = readerToken ? `&rid=${readerToken}` : ''
+  return `${articleUrl(slug)}?ref=dispatch${rid}`
+}
+
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -35,7 +49,7 @@ function brokerTag(article: ArticleWithJoins): string | null {
 
 export function buildRoundupDeal(
   article: ArticleWithJoins,
-  opts: { heroUrl: string | null }
+  opts: { heroUrl: string | null; readerToken?: string }
 ): RoundupDeal {
   return {
     kicker: kicker(article),
@@ -43,8 +57,7 @@ export function buildRoundupDeal(
     deck: article.deck,
     heroUrl: opts.heroUrl,
     brokerTag: brokerTag(article),
-    // ?ref=dispatch lets the reader-analytics beacon attribute the read to email.
-    articleUrl: `${articleUrl(article.slug)}?ref=dispatch`,
+    articleUrl: dispatchArticleUrl(article.slug, opts.readerToken || ''),
   }
 }
 
@@ -52,7 +65,7 @@ export function buildRoundupDeal(
 // is the post's category and the teaser is its deck.
 export function buildRoundupDealFromPost(
   post: Post,
-  opts: { heroUrl: string | null }
+  opts: { heroUrl: string | null; readerToken?: string }
 ): RoundupDeal {
   return {
     kicker: post.kicker || 'Dispatch',
@@ -60,15 +73,16 @@ export function buildRoundupDealFromPost(
     deck: post.deck ?? null,
     heroUrl: opts.heroUrl,
     brokerTag: null,
-    articleUrl: `${articleUrl(post.slug)}?ref=dispatch`,
+    articleUrl: dispatchArticleUrl(post.slug, opts.readerToken || ''),
   }
 }
 
 // Broadcasts keep the live tokens (Resend fills them per-recipient). Preview and
 // test sends have no recipient context, so swap the tokens for samples so the
 // render looks real.
-export function sampleTokens(html: string, opts: { firstName?: string } = {}): string {
+export function sampleTokens(html: string, opts: { firstName?: string; email?: string } = {}): string {
   return html
     .replaceAll(RESEND_FIRST_NAME, opts.firstName?.trim() || 'there')
+    .replaceAll(RESEND_CONTACT_EMAIL, opts.email?.trim() || 'reader@example.com')
     .replaceAll(RESEND_UNSUBSCRIBE_TOKEN, '#')
 }

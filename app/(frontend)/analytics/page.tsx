@@ -66,6 +66,56 @@ type EmailTotals = { delivered: number; opens: number; clicks: number; untracked
 type WaitlistRow = { email: string; name: string | null; property: string | null; created_at: string }
 type DealRow = { name: string; email: string; deal: string; note: string | null; created_at: string }
 type GuideRow = { name: string; email: string; company: string | null; source: string | null; created_at: string }
+// One named subscriber's reading on the site, joined to their email engagement.
+type ReaderRow = {
+  id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+  role: string | null
+  views: number
+  pieces: number
+  last_seen: string
+  last_path: string
+  opens: number
+  clicks: number
+}
+type ReaderTotals = { identified: number; readers: number; total: number }
+
+// ---- one reader, in full ----
+type ReaderProfile = {
+  id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+  role: string | null
+  status: string
+  created_at: string
+}
+// A single thing the reader did, on the site or in their inbox. Both streams
+// merge into one chronological timeline — the point of the detail view is
+// seeing "opened, clicked, then read three more things" as one sequence.
+type TimelineEntry = {
+  at: string
+  kind: 'view' | 'open' | 'click' | 'other'
+  label: string
+  detail: string | null
+}
+type ReaderDetail = {
+  profile: ReaderProfile
+  timeline: TimelineEntry[]
+  views: number
+  pages: number
+  opens: number
+  clicks: number
+  firstSeen: string | null
+  truncated: boolean
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Enough to read a reader's whole relationship with the brief without letting
+// one very active subscriber pull an unbounded result set.
+const TIMELINE_LIMIT = 300
 
 // Reused window predicates. $1 is the day count (null = all time).
 const VIEW_WINDOW = `($1::int is null or pv.viewed_at > now() - make_interval(days => $1::int))`
@@ -78,7 +128,82 @@ const SOURCE_COLS = `
   count(*) filter (where pv.source = 'internal')::int internal_src,
   count(*) filter (where pv.source = 'other' or pv.source is null)::int other_src`
 
-async function loadAnalytics(days: number | null) {
+// Everything one named reader did in the window, site and inbox merged. Runs on
+// the connection loadAnalytics already opened, and only when a reader is
+// selected — the list view never pays for it.
+async function loadReaderDetail(
+  c: Client,
+  days: number | null,
+  readerId: string,
+  labelForPath: (path: string) => string
+): Promise<ReaderDetail | null> {
+  const p: [number | null, string] = [days, readerId]
+
+  const profile = await c.query<ReaderProfile>(
+    `select id, email, first_name, last_name, role, status, created_at
+     from subscribers where id = $1`,
+    [readerId]
+  )
+  if (!profile.rows[0]) return null
+
+  const [views, events, totals] = await Promise.all([
+    c.query<{ path: string; source: string | null; viewed_at: string }>(`
+      select pv.path, pv.source, pv.viewed_at
+      from post_views pv
+      where pv.subscriber_id = $2 and ${VIEW_WINDOW}
+      order by pv.viewed_at desc
+      limit ${TIMELINE_LIMIT}`, p),
+    // Joined on the address, which is how Resend identifies a recipient — the
+    // webhook never sees our subscriber id.
+    c.query<{ type: string; link: string | null; created_at: string }>(`
+      select e.type, e.link, e.created_at
+      from email_events e
+      where lower(e.email) = (select lower(email) from subscribers where id = $2)
+        and ${CREATED_WINDOW.replace('created_at', 'e.created_at')}
+      order by e.created_at desc
+      limit ${TIMELINE_LIMIT}`, p),
+    c.query<{ views: number; pages: number; first_seen: string | null }>(`
+      select count(*)::int views, count(distinct pv.path)::int pages,
+        min(pv.viewed_at) first_seen
+      from post_views pv
+      where pv.subscriber_id = $2 and ${VIEW_WINDOW}`, p),
+  ])
+
+  const timeline: TimelineEntry[] = [
+    ...views.rows.map((v): TimelineEntry => ({
+      at: v.viewed_at,
+      kind: 'view',
+      label: labelForPath(v.path),
+      // 'email' on the first page of a dispatch click, 'internal' after that —
+      // which is exactly how you tell the landing page from what followed it.
+      detail: v.source === 'email' ? 'arrived from the dispatch' : v.source,
+    })),
+    ...events.rows.map((e): TimelineEntry => ({
+      at: e.created_at,
+      kind: e.type === 'opened' ? 'open' : e.type === 'clicked' ? 'click' : 'other',
+      label: e.type === 'opened'
+        ? 'Opened the dispatch'
+        : e.type === 'clicked'
+          ? `Clicked ${labelForPath((e.link || '').replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '')}`
+          : `Email ${e.type}`,
+      detail: null,
+    })),
+  ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+
+  const t = totals.rows[0]
+  return {
+    profile: profile.rows[0],
+    timeline: timeline.slice(0, TIMELINE_LIMIT),
+    views: t?.views ?? 0,
+    pages: t?.pages ?? 0,
+    opens: events.rows.filter(e => e.type === 'opened').length,
+    clicks: events.rows.filter(e => e.type === 'clicked').length,
+    firstSeen: t?.first_seen ?? null,
+    truncated: timeline.length > TIMELINE_LIMIT,
+  }
+}
+
+async function loadAnalytics(days: number | null, readerId: string | null) {
   const c = new Client({ connectionString: process.env.DATABASE_URI })
   await c.connect()
   const p = [days]
@@ -86,6 +211,7 @@ async function loadAnalytics(days: number | null) {
     const [
       posts, totals, pages, pageTotals, landingViews, landingLeads,
       broadcasts, links, emailCount, emailTotals, waitlist, deals, guideLeads, postTitleRows,
+      readerRows, readerTotals, emailByAddress, articleTitleRows,
     ] = await Promise.all([
       c.query<PostRow>(`
         select coalesce(a.headline, pv.slug) as headline, pv.slug,
@@ -173,6 +299,41 @@ async function loadAnalytics(days: number | null) {
       // so "By post" can show a real title instead of the bare slug.
       c.query<{ slug: string; title: string }>(`
         select slug, title from payload.posts where _status = 'published'`),
+      // --- named readers ---
+      // Every view we could attribute to a subscriber, grouped by person. The
+      // join is on subscriber_id, so anonymous traffic simply isn't in here.
+      // Titles are resolved in JS rather than joined: joining articles and
+      // payload.posts inside an aggregate risks multiplying rows and inflating
+      // the very counts this table exists to report.
+      c.query<Omit<ReaderRow, 'opens' | 'clicks'>>(`
+        select s.id, s.email, s.first_name, s.last_name, s.role,
+          count(*)::int views,
+          count(distinct pv.path)::int pieces,
+          max(pv.viewed_at) last_seen,
+          (array_agg(pv.path order by pv.viewed_at desc))[1] as last_path
+        from post_views pv
+        join subscribers s on s.id = pv.subscriber_id
+        where ${VIEW_WINDOW}
+        group by s.id, s.email, s.first_name, s.last_name, s.role
+        order by views desc, last_seen desc
+        limit 200`, p),
+      c.query<ReaderTotals>(`
+        select
+          count(*) filter (where pv.subscriber_id is not null)::int identified,
+          count(distinct pv.subscriber_id)::int readers,
+          count(*)::int total
+        from post_views pv
+        where ${VIEW_WINDOW}`, p),
+      // Email engagement keyed by address, merged onto the reader rows in JS.
+      c.query<{ email: string; opens: number; clicks: number }>(`
+        select lower(email) as email,
+          count(*) filter (where type = 'opened')::int opens,
+          count(*) filter (where type = 'clicked')::int clicks
+        from email_events
+        where email is not null and ${CREATED_WINDOW}
+        group by lower(email)`, p),
+      c.query<{ slug: string; headline: string }>(`
+        select slug, headline from articles where headline is not null`),
     ])
     // For a post view, the articles join found nothing so headline === slug.
     // Swap in the post title where we have one.
@@ -192,8 +353,30 @@ async function loadAnalytics(days: number | null) {
       leads: leadsByKey.get(l.leadKey) ?? 0,
     }))
 
+    // Path -> human label, so "last read" shows a headline rather than a slug.
+    const articleTitles = new Map(articleTitleRows.rows.map(r => [r.slug, r.headline.replace(/\*/g, '')]))
+    const labelForPath = (path: string): string => {
+      if (PAGE_LABELS[path]) return PAGE_LABELS[path]
+      const m = /^\/atlas-brief\/([^/]+)$/.exec(path || '')
+      if (!m) return path
+      return articleTitles.get(m[1]) ?? postTitles.get(m[1]) ?? m[1]
+    }
+    const engagement = new Map(emailByAddress.rows.map(r => [r.email, r]))
+    const readers: ReaderRow[] = readerRows.rows.map(r => {
+      const e = engagement.get(r.email.toLowerCase())
+      return {
+        ...r,
+        last_path: labelForPath(r.last_path),
+        opens: e?.opens ?? 0,
+        clicks: e?.clicks ?? 0,
+      }
+    })
+
+    const readerDetail = readerId ? await loadReaderDetail(c, days, readerId, labelForPath) : null
+
     const zero: Totals = { total_views: 0, unique_readers: 0, pieces: 0 }
     return {
+      readerDetail,
       posts: postsResolved,
       totals: totals.rows[0] ?? zero,
       pages: pages.rows,
@@ -206,6 +389,8 @@ async function loadAnalytics(days: number | null) {
       waitlist: waitlist.rows,
       deals: deals.rows,
       guideLeads: guideLeads.rows,
+      readers,
+      readerTotals: readerTotals.rows[0] ?? { identified: 0, readers: 0, total: 0 },
     }
   } finally {
     await c.end().catch(() => {})
@@ -257,7 +442,7 @@ const EMPTY: React.CSSProperties = { color: '#999', fontSize: 14 }
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; range?: string }>
+  searchParams: Promise<{ tab?: string; range?: string; reader?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -267,11 +452,20 @@ export default async function AnalyticsPage({
   const tab: TabId = (TABS.find(t => t.id === sp.tab)?.id ?? 'posts') as TabId
   const range = RANGES.find(r => r.id === sp.range) ?? RANGES[1]
   const rangeId: RangeId = range.id
+  // Validated before it reaches SQL — a malformed uuid is a Postgres error, not
+  // an empty result.
+  const readerId = sp.reader && UUID_RE.test(sp.reader) ? sp.reader : null
 
   const {
     posts, totals, pages, pageTotals, conversions,
     broadcasts, links, hasEmail, emailTotals, waitlist, deals, guideLeads,
-  } = await loadAnalytics(range.days)
+    readers, readerTotals, readerDetail,
+  } = await loadAnalytics(range.days, tab === 'dispatch' ? readerId : null)
+
+  // Switching range while reading one person keeps you on that person.
+  const rangeHref = (r: RangeId) =>
+    `/analytics?tab=${tab}&range=${r}${readerDetail ? `&reader=${readerDetail.profile.id}` : ''}`
+  const readersHref = `/analytics?tab=dispatch&range=${rangeId}`
 
   const windowNote = range.days === null ? 'all time' : `last ${range.days} days`
 
@@ -309,7 +503,7 @@ export default async function AnalyticsPage({
           {RANGES.map(r => (
             <Link
               key={r.id}
-              href={`/analytics?tab=${tab}&range=${r.id}`}
+              href={rangeHref(r.id)}
               style={{
                 padding: '4px 12px',
                 fontSize: 12,
@@ -517,6 +711,159 @@ export default async function AnalyticsPage({
               </>
             )}
           </>
+        )}
+
+        {/* ---- one reader, in full ---- */}
+        {readerDetail ? (
+        <>
+        <div style={{ marginTop: 40 }}>
+          <Link href={readersHref} style={{ fontSize: 12, color: '#9A6B3F', textDecoration: 'none' }}>
+            ← All readers
+          </Link>
+        </div>
+        {(() => {
+          const d = readerDetail
+          const name = [d.profile.first_name, d.profile.last_name].filter(Boolean).join(' ')
+          return (
+            <>
+              <h2 style={{ fontSize: 22, marginTop: 12, marginBottom: 2 }}>{name || d.profile.email}</h2>
+              <p style={{ ...EMPTY, marginTop: 0, marginBottom: 16 }}>
+                <a href={`mailto:${d.profile.email}`} style={{ color: '#9A6B3F' }}>{d.profile.email}</a>
+                {d.profile.role ? ` · ${d.profile.role}` : ''}
+                {d.profile.status !== 'subscribed' ? ` · ${d.profile.status}` : ''}
+                {' · subscribed '}{new Date(d.profile.created_at).toLocaleDateString()}
+              </p>
+
+              <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+                <Stat label="Page views" value={d.views.toLocaleString()} />
+                <Stat label="Pages read" value={d.pages.toLocaleString()} />
+                <Stat label="Opens" value={d.opens.toLocaleString()} />
+                <Stat label="Clicks" value={d.clicks.toLocaleString()} />
+                <Stat
+                  label="First seen"
+                  value={d.firstSeen ? new Date(d.firstSeen).toLocaleDateString() : '—'}
+                />
+              </div>
+
+              <h3 style={{ fontSize: 14, color: '#666', margin: '0 0 8px' }}>
+                Timeline · {windowNote}
+              </h3>
+              {d.timeline.length === 0 ? (
+                <p style={EMPTY}>Nothing recorded for this reader in the {windowNote}.</p>
+              ) : (
+                <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      {d.timeline.map((t, i) => (
+                        <tr key={`${t.at}-${i}`}>
+                          <td style={{ ...TD, width: 150, fontSize: 12, color: '#666', whiteSpace: 'nowrap' }}>
+                            {new Date(t.at).toLocaleString([], {
+                              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                            })}
+                          </td>
+                          <td style={{ ...TD, width: 8, paddingRight: 0 }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                display: 'inline-block', width: 7, height: 7, borderRadius: 999,
+                                background: t.kind === 'view' ? '#9A6B3F' : t.kind === 'click' ? '#2F6F4E' : '#C4C4C4',
+                              }}
+                            />
+                          </td>
+                          <td style={TD}>
+                            {t.kind === 'view' ? 'Read ' : ''}{t.label}
+                            {t.detail ? (
+                              <span style={{ fontSize: 11, color: '#999' }}> · {t.detail}</span>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {d.truncated && (
+                <p style={{ ...EMPTY, marginTop: 8, fontSize: 12 }}>
+                  Showing the {TIMELINE_LIMIT} most recent events.
+                </p>
+              )}
+            </>
+          )
+        })()}
+        </>
+        ) : (
+        <>
+        {/* ---- who read what ---- */}
+        <h2 style={{ fontSize: 18, marginTop: 40, marginBottom: 4 }}>Reader activity</h2>
+        <p style={{ ...EMPTY, marginTop: 0, marginBottom: 12 }}>
+          Subscribers who clicked through from a dispatch, and what they read once they got here.
+          Pick a name for their full timeline. Everyone else on the site stays anonymous.
+        </p>
+        {readers.length === 0 ? (
+          <div style={{ background: '#FBF6EC', border: '1px solid #EADFC8', borderRadius: 8, padding: 16, fontSize: 14, color: '#555' }}>
+            No named readers in the {windowNote} yet. Every dispatch link now carries the recipient&rsquo;s
+            identity, so this fills in as soon as the <b>next dispatch</b> goes out and someone clicks through.
+            Links sent before that are anonymous and can&rsquo;t be backfilled.
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+              <Stat label="Named readers" value={readerTotals.readers.toLocaleString()} />
+              <Stat label="Attributed reads" value={readerTotals.identified.toLocaleString()} />
+              <Stat
+                label="Of all reads"
+                value={readerTotals.total ? `${Math.round((readerTotals.identified / readerTotals.total) * 100)}%` : '—'}
+              />
+            </div>
+            <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={TH}>Reader</th>
+                    <th style={TH}>Last read</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Opens</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Clicks</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Pages</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Views</th>
+                    <th style={{ ...TH, textAlign: 'right' }}>Last seen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {readers.map((r) => {
+                    const name = [r.first_name, r.last_name].filter(Boolean).join(' ')
+                    return (
+                      <tr key={r.id}>
+                        <td style={TD}>
+                          <Link
+                            href={`/analytics?tab=dispatch&range=${rangeId}&reader=${r.id}`}
+                            style={{ color: '#0A0A0A' }}
+                          >
+                            {name || r.email}
+                          </Link>
+                          <div style={{ fontSize: 11, color: '#999' }}>
+                            {name ? r.email : ''}{name && r.role ? ' · ' : ''}{r.role || ''}
+                          </div>
+                        </td>
+                        <td style={{ ...TD, fontSize: 13 }}>{r.last_path}</td>
+                        <td style={NUM}>{r.opens || ''}</td>
+                        <td style={NUM}>{r.clicks || ''}</td>
+                        <td style={NUM}>{r.pieces}</td>
+                        <td style={NUM}>{r.views}</td>
+                        <td style={{ ...NUM, fontSize: 12, color: '#666' }}>
+                          {new Date(r.last_seen).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {readers.length === 200 && (
+              <p style={{ ...EMPTY, marginTop: 8, fontSize: 12 }}>Showing the 200 most active readers.</p>
+            )}
+          </>
+        )}
+        </>
         )}
         </>
         )}

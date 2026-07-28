@@ -55,3 +55,6 @@ next-env.d.ts
 
 # Payload local-storage media (S3 is used in all envs)
 /media/
+
+# Scratch file holding a live DATABASE_URI (credentials) — never commit
+/VERCEL_DATABASE_URI_PASTE_ME.txt

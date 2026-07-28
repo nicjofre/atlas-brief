@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { renderRoundupHtml } from '@/lib/email/render-roundup'
 import {
   formatDispatchDate,
+  RESEND_CONTACT_EMAIL,
   RESEND_FIRST_NAME,
   RESEND_UNSUBSCRIBE_TOKEN,
 } from '@/lib/email/build-roundup'
@@ -26,8 +27,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 //   'test'     -> render with a sample greeting and email it to one address
 //   'send'     -> create + send a broadcast to the audience now
 //   'schedule' -> create + send a broadcast at scheduled_at
-// Tokens ({{{FIRST_NAME}}}, unsubscribe) stay live in broadcast HTML so Resend
-// fills them per-recipient; the test render swaps in samples. Admin only.
+// Tokens ({{{FIRST_NAME}}}, contact email, unsubscribe) stay live in broadcast
+// HTML so Resend fills them per-recipient; the test render swaps in samples.
+// Admin only.
 export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -101,6 +103,10 @@ export async function POST(req: Request) {
     greeting: RESEND_FIRST_NAME,
     unsubscribeUrl: RESEND_UNSUBSCRIBE_TOKEN,
     dateline: formatDispatchDate(sendDate),
+    // Stamps each article link with the recipient's own address so their reads
+    // on the site attribute back to them. Test sends deliberately leave this
+    // off — there's no subscriber behind a one-off test.
+    readerToken: RESEND_CONTACT_EMAIL,
   })
   if (count === 0) {
     await alert('Rendering the email', 'None of the selected deals could be rendered.')

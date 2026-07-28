@@ -1023,6 +1023,7 @@ export type Database = {
           referrer: string | null
           slug: string | null
           source: string | null
+          subscriber_id: string | null
           viewed_at: string
           visitor_hash: string | null
         }
@@ -1034,6 +1035,7 @@ export type Database = {
           referrer?: string | null
           slug?: string | null
           source?: string | null
+          subscriber_id?: string | null
           viewed_at?: string
           visitor_hash?: string | null
         }
@@ -1045,6 +1047,7 @@ export type Database = {
           referrer?: string | null
           slug?: string | null
           source?: string | null
+          subscriber_id?: string | null
           viewed_at?: string
           visitor_hash?: string | null
         }
@@ -1094,6 +1097,7 @@ export type Database = {
           role: string | null
           source: string | null
           status: string
+          track_token: string
           unsubscribed_at: string | null
           updated_at: string
         }
@@ -1107,6 +1111,7 @@ export type Database = {
           role?: string | null
           source?: string | null
           status?: string
+          track_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
         }
@@ -1120,6 +1125,7 @@ export type Database = {
           role?: string | null
           source?: string | null
           status?: string
+          track_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
         }

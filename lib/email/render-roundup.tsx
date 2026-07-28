@@ -8,15 +8,18 @@ import { buildRoundupDeal, buildRoundupDealFromPost } from './build-roundup'
 import { RoundupEmail } from './roundup-template'
 
 // Single source of truth for the roundup HTML — preview, test, and the live
-// broadcast all render through here so they're byte-identical. The greeting and
-// unsubscribeUrl are passed in: a sample for preview/test, the live Resend
-// tokens for a broadcast.
+// broadcast all render through here so they're byte-identical. The greeting,
+// unsubscribeUrl and readerToken are passed in: samples for preview/test, the
+// live Resend tokens for a broadcast.
 export async function renderRoundupHtml(args: {
   slugs: string[]
   intro: string
   greeting: string
   unsubscribeUrl: string
   dateline: string
+  // Per-recipient identifier stamped onto every article link. Omitted for
+  // preview and test sends, which have no recipient to attribute a read to.
+  readerToken?: string
 }): Promise<{ html: string; count: number; missing: string[] }> {
   const supabase = await createClient()
   const deals = []
@@ -29,7 +32,7 @@ export async function renderRoundupHtml(args: {
         article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
       )
       if (heroUrl && heroUrl.startsWith('/')) heroUrl = siteBaseUrl() + heroUrl
-      deals.push(buildRoundupDeal(article, { heroUrl }))
+      deals.push(buildRoundupDeal(article, { heroUrl, readerToken: args.readerToken }))
       continue
     }
     // Not a brief — try a freeform post.
@@ -37,7 +40,7 @@ export async function renderRoundupHtml(args: {
     if (post) {
       const raw = post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null
       const heroUrl = raw && raw.startsWith('/') ? siteBaseUrl() + raw : raw
-      deals.push(buildRoundupDealFromPost(post, { heroUrl }))
+      deals.push(buildRoundupDealFromPost(post, { heroUrl, readerToken: args.readerToken }))
       continue
     }
     missing.push(slug)
