@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { Client } from 'pg'
+import { sendDispatchFailureAlert, getBroadcastName } from '@/lib/resend'
 
 export const runtime = 'nodejs'
 
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
       to?: string[] | string
       email?: string
       click?: { link?: string }
+      reason?: string
     }
   }
   try {
@@ -76,6 +78,27 @@ export async function POST(req: Request) {
        values ($1, $2, $3, $4, $5, $6)`,
       [type, email, broadcastId, link, resendEmailId, payload]
     )
+
+    // A scheduled dispatch can fail hours after David closed the tab, and
+    // nothing else would tell him. Alert on the first failure of a broadcast;
+    // the count guard keeps a 134-recipient blowup to one email.
+    if (type === 'failed' && broadcastId) {
+      const { rows } = await c.query<{ n: string }>(
+        `select count(*) n from email_events where type = 'failed' and broadcast_id = $1`,
+        [broadcastId]
+      )
+      if (Number(rows[0]?.n) === 1) {
+        const name = await getBroadcastName(broadcastId)
+        await sendDispatchFailureAlert({
+          stage: 'Resend delivering the broadcast',
+          error: data.reason || 'Resend reported email.failed',
+          subject: name || `Broadcast ${broadcastId}`,
+          broadcastId,
+          recipient: email,
+          partial: true,
+        }).catch(() => {})
+      }
+    }
   } catch (e) {
     console.error('[webhooks/resend] insert failed', e instanceof Error ? e.message : e)
     // 200 anyway so Resend doesn't hammer retries on a transient DB blip; the

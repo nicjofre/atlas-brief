@@ -14,6 +14,7 @@ import {
   isReservedEmail,
   listResendContacts,
   removeContactFromResend,
+  sendDispatchFailureAlert,
 } from '@/lib/resend'
 
 export const runtime = 'nodejs'
@@ -83,13 +84,28 @@ export async function POST(req: Request) {
     sendDate = d
   }
 
+  // Every failure past this point means the dispatch didn't go out. Email an
+  // alert as well as answering the compose page: a scheduled Friday send can
+  // fail long after David has closed the tab, and silence looks like success.
+  const alert = async (stage: string, error: string, broadcastId?: string) => {
+    await sendDispatchFailureAlert({
+      stage, error, subject, action,
+      scheduledAt: action === 'schedule' ? sendDate.toISOString() : null,
+      broadcastId: broadcastId ?? null,
+      dealCount: slugs.length,
+    }).catch(() => {})
+  }
+
   const { html, count } = await renderRoundupHtml({
     slugs, intro,
     greeting: RESEND_FIRST_NAME,
     unsubscribeUrl: RESEND_UNSUBSCRIBE_TOKEN,
     dateline: formatDispatchDate(sendDate),
   })
-  if (count === 0) return NextResponse.json({ error: 'None of the selected deals could be rendered.' }, { status: 400 })
+  if (count === 0) {
+    await alert('Rendering the email', 'None of the selected deals could be rendered.')
+    return NextResponse.json({ error: 'None of the selected deals could be rendered.' }, { status: 400 })
+  }
 
   // Resend hard-rejects the whole broadcast if the audience contains a reserved
   // domain (e.g. @example.com). Sweep any out of the audience — and our table —
@@ -102,13 +118,28 @@ export async function POST(req: Request) {
     }
   }
 
-  const created = await createDispatchBroadcast({ subject, html, name: `${subject} (${formatDispatchDate(sendDate)})` })
-  if (!created.ok) return NextResponse.json({ error: `Could not create broadcast: ${created.error}` }, { status: 502 })
+  // The broadcast name is only Resend's dashboard label, and it's capped at 70
+  // characters. Trim the subject rather than the date so the label stays useful.
+  const dateTag = formatDispatchDate(sendDate).replace(/^[^,]+,\s*/, '')
+  const subjectBudget = 70 - dateTag.length - 3
+  const labelSubject = subject.length > subjectBudget
+    ? `${subject.slice(0, subjectBudget - 1).trimEnd()}…`
+    : subject
+  const created = await createDispatchBroadcast({ subject, html, name: `${labelSubject} (${dateTag})` })
+  if (!created.ok) {
+    await alert('Creating the broadcast in Resend', created.error)
+    return NextResponse.json({ error: `Could not create broadcast: ${created.error}` }, { status: 502 })
+  }
 
   const sent = await sendDispatchBroadcast(created.data.id, {
     scheduledAt: action === 'schedule' ? sendDate.toISOString() : undefined,
   })
   if (!sent.ok) {
+    await alert(
+      action === 'schedule' ? 'Scheduling the broadcast' : 'Sending the broadcast',
+      sent.error,
+      created.data.id
+    )
     return NextResponse.json(
       { error: `Broadcast created but send failed: ${sent.error}`, broadcastId: created.data.id },
       { status: 502 }

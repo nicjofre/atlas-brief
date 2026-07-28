@@ -309,6 +309,100 @@ export function sendBriefingEmail(args: {
   })
 }
 
+// ===================================================================
+// Dispatch failure alerts
+// ===================================================================
+
+// Who hears about it when a dispatch doesn't go out. David so he knows the
+// Friday send didn't happen, Nic so someone can read the actual error, plus
+// anyone in DISPATCH_ALERT_CC (comma separated) without a code change.
+const DISPATCH_ALERT_TO = ['David@atlasbrief.la', 'n.e.jofre@gmail.com']
+
+function dispatchAlertRecipients(): string[] {
+  const cc = (process.env.DISPATCH_ALERT_CC || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+  return [...new Set([...DISPATCH_ALERT_TO, ...cc].map(a => a.toLowerCase()))]
+}
+
+// Email an alert when a dispatch fails to go out. Fire-and-forget: this is
+// itself a Resend call, so it can fail too — callers must never let it block or
+// throw over the failure it's reporting.
+export function sendDispatchFailureAlert(args: {
+  stage: string
+  error: string
+  subject: string
+  action?: 'send' | 'schedule'
+  scheduledAt?: string | null
+  broadcastId?: string | null
+  dealCount?: number
+  recipient?: string | null
+  // true when Resend already accepted the broadcast and failed later, so some
+  // subscribers may have received it.
+  partial?: boolean
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const rows: [string, string][] = [
+    ['What failed', args.stage],
+    ['Error', args.error],
+    ['Dispatch', args.subject],
+  ]
+  if (args.action) {
+    rows.push(['Action', args.action === 'schedule' ? `scheduled for ${args.scheduledAt || 'unknown time'}` : 'send now'])
+  }
+  if (typeof args.dealCount === 'number') rows.push(['Deals selected', String(args.dealCount)])
+  if (args.recipient) rows.push(['First affected address', args.recipient])
+  if (args.broadcastId) rows.push(['Broadcast ID', args.broadcastId])
+
+  const footer = args.partial
+    ? 'Some subscribers may still have received it. Check the broadcast in Resend before resending so it does not go out twice.'
+    : `No subscribers were emailed${args.broadcastId ? ' — check the broadcast in Resend before retrying so it does not go twice' : ''}. Fix the issue and send again from the compose page.`
+
+  const html =
+    `<div style="font-family:Georgia,serif;font-size:15px;color:#1a1a1a;line-height:1.6">` +
+    `<p style="margin:0 0 14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#B3261E">Dispatch did not go out</p>` +
+    rows
+      .map(([k, v]) => `<p style="margin:0 0 10px"><strong>${k}:</strong> ${escapeHtml(v)}</p>`)
+      .join('') +
+    `<p style="margin:18px 0 0;font-size:13px;color:#777">${footer}</p>` +
+    `</div>`
+
+  return resendPost('/emails', {
+    from: DISPATCH_FROM,
+    to: dispatchAlertRecipients(),
+    reply_to: DISPATCH_REPLY_TO,
+    subject: `Atlas Brief dispatch FAILED: ${args.subject.slice(0, 60)}`,
+    html,
+  })
+}
+
+// Look up a broadcast's dashboard name so an alert can say which dispatch it
+// was. Falls back to the id when the lookup fails — never throws.
+export async function getBroadcastName(id: string): Promise<string | null> {
+  if (!resendConfigured()) return null
+  try {
+    const res = await fetch(`${RESEND_API}/broadcasts/${id}`, {
+      headers: { Authorization: `Bearer ${resendKey()}` },
+    })
+    if (!res.ok) return null
+    const data = (await res.json().catch(() => ({}))) as { name?: string; subject?: string }
+    return data.name || data.subject || null
+  } catch {
+    return null
+  }
+}
+
+// Resend caps the broadcast `name` (the internal dashboard label) at 70
+// characters and rejects the whole create call if it's longer.
+const BROADCAST_NAME_MAX = 70
+
+function clampBroadcastName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.length <= BROADCAST_NAME_MAX) return trimmed
+  return `${trimmed.slice(0, BROADCAST_NAME_MAX - 1).trimEnd()}…`
+}
+
 // Create a broadcast against the configured audience. Keep the live
 // {{{FIRST_NAME}}} / unsubscribe tokens in the html so Resend fills them.
 export function createDispatchBroadcast(args: {
@@ -323,7 +417,7 @@ export function createDispatchBroadcast(args: {
     reply_to: DISPATCH_REPLY_TO,
     subject: args.subject,
     html: args.html,
-    name: args.name ?? args.subject,
+    name: clampBroadcastName(args.name || args.subject),
   })
 }
 
