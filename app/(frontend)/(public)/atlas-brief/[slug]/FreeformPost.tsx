@@ -4,6 +4,7 @@ import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
+import ArticleSubscribeModal from '../../ArticleSubscribeModal'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -29,6 +30,9 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
   return (
     <>
       {showBar && <ArticleSubscribeBar />}
+      {/* Never in the CMS Live Preview iframe — a pop-up firing mid-edit would
+          just be in David's way. */}
+      {!preview && <ArticleSubscribeModal enabled={showBar} />}
       {/* In the CMS Live Preview iframe, refresh the render on save. Not
           rendered on the public page — only in preview. */}
       {preview && <RefreshRouteOnSave />}

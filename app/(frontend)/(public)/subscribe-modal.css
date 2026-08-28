@@ -1,0 +1,160 @@
+/* Article signup pop-up.
+   The homepage's .tm-modal-* rules live in home.css, which only loads on the
+   homepage route — so the article modal carries its own styles. Same design
+   language (paper, ink, accent), driven by the :root tokens in atlas-v2.css,
+   which the public layout loads on every route. */
+
+.asm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 10, 10, 0.5);
+  animation: asm-fade 0.22s ease both;
+}
+
+.asm-panel {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  padding: 34px 30px 26px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  animation: asm-rise 0.26s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes asm-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes asm-rise {
+  from { opacity: 0; transform: translateY(14px) }
+  to   { opacity: 1; transform: none }
+}
+
+/* Readers who ask for less motion get the modal, just without the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .asm-overlay, .asm-panel { animation: none }
+}
+
+.asm-x {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: 0;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.asm-x:hover { color: var(--ink) }
+
+.asm-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.asm-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
+.asm-sub {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0 0 22px;
+}
+
+.asm-field { display: block; margin-bottom: 14px }
+.asm-field span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.asm-field input,
+.asm-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  /* 16px keeps iOS Safari from zooming the viewport on focus. */
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--bg-alt);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+}
+.asm-field input:focus,
+.asm-field select:focus { outline: none; border-color: var(--accent) }
+
+.asm-row { display: flex; gap: 12px }
+.asm-row .asm-field { flex: 1 1 0; min-width: 0 }
+@media (max-width: 440px) { .asm-row { flex-direction: column; gap: 0 } }
+
+.asm-err {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #c0392b;
+  margin: 0 0 12px;
+}
+
+.asm-submit {
+  width: 100%;
+  padding: 13px;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+}
+.asm-submit:hover { background: transparent; color: var(--ink) }
+.asm-submit:disabled { opacity: 0.6; cursor: default }
+
+.asm-skip {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+.asm-skip:hover { color: var(--ink); text-decoration: underline }
+
+/* Post-signup confirmation, shown in place of the form before the modal exits. */
+.asm-done {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+  padding: 6px 0 10px;
+}

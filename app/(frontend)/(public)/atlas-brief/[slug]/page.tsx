@@ -13,6 +13,7 @@ import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
+import ArticleSubscribeModal from '../../ArticleSubscribeModal'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -129,6 +130,7 @@ export default async function PostPage(
   return (
     <>
       {showBar && <ArticleSubscribeBar />}
+      <ArticleSubscribeModal enabled={showBar} />
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
