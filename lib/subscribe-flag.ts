@@ -9,10 +9,13 @@ const DISMISS_KEY = 'atlas_capture_dismissed'
 const MODAL_DISMISS_KEY = 'atlas_modal_dismissed_at'
 
 // How long a modal dismissal sticks. The bar's dismissal is permanent (it's
-// ambient, so nagging is the only failure mode); the modal interrupts, so a
-// "no" has to be honoured for a good while — but not forever, since a reader
-// who declined in March is a different prospect by autumn.
-const MODAL_DISMISS_DAYS = 45
+// ambient, so nagging is the only failure mode). The modal interrupts, so a
+// "no" is honoured — but only for a day. Someone who reads here repeatedly
+// without subscribing is the exact reader worth asking again, and a long
+// suppression window means we ask them once and then never again. Within a
+// single visit they still only ever see it once: the trigger fires at most
+// once per page load.
+const MODAL_DISMISS_DAYS = 1
 
 export function captureSuppressed(): boolean {
   if (typeof window === 'undefined') return true
