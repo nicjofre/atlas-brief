@@ -61,7 +61,16 @@ export async function GET(req: Request) {
   }
 
   const res = await fetch(googleUrl, { headers: { Referer: REFERER } })
-  if (!res.ok) return NextResponse.json({ error: `Google returned ${res.status}` }, { status: 502 })
+  if (!res.ok) {
+    // Google puts the real reason (billing off, key restricted, quota) in a
+    // plain-text body. Pass it through so a broken preview is diagnosable from
+    // the network tab instead of just a broken-image icon.
+    const detail = await res.text().catch(() => '')
+    return NextResponse.json(
+      { error: `Google returned ${res.status}`, detail: detail.slice(0, 500) },
+      { status: 502 }
+    )
+  }
 
   const bytes = Buffer.from(await res.arrayBuffer())
   return new NextResponse(bytes, {

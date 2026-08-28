@@ -106,7 +106,15 @@ export async function POST(
     const metaUrl = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${encodeURIComponent(location)}&key=${KEY}`
     const meta = await fetch(metaUrl, { headers: { Referer: REFERER } }).then(r => r.json()).catch(() => null)
     if (!meta || meta.status !== 'OK') {
-      return NextResponse.json({ error: 'No Street View coverage at this location' }, { status: 422 })
+      // Only ZERO_RESULTS/NOT_FOUND actually mean "no imagery here". Everything
+      // else (REQUEST_DENIED for billing/key problems, OVER_QUERY_LIMIT) is an
+      // account fault — report it as such instead of blaming the address.
+      const noCoverage = meta?.status === 'ZERO_RESULTS' || meta?.status === 'NOT_FOUND'
+      return NextResponse.json({
+        error: noCoverage
+          ? 'No Street View coverage at this location'
+          : `Google Maps error (${meta?.status ?? 'unreachable'}): ${meta?.error_message ?? 'no details'}`,
+      }, { status: 422 })
     }
   }
 
