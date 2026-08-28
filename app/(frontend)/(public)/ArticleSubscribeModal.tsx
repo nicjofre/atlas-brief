@@ -15,13 +15,11 @@ import './subscribe-modal.css'
 const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// Trigger thresholds. Both must be satisfied: a reader who slams the scrollbar
-// to the bottom in four seconds hasn't read anything, and a reader parked on
-// the hero for a minute hasn't either.
+// Scroll depth is the only trigger: the moment a reader is this far through
+// the piece, the modal opens. No dwell timer — getting here IS the engagement
+// signal, and making someone who's already read half the article wait longer
+// only moves the ask further from the moment they were interested.
 const DEPTH_TRIGGER = 0.55   // fraction of the page scrolled through
-const DWELL_MS = 20_000      // time on page before we're willing to interrupt
-// Exit intent is a weaker signal, so it needs less dwell but still some.
-const EXIT_DWELL_MS = 10_000
 
 type State = 'idle' | 'submitting' | 'sent'
 
@@ -43,7 +41,6 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
 
   // --- Trigger ------------------------------------------------------------
   useEffect(() => {
-    const mountedAt = Date.now()
     let raf = 0
 
     const fire = () => {
@@ -56,9 +53,9 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
     // would otherwise never see this at all:
     //   ?capture=preview — opens immediately, ignoring scroll/dwell. For looking
     //                      at the design. NOT what a reader experiences.
-    //   ?capture=trigger — keeps the real scroll-depth + dwell triggers, only
-    //                      skipping the logged-in gate and dismissal clock. For
-    //                      checking when it actually fires.
+    //   ?capture=trigger — keeps the real scroll-depth trigger, only skipping
+    //                      the logged-in gate and dismissal clock. For checking
+    //                      when it actually fires.
     const mode = new URLSearchParams(window.location.search).get('capture')
 
     // Deferred a tick so the open isn't a synchronous setState in the effect.
@@ -72,12 +69,12 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
     const check = () => {
       raf = 0
       if (firedRef.current) return
-      if (Date.now() - mountedAt < DWELL_MS) return
       const doc = document.documentElement
-      const scrollable = doc.scrollHeight - window.innerHeight
-      // Guard the divide: a page shorter than the viewport can't be scrolled,
-      // and by this point the dwell requirement alone has been met.
-      const depth = scrollable > 0 ? (window.scrollY + window.innerHeight) / doc.scrollHeight : 1
+      // A page shorter than the viewport has no depth to measure. Sit it out
+      // rather than treating it as 100% — firing on load is the one behaviour
+      // this trigger exists to avoid.
+      if (doc.scrollHeight - window.innerHeight <= 0) return
+      const depth = (window.scrollY + window.innerHeight) / doc.scrollHeight
       if (depth >= DEPTH_TRIGGER) fire()
     }
 
@@ -86,30 +83,14 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
       raf = window.requestAnimationFrame(check)
     }
 
-    // Desktop exit intent: cursor leaving through the top of the viewport is the
-    // classic "about to close the tab" tell. Ignored on touch, where there's no
-    // cursor and the event fires on incidental drags.
-    const onMouseOut = (e: MouseEvent) => {
-      if (firedRef.current) return
-      if (e.relatedTarget || e.clientY > 0) return
-      if (Date.now() - mountedAt < EXIT_DWELL_MS) return
-      fire()
-    }
-
-    // A timer covers the reader who hits depth early and then just sits there —
-    // without it, no further scroll events would ever re-run the check.
-    const timer = window.setTimeout(check, DWELL_MS)
+    // Covers a restored scroll position that's already past the threshold.
+    check()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
-    if (window.matchMedia('(hover: hover)').matches) {
-      document.addEventListener('mouseout', onMouseOut)
-    }
     return () => {
-      window.clearTimeout(timer)
       if (raf) window.cancelAnimationFrame(raf)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
-      document.removeEventListener('mouseout', onMouseOut)
     }
   }, [enabled])
 
