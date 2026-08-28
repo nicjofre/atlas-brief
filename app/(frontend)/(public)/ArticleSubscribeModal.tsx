@@ -52,16 +52,22 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
       setOpen(true)
     }
 
-    // `?capture=preview` forces the modal open for anyone, ignoring the logged-in
-    // gate and the dismissal clock. It's how David and Nic can actually look at
-    // this thing — signed in on their own site, they'd otherwise never see it.
+    // Two escape hatches, because signed in on their own site David and Nic
+    // would otherwise never see this at all:
+    //   ?capture=preview — opens immediately, ignoring scroll/dwell. For looking
+    //                      at the design. NOT what a reader experiences.
+    //   ?capture=trigger — keeps the real scroll-depth + dwell triggers, only
+    //                      skipping the logged-in gate and dismissal clock. For
+    //                      checking when it actually fires.
+    const mode = new URLSearchParams(window.location.search).get('capture')
+
     // Deferred a tick so the open isn't a synchronous setState in the effect.
-    if (new URLSearchParams(window.location.search).get('capture') === 'preview') {
+    if (mode === 'preview') {
       const t = window.setTimeout(fire, 0)
       return () => window.clearTimeout(t)
     }
 
-    if (!enabled || modalSuppressed()) return
+    if (mode !== 'trigger' && (!enabled || modalSuppressed())) return
 
     const check = () => {
       raf = 0
