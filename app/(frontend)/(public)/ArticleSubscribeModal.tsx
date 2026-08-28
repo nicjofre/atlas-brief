@@ -15,11 +15,18 @@ import './subscribe-modal.css'
 const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// Scroll depth is the only trigger: the moment a reader is this far through
-// the piece, the modal opens. No dwell timer — getting here IS the engagement
-// signal, and making someone who's already read half the article wait longer
-// only moves the ask further from the moment they were interested.
-const DEPTH_TRIGGER = 0.55   // fraction of the page scrolled through
+// The trigger measures progress through the BODY, not the page. These pieces
+// carry a lot above the prose (crumb, kicker, headline, deck, byline, hero,
+// caption, dealstats), so a reader can be halfway down the document having
+// read barely a paragraph. Both templates wrap the prose in .art-body.
+const BODY_SELECTOR = '.art-body'
+// Fraction of the body scrolled ABOVE the top of the viewport, i.e. prose the
+// reader has actually moved through. Measuring what's merely visible would fire
+// the moment the body first peeked into view, having read none of it.
+const BODY_TRIGGER = 0.25
+// Fallback for any article template without .art-body: fall back to whole-page
+// depth so the modal degrades to the old behaviour instead of never firing.
+const PAGE_TRIGGER = 0.55
 
 type State = 'idle' | 'submitting' | 'sent'
 
@@ -70,12 +77,32 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
       raf = 0
       if (firedRef.current) return
       const doc = document.documentElement
-      // A page shorter than the viewport has no depth to measure. Sit it out
-      // rather than treating it as 100% — firing on load is the one behaviour
-      // this trigger exists to avoid.
+      // A page shorter than the viewport has no progress to measure. Sit it out
+      // rather than treating it as fully read — firing on load is the one
+      // behaviour this trigger exists to avoid.
       if (doc.scrollHeight - window.innerHeight <= 0) return
+
+      // Reaching the foot of the page counts however short the body is: the
+      // reader is done, and a proportional threshold can be unreachable on a
+      // brief whose body is shorter than the screen.
+      if (window.scrollY + window.innerHeight >= doc.scrollHeight - 100) {
+        fire()
+        return
+      }
+
+      const body = document.querySelector(BODY_SELECTOR)
+      if (body) {
+        const rect = body.getBoundingClientRect()
+        if (rect.height <= 0) return
+        // rect.top goes negative as the body scrolls up past the viewport top,
+        // so -top/height is the fraction the reader has moved through.
+        const consumed = -rect.top / rect.height
+        if (consumed >= BODY_TRIGGER) fire()
+        return
+      }
+
       const depth = (window.scrollY + window.innerHeight) / doc.scrollHeight
-      if (depth >= DEPTH_TRIGGER) fire()
+      if (depth >= PAGE_TRIGGER) fire()
     }
 
     const onScroll = () => {
@@ -220,18 +247,19 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
         {state === 'sent' ? (
           <>
             <div className="asm-kicker">You&rsquo;re in</div>
-            <h2 id="asm-title" className="asm-title">On the list.</h2>
+            <h2 id="asm-title" className="asm-title">Done. You&rsquo;re on the list.</h2>
             <p className="asm-done">
-              The next Dispatch lands Friday. Talk then.
+              Next one lands Friday morning. Back to the article.
             </p>
           </>
         ) : (
           <>
             <div className="asm-kicker">The Friday Dispatch</div>
-            <h2 id="asm-title" className="asm-title">Keep reading the tape.</h2>
+            <h2 id="asm-title" className="asm-title">Deals like this one, every Friday.</h2>
             <p className="asm-sub">
-              One note a week from David Safai &mdash; what traded, what&rsquo;s listed, and what
-              the numbers actually say about LA multifamily. Free, and no filler.
+              David Safai reads the LA multifamily tape all week. What traded, what it
+              actually penciled at, and what the numbers say the market is doing. One
+              email, Friday morning. Free.
             </p>
 
             <form onSubmit={submit} noValidate>
