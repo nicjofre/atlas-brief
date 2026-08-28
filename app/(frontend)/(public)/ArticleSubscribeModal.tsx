@@ -257,9 +257,9 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
             <div className="asm-kicker">The Friday Dispatch</div>
             <h2 id="asm-title" className="asm-title">Deals like this one, every Friday.</h2>
             <p className="asm-sub">
-              David Safai reads the LA multifamily tape all week. What traded, what it
-              actually penciled at, and what the numbers say the market is doing. One
-              email, Friday morning. Free.
+              David Safai builds and owns multifamily in Los Angeles. Every Friday he
+              sends what traded that week, what it really sold for, and what the
+              numbers say the market is doing. Free.
             </p>
 
             <form onSubmit={submit} noValidate>
