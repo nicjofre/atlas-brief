@@ -23,15 +23,19 @@ export default async function AtlasBriefIndex() {
 
   if (articles.length === 0) {
     return (
-      <>
-        <FeedMasthead />
-        <section className="front">
-          <div className="wrap" style={{ padding: '64px 0', color: 'var(--muted)' }}>
-            No dispatches yet.
-          </div>
-        </section>
-        <Footer />
-      </>
+      
+    <header className="flag">
+      <div className="flag-inner">
+        <h1 className="flag-title">Atlas <em>Brief</em></h1>
+        <div className="flag-right">
+          <b>Editor &amp; Publisher</b><br />
+          David Safai · Los Angeles, Cal.<br />
+          <span className="fr-sep" />
+          Real Estate · Development<br />
+          Construction · Policy
+        </div>
+      </div>
+    </header>
     )
   }
 

@@ -85,8 +85,8 @@
   transition: background .15s, border-color .15s;
   white-space: nowrap;
 }
-.tax-btn-primary { background: #FFE680; color: var(--ink); border: 1px solid #EFCF4D; }
-.tax-btn-primary:hover { background: #FFD83D; border-color: #E6BE2E; }
+.tax-btn-primary { background: var(--accent); color: var(--ink); border: 1px solid var(--accent); font-weight: 600; }
+.tax-btn-primary:hover { background: transparent; color: var(--ink); }
 .tax-btn-primary:disabled { opacity: 0.6; cursor: default; }
 
 /* ---- Waitlist form ---- */
@@ -107,7 +107,7 @@
 .tax-input::placeholder { color: var(--muted-2); }
 .tax-input:focus { outline: none; border-color: var(--accent); }
 .tax-form .tax-btn-primary { flex: 0 0 auto; }
-.tax-form-err { font-family: var(--sans); font-size: 13px; color: #B23B2E; margin: 4px 0 0; }
+.tax-form-err { font-family: var(--sans); font-size: 13px; color: var(--danger); margin: 4px 0 0; }
 .tax-form-done {
   display: flex;
   flex-direction: column;

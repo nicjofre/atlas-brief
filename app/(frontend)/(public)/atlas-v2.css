@@ -7,17 +7,35 @@
 
 /* ---- Tokens ---- */
 :root {
-  /* FT-inspired warm paper with high-contrast ink across the entire site */
-  --bg:        #FFF4E3;
-  --bg-alt:    #F7E9CE;
-  --ink:       #0A0A0A;
-  --ink-soft:  #1F1F1D;
-  --muted:     #4F4F4B;
-  --muted-2:   #7A7A75;
-  --rule:      #D6CBB3;
-  --rule-soft: #E6DBC2;
-  --accent:    #8B5A2B;
-  --accent-ink:#6E4520;
+  /* Calcite — warm neutrals, one hot accent, first color option Lucas */
+  /*--bg:        #FBFAF9;
+  --bg-alt:    #F3F1EF;
+  --ink:       #2C3034;
+  --ink-soft:  #3C4044;
+  --muted:     #6A6E72;
+  --muted-2:   #93969A;
+  --rule:      #DDDCDB;
+  --rule-soft: #ECEBEA;
+  --accent:    #FD7B41;
+  --accent-ink:#B84410;
+  --sand:      #EDBF9B;
+  --danger:    #B3261E;
+*/
+  /* Atlas Brief — navy / red / electric blue */
+  --bg:        #FFFFFF;
+  --bg-alt:    #F4F6FA;
+  --ink:       #0C1530;   /* brand navy — 18:1 */
+  --ink-soft:  #1E2949;
+  --muted:     #5A6485;
+  --muted-2:   #8891AC;   /* large text only */
+  --rule:      #D8DDE9;
+  --rule-soft: #EBEEF5;
+  --accent:    #2E5BE8;   /* electric blue — primary actions, links */
+  --accent-ink:#1F55DB;   /* darkened blue for small text */
+  --danger:    #C41A1F;   /* darkened red — error text, 5.97:1 */
+  --brand-red: #EE2529;   /* brand red — badges, rules, display only */
+  --navy-deep: #060C1E;   /* dark bands, footer */
+  --sand:      #F4F6FA;   /* retire the peach; keep the name so nothing breaks */
 
   --serif:  'Newsreader', 'Times New Roman', Georgia, serif;
   --sans:   'Inter Tight', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
@@ -57,7 +75,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: var(--accent); color: var(--bg); }
+::selection { background: var(--sand); color: var(--ink); }
 
 /* ---- Utilities ---- */
 .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad-x); }

@@ -48,7 +48,7 @@
 .sg-btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
 .sg-btn-primary:disabled { opacity: 0.6; cursor: default; }
 .sg-fine { font-family: var(--sans); font-size: 12px; color: var(--muted-2); margin: 8px 0 0; text-align: center; }
-.sg-err { font-family: var(--sans); font-size: 13px; color: #B23B2E; margin: 0; }
+.sg-err { font-family: var(--sans); font-size: 13px; color: var(--danger); margin: 0; }
 .sg-done { display: flex; flex-direction: column; gap: 10px; }
 .sg-done strong { font-family: var(--serif); font-size: 20px; }
 .sg-done span { font-family: var(--sans); font-size: 14px; color: var(--muted); }
