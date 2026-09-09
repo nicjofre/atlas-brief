@@ -45,7 +45,7 @@
   cursor: pointer; transition: background .15s, border-color .15s;
 }
 .sg-btn-primary { background: var(--accent); color: var(--bg); border: 1px solid var(--accent); }
-.sg-btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.sg-btn-primary:hover { background: var(--brand-red); border-color: var(--brand-red); }
 .sg-btn-primary:disabled { opacity: 0.6; cursor: default; }
 .sg-fine { font-family: var(--sans); font-size: 12px; color: var(--muted-2); margin: 8px 0 0; text-align: center; }
 .sg-err { font-family: var(--sans); font-size: 13px; color: var(--danger); margin: 0; }

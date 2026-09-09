@@ -18,7 +18,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type State = 'idle' | 'modal' | 'submitting' | 'sent' | 'error'
 
-export default function DispatchForm() {
+// `onSubscribed` lets a host (DispatchBanner) retire itself once the signup
+// lands. `variant` only tags the form so the banner can lay it out on one row —
+// the two-step flow and the POST are identical either way.
+export default function DispatchForm({
+  onSubscribed,
+  variant = 'card',
+}: {
+  onSubscribed?: () => void
+  variant?: 'card' | 'banner'
+} = {}) {
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -65,6 +74,7 @@ export default function DispatchForm() {
       trackConversion(CONVERSIONS.newsletterSignup)
       markSubscribed()
       setState('sent')
+      onSubscribed?.()
     } catch {
       setError('Something went wrong. Please try again.')
       setState('modal')
@@ -74,7 +84,7 @@ export default function DispatchForm() {
   return (
     <>
       <form
-        className={`tm-dispatch${state === 'sent' ? ' sent' : ''}`}
+        className={`tm-dispatch tm-dispatch-${variant}${state === 'sent' ? ' sent' : ''}`}
         onSubmit={onEmailSubmit}
         noValidate
       >

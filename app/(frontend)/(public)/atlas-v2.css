@@ -33,8 +33,13 @@
   --accent:    #2E5BE8;   /* electric blue — primary actions, links */
   --accent-ink:#1F55DB;   /* darkened blue for small text */
   --danger:    #C41A1F;   /* darkened red — error text, 5.97:1 */
-  --brand-red: #EE2529;   /* brand red — badges, rules, display only */
+  --brand-red: #E73736;   /* brand red — badges, rules, display only */
   --navy-deep: #060C1E;   /* dark bands, footer */
+
+  /* Identity-sheet palette (sampled from the brand deck). Scoped to the nav for
+     now — we're rolling the new look out section by section. */
+  --brand-navy: #061832;  /* roundel disc, dark panels */
+  --brand-blue: #387FF4;  /* display headlines, primary CTA */
   --sand:      #F4F6FA;   /* retire the peach; keep the name so nothing breaks */
 
   --serif:  'Newsreader', 'Times New Roman', Georgia, serif;
@@ -135,8 +140,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--bg);
-  border-bottom: var(--tick);
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
 }
 .nav-inner {
   max-width: var(--maxw);
@@ -157,10 +162,55 @@ body {
   align-items: center;
   gap: 10px;
 }
-.nav-logo .mark {
-  width: 10px; height: 10px;
-  background: var(--accent);
-  display: inline-block;
+.nav-logo .atlas-mark {
+  display: block;
+  flex: none;
+}
+/* Roundel fills/type live here so the mark reads from the brand tokens. */
+.atlas-mark-disc {
+  fill: var(--brand-navy);
+  stroke: rgba(255,255,255,0.45);
+  stroke-width: 2.8;
+}
+.atlas-mark-bar { fill: var(--brand-red); }
+.atlas-mark-a {
+  fill: #FFFFFF;
+  font-family: var(--serif);
+  font-size: 40px;
+  font-weight: 600;
+}
+/* Wordmark per the identity sheet: "Atlas" white roman, "Brief" red italic.
+   Wrapped in .nav-wordmark so the flex `gap` only separates the mark from the
+   words; without it "Atlas" and "Brief" are separate anonymous flex items and
+   the gap lands between them too. */
+.nav-wordmark { white-space: nowrap; color: #FFFFFF; }
+.nav-logo em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
+
+/* Hairline rule + tracked tagline, the lockup from the profile banner. */
+.nav-lockup {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.nav-tagline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255,255,255,0.28);
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.72);
+  white-space: nowrap;
 }
 .nav-links {
   display: flex;
@@ -171,15 +221,19 @@ body {
 }
 .nav-links a {
   font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-  letter-spacing: -0.005em;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.82);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   padding: 6px 0;
   border-bottom: 1px solid transparent;
-  transition: border-color .15s;
+  transition: border-color .15s, color .15s;
 }
-.nav-links a:hover, .nav-links a.active { border-color: var(--accent); }
+.nav-links a:hover, .nav-links a.active {
+  color: #FFFFFF;
+  border-color: var(--brand-red);
+}
 /* ---- Header CTA cluster (in .nav-right): tertiary -> secondary -> primary ---- */
 
 /* Tertiary: quiet text link. */
@@ -187,11 +241,13 @@ body {
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
+  color: rgba(255,255,255,0.62);
   white-space: nowrap;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   transition: color .15s;
 }
-.nav-tertiary:hover { color: var(--ink); }
+.nav-tertiary:hover { color: #FFFFFF; }
 
 /* Secondary: Tax Appeals — outlined accent pill (was a filled tab; softened so
    the primary button leads). Self-contained now that it lives in .nav-right. */
@@ -199,9 +255,9 @@ body {
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent-ink);
+  color: #FFFFFF;
   background: transparent;
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(255,255,255,0.42);
   padding: 7px 13px;
   border-radius: 3px;
   display: inline-flex;
@@ -210,34 +266,34 @@ body {
   white-space: nowrap;
   transition: background .15s, color .15s;
 }
-.nav-highlight:hover { background: var(--accent); color: var(--bg); }
+.nav-highlight:hover { background: var(--brand-red); border-color: var(--brand-red); color: #FFFFFF; }
 .nav-highlight-tag {
   font-family: var(--mono);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--brand-red);
+  color: #FFFFFF;
   padding: 2px 5px;
   border-radius: 2px;
 }
-.nav-highlight:hover .nav-highlight-tag { background: var(--bg); color: var(--accent-ink); }
+.nav-highlight:hover .nav-highlight-tag { background: #FFFFFF; color: var(--brand-red); }
 
 /* Primary: Submit a Deal — filled accent button, the lead action. */
 .nav-primary {
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;
-  color: var(--bg);
-  background: var(--accent);
-  border: 1px solid var(--accent);
+  color: #FFFFFF;
+  background: var(--brand-blue);
+  border: 1px solid var(--brand-blue);
   padding: 8px 16px;
   border-radius: 3px;
   white-space: nowrap;
   transition: background .15s, border-color .15s;
 }
-.nav-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.nav-primary:hover { background: var(--brand-red); border-color: var(--brand-red); }
 .nav-primary:disabled { opacity: 0.6; cursor: default; }
 
 /* ---- Submit-a-deal modal ---- */
@@ -369,13 +425,13 @@ body {
 
 .mobile-menu {
   display: none;
-  border-bottom: var(--tick);
-  background: var(--bg);
+  border-bottom: 3px solid var(--brand-red);
+  background: var(--brand-navy);
   padding: 16px var(--pad-x) 28px;
 }
 .mobile-menu.open { display: block; }
 .mobile-menu ul { list-style: none; padding: 0; margin: 0; }
-.mobile-menu li { border-bottom: var(--tick-soft); }
+.mobile-menu li { border-bottom: 1px solid rgba(255,255,255,0.14); }
 .mobile-menu li:last-child { border-bottom: 0; }
 .mobile-menu a {
   display: block;
@@ -383,7 +439,7 @@ body {
   font-family: var(--serif);
   font-size: 22px;
   font-weight: 400;
-  color: var(--ink);
+  color: #FFFFFF;
 }
 /* "Submit a Deal" in the menu — a full-width accent button. */
 .mobile-menu-cta {
@@ -402,7 +458,7 @@ body {
   cursor: pointer;
   text-align: center;
 }
-.mobile-menu-cta:hover { background: var(--accent-ink); }
+.mobile-menu-cta:hover { background: var(--brand-red); }
 /* The menu is a mobile affordance only — never show it on desktop. */
 @media (min-width: 1025px) { .mobile-menu { display: none !important; } }
 .mobile-menu .mm-meta {
@@ -423,15 +479,18 @@ body {
     padding: 0 14px;
     position: relative;
   }
-  .nav-logo {
+  .nav-lockup {
     grid-column: 2;
-    justify-content: center;
     justify-self: center;
+  }
+  .nav-tagline { display: none; }
+  .nav-logo {
+    justify-content: center;
     font-size: 19px;
     letter-spacing: 0;
     gap: 7px;
   }
-  .nav-logo .mark { width: 7px; height: 7px; }
+  .nav-logo .atlas-mark { width: 26px; height: 26px; }
   .nav-links { display: none; }
   .nav-right {
     grid-column: 3;
@@ -456,14 +515,15 @@ body {
     background: transparent;
     cursor: pointer;
   }
-  .nav-burger span { left: 6px; right: 6px; height: 1.5px; background: var(--ink); }
+  .nav-burger span { left: 6px; right: 6px; height: 1.5px; background: #FFFFFF; }
   .nav-burger span:nth-child(1) { top: 12px; }
   .nav-burger span:nth-child(2) { top: 17px; }
   .nav-burger span:nth-child(3) { top: 22px; }
-  .nav { border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .nav { border-bottom: 3px solid var(--brand-red); }
 }
 @media (max-width: 480px) {
-  .nav-logo { font-size: 16px; }
+  .nav-logo { font-size: 16px; gap: 6px; }
+  .nav-logo .atlas-mark { width: 22px; height: 22px; }
   .nav-inner { grid-template-columns: 36px 1fr auto; padding: 0 10px; gap: 6px; }
   /* Two compact buttons need every pixel on small phones. */
   .nav-right { gap: 5px; }
@@ -474,20 +534,26 @@ body {
 /* ============================================================
    FOOTER
    ============================================================ */
+/* Navy footer — bookends the masthead and gives the pinned Dispatch banner a
+   surface of the same colour to sit on, instead of a white one to fight. */
 .footer {
   margin-top: 120px;
-  border-top: 1px solid var(--ink);
-  background: var(--bg);
+  border-top: 3px solid var(--brand-red);
+  background: var(--brand-navy);
+  color: rgba(255,255,255,0.82);
   padding-top: 56px;
   padding-bottom: 28px;
 }
+/* Three columns for three blocks — this was a 4-column grid with only 3
+   children, so the widest track sat empty and the contact block was squeezed. */
 .footer-top {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+  grid-template-columns: 1.6fr 1fr 1.2fr;
   gap: 48px;
-  padding-bottom: 56px;
-  border-bottom: var(--tick);
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.16);
 }
+.footer-brand .atlas-mark { margin-bottom: 18px; }
 .footer-sections {
   padding: 8px 0 40px;
   margin-bottom: 40px;
@@ -552,31 +618,59 @@ body {
 }
 .footer-logo {
   font-family: var(--serif);
-  font-size: 28px;
-  line-height: 1.1;
+  font-size: 30px;
+  line-height: 1.02;
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+.footer-logo em {
+  display: block;
+  font-style: italic;
+  color: var(--brand-red);
 }
 .footer-tag {
   margin-top: 14px;
-  color: var(--muted);
+  color: rgba(255,255,255,0.60);
   font-size: 14px;
   max-width: 320px;
 }
 .footer h5 {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--brand-red);
   margin: 0 0 20px;
 }
 .footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.footer a { font-size: 15px; color: var(--ink); }
-.footer a:hover { color: var(--accent-ink); }
-.footer-contact p { margin: 0 0 6px; font-size: 15px; }
-.footer-contact .m { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.footer a { font-size: 15px; color: rgba(255,255,255,0.82); transition: color .15s; }
+.footer a:hover { color: #FFFFFF; }
+.footer-contact p { margin: 0 0 6px; font-size: 15px; color: rgba(255,255,255,0.82); }
+.footer-contact .m { font-family: var(--mono); font-size: 13px; color: rgba(255,255,255,0.62); }
+.footer-social { display: flex; gap: 14px; margin-top: 18px; }
+.footer-social a { color: rgba(255,255,255,0.55); }
+.footer-social a:hover { color: var(--brand-red); }
+
+.footer-disclaimer {
+  margin: 20px 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+/* Default is the light treatment — the disclaimer also runs in .site-footer on
+   article pages, which sits on --bg-alt. The navy footer overrides below. */
+.disclaimer {
+  margin: 0;
+  max-width: 900px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.disclaimer b { color: var(--ink-soft); }
+.footer .disclaimer { color: rgba(255,255,255,0.46); }
+.footer .disclaimer b { color: rgba(255,255,255,0.72); }
+
 .footer-legal {
   padding-top: 28px;
   display: flex;
@@ -585,11 +679,13 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: rgba(255,255,255,0.50);
   text-transform: uppercase;
 }
+.footer-domain { font-size: 0.85em; opacity: 0.7; }
 @media (max-width: 1024px) {
   .footer-top { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .footer-brand { grid-column: 1 / -1; }
 }
 @media (max-width: 640px) {
   .footer { margin-top: 80px; padding-top: 40px; }

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import SubmitDealModal from './SubmitDealModal'
+import AtlasMark from './AtlasMark'
 
 // The public site header. Client component so the hamburger menu and the deal
 // modal are interactive. Desktop: editorial links centered, CTA cluster right
@@ -17,7 +18,12 @@ export default function SiteNav() {
     <>
       <nav className="nav">
         <div className="nav-inner">
-          <Link href="/" className="nav-logo" onClick={closeMenu}><span className="mark" /> Atlas <em>Brief</em></Link>
+          {/* Lockup = roundel + wordmark + tracked tagline, per the identity sheet.
+              One grid cell so the nav stays a 3-column layout. */}
+          <div className="nav-lockup">
+            <Link href="/" className="nav-logo" onClick={closeMenu}><AtlasMark /><span className="nav-wordmark">Atlas <em>Brief</em></span></Link>
+            <span className="nav-tagline" aria-hidden="true">Los Angeles<br />Real Estate<br />Intelligence</span>
+          </div>
           <ul className="nav-links">
             <li><Link href="/">The Tape</Link></li>
             <li><Link href="/about">About</Link></li>
