@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
+import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 import { markSubscribed, modalSuppressed, markModalDismissed } from '@/lib/subscribe-flag'
 import './subscribe-modal.css'
 
@@ -213,7 +213,7 @@ export default function ArticleSubscribeModal({ enabled = true }: { enabled?: bo
         setState('idle')
         return
       }
-      trackConversion(CONVERSIONS.newsletterSignup)
+      trackNewsletterSignup('article_modal')
       markSubscribed()
       setState('sent')
     } catch {

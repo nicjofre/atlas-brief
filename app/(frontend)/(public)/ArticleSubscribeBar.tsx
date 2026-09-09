@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { captureSuppressed, markSubscribed, markCaptureDismissed } from '@/lib/subscribe-flag'
+import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -56,6 +57,7 @@ export default function ArticleSubscribeBar() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Something went wrong.')
+      trackNewsletterSignup('article_bar')
       markSubscribed()
       setStatus('done')
     } catch (e) {

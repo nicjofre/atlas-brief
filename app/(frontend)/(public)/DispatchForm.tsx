@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
+import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 import { markSubscribed } from '@/lib/subscribe-flag'
 
 // Friday dispatch signup. Two steps so we can collect a little context without
@@ -62,7 +62,8 @@ export default function DispatchForm() {
         setState('modal')
         return
       }
-      trackConversion(CONVERSIONS.newsletterSignup)
+      // Matches the default source on /api/subscribe when none is sent.
+      trackNewsletterSignup('home_dispatch_form')
       markSubscribed()
       setState('sent')
     } catch {
