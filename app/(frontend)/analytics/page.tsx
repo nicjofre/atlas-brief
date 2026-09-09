@@ -1364,7 +1364,11 @@ export default async function AnalyticsPage({
         <h2 style={{ fontSize: 18, marginTop: 28, marginBottom: 8 }}>Submitted deals</h2>
         {deals.length === 0 ? (
           <p style={EMPTY}>
-            No deals submitted in the {windowNote}. Deals sent through the header <b>Submit a Deal</b> popup show here.
+            No deals submitted in the {windowNote}. The header <b>Submit a Deal</b> CTA was
+            retired in September 2026 because of spam, so nothing new lands here — deals
+            collected while it was live still show, and anything older than the {windowNote}
+            is a window change away. To take submissions again, restore the button in
+            SiteNav.tsx and set <code>DEALS_ENABLED=1</code>.
           </p>
         ) : (
           <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
