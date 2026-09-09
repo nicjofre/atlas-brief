@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { JsonLd, articleGraph } from '@/lib/seo/json-ld'
 import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
 import FreeformPost from './FreeformPost'
@@ -22,26 +24,33 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params
-  const article = await getArticleBySlug(slug)
+  // A slug is either a brief or a post, never both, so look in both stores at
+  // once. Sequentially, a post paid for a wasted brief lookup before its own
+  // query even started — slow enough on a cold render that Next streamed the
+  // shell first and flushed the tags into the body instead of <head>.
+  const { isEnabled: draft } = await draftMode()
+  const [article, post] = await Promise.all([
+    getArticleBySlug(slug),
+    getPostBySlug(slug, draft).catch(() => null),
+  ])
+
   if (!article) {
-    // Not a brief — maybe a freeform post.
-    const { isEnabled: draft } = await draftMode()
-    const post = await getPostBySlug(slug, draft)
     if (!post) return { title: 'Atlas Brief' }
     const title = `${post.title} — Atlas Brief`
-    const description = post.deck ?? undefined
     const hero = post.heroImage && typeof post.heroImage === 'object' ? post.heroImage.url : undefined
-    const images = hero ? [hero] : undefined
-    return {
+    return pageMetadata({
       title,
-      description,
-      openGraph: { type: 'article', title, description, url: `/atlas-brief/${slug}`, images },
-      twitter: { card: 'summary_large_image', title, description, images },
-    }
+      description: post.deck ?? undefined,
+      path: `/atlas-brief/${slug}`,
+      images: hero ? [hero] : undefined,
+      type: 'article',
+      publishedTime: post.publishedAt ?? undefined,
+      modifiedTime: post.updatedAt ?? undefined,
+    })
   }
+
   const plainHeadline = (article.headline ?? '').replace(/\*/g, '')
   const title = `${plainHeadline} — Atlas Brief`
-  const description = article.deck ?? undefined
 
   // Share card uses the property's hero photo (overrides the sitewide banner).
   const supabase = await createClient()
@@ -49,25 +58,16 @@ export async function generateMetadata(
     supabase,
     article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
   )
-  const images = heroUrl ? [heroUrl] : undefined
 
-  return {
+  return pageMetadata({
     title,
-    description,
-    openGraph: {
-      type: 'article',
-      title,
-      description,
-      url: `/atlas-brief/${slug}`,
-      images,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images,
-    },
-  }
+    description: article.deck ?? undefined,
+    path: `/atlas-brief/${slug}`,
+    images: heroUrl ? [heroUrl] : undefined,
+    type: 'article',
+    publishedTime: article.published_at ?? undefined,
+    modifiedTime: article.updated_at ?? undefined,
+  })
 }
 
 export default async function PostPage(
@@ -129,6 +129,27 @@ export default async function PostPage(
 
   return (
     <>
+      {/* NewsArticle for this brief. `about` carries the street address, which
+          is the whole point: it's what lets a search or an LLM resolve "what
+          happened at 630 Masselin" to this page. */}
+      <JsonLd
+        data={articleGraph({
+          headline: (article.headline ?? '').replace(/\*/g, ''),
+          description: article.deck,
+          path: `/atlas-brief/${slug}`,
+          datePublished: article.published_at,
+          dateModified: article.updated_at,
+          images: [heroUrl],
+          section: catLabel,
+          address: property
+            ? {
+                streetAddress: property.street_address,
+                locality: property.city,
+                region: property.state,
+              }
+            : null,
+        })}
+      />
       {showBar && <ArticleSubscribeBar />}
       <ArticleSubscribeModal enabled={showBar} />
       <header className="art-top">

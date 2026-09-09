@@ -5,6 +5,7 @@ import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import { JsonLd, articleGraph } from '@/lib/seo/json-ld'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -29,6 +30,21 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
 
   return (
     <>
+      {/* Structured data for the essay. Skipped in the CMS preview iframe,
+          which isn't a public URL. */}
+      {!preview && (
+        <JsonLd
+          data={articleGraph({
+            headline: post.title ?? '',
+            description: post.deck,
+            path: `/atlas-brief/${post.slug}`,
+            datePublished: post.publishedAt ?? post.createdAt,
+            dateModified: post.updatedAt,
+            images: [hero?.url],
+            section: kicker,
+          })}
+        />
+      )}
       {showBar && <ArticleSubscribeBar />}
       {/* Never in the CMS Live Preview iframe — a pop-up firing mid-edit would
           just be in David's way. */}

@@ -1,16 +1,18 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from './Footer'
 import DispatchForm from './DispatchForm'
 import { getArticles } from '@/lib/db/articles'
 import { formatDateLong, placeLine, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
 import './home.css'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'The Tape · Atlas Brief',
   description:
     "A running log of Los Angeles real estate — what trades, what's listed, what the numbers actually say. By David Safai.",
-}
+  path: '/',
+})
 
 export default async function HomePage() {
   const articles = await getArticles()

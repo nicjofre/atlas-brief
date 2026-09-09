@@ -3,6 +3,7 @@ import SiteNav from './SiteNav'
 import LinkedInInsight from './LinkedInInsight'
 import GoogleTag from './GoogleTag'
 import TrackPageView from './TrackPageView'
+import { JsonLd, siteGraph } from '@/lib/seo/json-ld'
 import './atlas-v2.css'
 
 const OG_TITLE = 'Atlas Brief — A Journal of Record on LA Real Estate'
@@ -54,6 +55,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
+
+      {/* Publisher / author / site identity, once per page. Article pages add
+          their own NewsArticle node that points back at these by @id. */}
+      <JsonLd data={siteGraph()} />
 
       <SiteNav />
 

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../Footer'
 import GuideForm from './GuideForm'
 import './survival-guide.css'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'The Atlas Brief Survival Guide · Atlas Brief',
   description:
     'How apartment investors protect their equity through every market cycle. A free guide from Atlas Brief — the framework, the blow-ups to avoid, and the one variable that decides your return.',
-}
+  path: '/survival-guide',
+})
 
 const INSIDE = [
   ['The 11 ways investors blow themselves up', 'A plain checklist of the balance-sheet mistakes that wipe out equity — from negative leverage to running out of liquidity.'],

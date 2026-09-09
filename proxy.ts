@@ -1,20 +1,35 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Routes anyone can read without a session. Everything else requires auth.
+// The editorial app. Requesting one of these without a session bounces to
+// /login; everything else falls through to Next, so an unknown URL 404s like it
+// should instead of leaking the login screen to crawlers.
+//
+// This is a deny-list rather than the allow-list it used to be, which matters
+// for search and answer engines: /robots.txt, /sitemap.xml and any typo'd URL
+// now return real files and real 404s. The safety of the inversion rests on
+// every private page and API route running its own auth check — they all do
+// (each calls supabase.auth.getUser() and redirects). This gate is
+// defence-in-depth, not the only lock, so a new admin route accidentally
+// omitted here is still protected by its own check.
+const PRIVATE_PREFIXES = [
+  '/account', '/admin', '/analytics', '/articles', '/dashboard',
+  '/development', '/dispatch', '/explore', '/image-check', '/listings',
+]
+
 // Public POST endpoints: `/api/subscribe` (signup), `/api/track/view` (the
 // reader-analytics beacon from the public article page), and
 // `/api/webhooks/resend` (Resend posts email events, verified by signature).
-// The admin-only `/api/dispatch/*` routes deliberately stay gated.
-const PUBLIC_PREFIXES = ['/atlas-brief', '/about', '/build', '/contact', '/tax-appeals', '/survival-guide', '/rso-briefing']
-const PUBLIC_EXACT = new Set(['/', '/api/subscribe', '/api/track/view', '/api/webhooks/resend', '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead', '/api/rso-briefing/lead', '/atlas-survival-guide.pdf', '/atlas-rso-briefing-desktop.pdf', '/atlas-rso-briefing-mobile.pdf', '/next/preview', '/next/exit-preview'])
+// Every other /api/* route is admin-only and stays gated.
+const PUBLIC_API = new Set([
+  '/api/subscribe', '/api/track/view', '/api/webhooks/resend',
+  '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead',
+  '/api/rso-briefing/lead',
+])
 
-function isPublicPath(pathname: string): boolean {
-  if (PUBLIC_EXACT.has(pathname)) return true
-  // Generated social-share images (Next appends a hash: /opengraph-image-abc123).
-  // Crawlers fetch these unauthenticated, so they must never bounce to /login.
-  if (pathname.startsWith('/opengraph-image') || pathname.startsWith('/twitter-image')) return true
-  return PUBLIC_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
+function isPrivatePath(pathname: string): boolean {
+  if (pathname.startsWith('/api/')) return !PUBLIC_API.has(pathname)
+  return PRIVATE_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
 }
 
 export async function proxy(request: NextRequest) {
@@ -59,7 +74,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  if (!user && !pathname.startsWith('/login') && !isPublicPath(pathname)) {
+  if (!user && !pathname.startsWith('/login') && isPrivatePath(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
@@ -71,7 +86,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Skip the proxy entirely for Next's static output and for anything with a
+  // file extension (robots.txt, sitemap.xml, PDFs, images, fonts). Crawlers
+  // fetch robots.txt and sitemap.xml before anything else; running an auth
+  // round-trip on them was what redirected both to /login.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|favicon-32.png|apple-touch-icon.png|images/).*)',
+    '/((?!_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)',
   ],
 }
