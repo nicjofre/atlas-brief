@@ -27,6 +27,9 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
   const hero = asMedia(post.heroImage)
   const kicker = post.kicker || 'Dispatch'
   const dateStr = fmtDate(post.publishedAt)
+  // Set only on essays about a specific building (the CMS field is optional).
+  const address = post.propertyAddress?.trim() || null
+  const locality = post.propertyLocality?.trim() || null
 
   return (
     <>
@@ -42,6 +45,9 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
             dateModified: post.updatedAt,
             images: [hero?.url],
             section: kicker,
+            // Names the building when the essay is about one, so an address
+            // query can resolve to this page.
+            address: address ? { streetAddress: address, locality } : null,
           })}
         />
       )}
@@ -68,8 +74,11 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           <h1>{post.title}</h1>
           {post.deck && <p className="deck">{post.deck}</p>}
           <div className="byl">
+            {/* Matches the brief layout: the building leads, when there is one. */}
+            {address && <div><b>Property</b>{address}</div>}
             <div><b>{post.author || 'David Safai'}</b>Editor · Publisher</div>
             {dateStr && <div><b>Published</b>{dateStr}</div>}
+            {address && locality && <div><b>Dateline</b>{locality}</div>}
           </div>
         </div>
       </header>

@@ -307,6 +307,14 @@ export interface Post {
    * One-sentence standfirst under the headline. Also the share/dispatch teaser.
    */
   deck?: string | null;
+  /**
+   * Optional. Street address, if this piece is about a specific building — e.g. "321 Tremont St". Leads the Google result title and appears in the byline. Leave blank for general essays.
+   */
+  propertyAddress?: string | null;
+  /**
+   * Optional. City or neighbourhood for the address above — e.g. "Avalon". Only used when Property Address is set.
+   */
+  propertyLocality?: string | null;
   heroImage?: (number | null) | Media;
   heroCaption?: string | null;
   layout?:
@@ -593,6 +601,8 @@ export interface PostsSelect<T extends boolean = true> {
   publishedAt?: T;
   author?: T;
   deck?: T;
+  propertyAddress?: T;
+  propertyLocality?: T;
   heroImage?: T;
   heroCaption?: T;
   layout?:

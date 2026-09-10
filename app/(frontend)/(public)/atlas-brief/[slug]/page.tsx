@@ -36,16 +36,22 @@ export async function generateMetadata(
 
   if (!article) {
     if (!post) return { title: 'Atlas Brief' }
-    const title = `${post.title} — Atlas Brief`
     const hero = post.heroImage && typeof post.heroImage === 'object' ? post.heroImage.url : undefined
+    // Essays about a specific building get the same address-first treatment as
+    // briefs, when David has filled the address in. Market essays don't.
+    const postAddress = post.propertyAddress?.trim() || null
+    const postLocality = post.propertyLocality?.trim() || null
     return pageMetadata({
-      title,
-      description: post.deck ?? undefined,
+      title: postAddress ? `${postAddress} — ${post.title}` : `${post.title} — Atlas Brief`,
+      description: postAddress
+        ? [`${postAddress}${postLocality ? `, ${postLocality}` : ''}.`, post.deck].filter(Boolean).join(' ')
+        : (post.deck ?? undefined),
       path: `/atlas-brief/${slug}`,
       images: hero ? [hero] : undefined,
       type: 'article',
       publishedTime: post.publishedAt ?? undefined,
       modifiedTime: post.updatedAt ?? undefined,
+      socialTitle: `${post.title} — Atlas Brief`,
     })
   }
 
