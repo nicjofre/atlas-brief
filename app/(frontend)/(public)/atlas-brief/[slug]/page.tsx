@@ -50,7 +50,26 @@ export async function generateMetadata(
   }
 
   const plainHeadline = (article.headline ?? '').replace(/\*/g, '')
-  const title = `${plainHeadline} — Atlas Brief`
+  const address = article.listing?.property?.street_address ?? null
+  const locality = article.listing?.property?.city ?? null
+
+  // Lead the search title with the street address. People look these buildings
+  // up by address and nothing else, and not one headline in the archive
+  // contains one — they name the block or the buyer, never the number.
+  //
+  // Address FIRST, not appended: Google truncates around 60 characters, and on
+  // a typical headline an appended address falls past the cut and is never
+  // seen. The "— Atlas Brief" suffix is dropped on these for the same reason;
+  // those characters are worth more spent on the headline.
+  const title = address
+    ? `${address} — ${plainHeadline}`
+    : `${plainHeadline} — Atlas Brief`
+
+  // Same reasoning for the snippet: open with the address, then David's deck.
+  const deck = article.deck ?? undefined
+  const description = address
+    ? [`${address}${locality ? `, ${locality}` : ''}.`, deck].filter(Boolean).join(' ')
+    : deck
 
   // Share card uses the property's hero photo (overrides the sitewide banner).
   const supabase = await createClient()
@@ -61,12 +80,14 @@ export async function generateMetadata(
 
   return pageMetadata({
     title,
-    description: article.deck ?? undefined,
+    description,
     path: `/atlas-brief/${slug}`,
     images: heroUrl ? [heroUrl] : undefined,
     type: 'article',
     publishedTime: article.published_at ?? undefined,
     modifiedTime: article.updated_at ?? undefined,
+    // Social keeps the headline as written.
+    socialTitle: `${plainHeadline} — Atlas Brief`,
   })
 }
 
@@ -175,10 +196,28 @@ export default async function PostPage(
             <HeadlineText text={article.headline} />
           </h1>
           {article.deck && <p className="deck">{article.deck}</p>}
+          {/* The street address leads the byline. It's the fact a reader
+              arrived looking for, and it's what makes the visible page agree
+              with a <title> that now opens with the address — without which
+              Google will happily rewrite that title back to the headline.
+              Every published brief carries a stored byline_html, so the cell is
+              rendered alongside it: display:contents dissolves the wrapper so
+              David's cells stay direct children of the .byl grid. */}
           {article.byline_html ? (
-            <div className="byl" dangerouslySetInnerHTML={{ __html: article.byline_html }} />
+            <div className="byl">
+              {property?.street_address && (
+                <div><b>Property</b>{property.street_address}</div>
+              )}
+              <div
+                style={{ display: 'contents' }}
+                dangerouslySetInnerHTML={{ __html: article.byline_html }}
+              />
+            </div>
           ) : (
             <div className="byl">
+              {property?.street_address && (
+                <div><b>Property</b>{property.street_address}</div>
+              )}
               <div><b>David Safai</b>Editor · Publisher</div>
               <div><b>Published</b>{formatDate(article.published_at)}</div>
               {article.status_tag && <div><b>Status</b>{article.status_tag}</div>}

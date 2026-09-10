@@ -16,9 +16,17 @@ export function pageMetadata(opts: {
   type?: 'website' | 'article'
   publishedTime?: string
   modifiedTime?: string
+  /**
+   * Share-card headline, when it should differ from the search title. Briefs
+   * lead their <title> with the street address because that's what people type
+   * into Google; on LinkedIn nobody searches, they scan, so the share card
+   * keeps David's editorial headline instead.
+   */
+  socialTitle?: string
 }): Metadata {
   const { title, description, path, images, type = 'website' } = opts
   const url = absoluteUrl(path)
+  const socialTitle = opts.socialTitle ?? title
 
   return {
     title,
@@ -27,7 +35,7 @@ export function pageMetadata(opts: {
     openGraph: {
       type,
       siteName: SITE_NAME,
-      title,
+      title: socialTitle,
       ...(description ? { description } : {}),
       url,
       ...(images?.length ? { images } : {}),
@@ -36,7 +44,7 @@ export function pageMetadata(opts: {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: socialTitle,
       ...(description ? { description } : {}),
       ...(images?.length ? { images } : {}),
     },
