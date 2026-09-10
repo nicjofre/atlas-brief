@@ -70,6 +70,14 @@ export async function generateMetadata(
   }
 }
 
+// Every published brief stores its byline as HTML (all 91 of them), and that
+// stored HTML leads with a "Published" cell. The date now sits on the kicker
+// row, so strip the cell rather than showing it twice. Only the first match
+// goes; anything else in the stored byline is left alone.
+function stripPublishedCell(html: string): string {
+  return html.replace(/<div>\s*<b>\s*Published\s*<\/b>.*?<\/div>/i, '')
+}
+
 export default async function PostPage(
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -134,11 +142,13 @@ export default async function PostPage(
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
+            {/* Was "Atlas Home Pro" — the acquisitions arm, not this publication.
+                Both crumbs also read "Atlas Brief"; the second is the Tape index. */}
             <Link href="/">
-              Atlas <span style={{ color: 'var(--accent)' }}>Home Pro</span>
+              Atlas <span className="crumb-mark">Brief</span>
             </Link>
             <span className="sep">/</span>
-            <Link href="/atlas-brief">Atlas Brief</Link>
+            <Link href="/atlas-brief">The Tape</Link>
             <span className="sep">/</span>
             <Link href={`/atlas-brief/sections/${article.section_slug}`}>{sectionLabel}</Link>
             <span className="sep">/</span>
@@ -149,17 +159,25 @@ export default async function PostPage(
             <span>
               {catLabel} · Entry № {String(article.entry_num).padStart(2, '0')}
             </span>
+            <span className="cat-date">{formatDate(article.published_at)}</span>
           </div>
           <h1>
             <HeadlineText text={article.headline} />
           </h1>
           {article.deck && <p className="deck">{article.deck}</p>}
           {article.byline_html ? (
-            <div className="byl" dangerouslySetInnerHTML={{ __html: article.byline_html }} />
+            <div className="byl">
+              <div><b>David Safai</b>Editor &middot; Publisher</div>
+              {/* display:contents on the wrapper keeps the stored cells as direct
+                  grid items instead of collapsing them into one column. */}
+              <div
+                className="byl-html"
+                dangerouslySetInnerHTML={{ __html: stripPublishedCell(article.byline_html) }}
+              />
+            </div>
           ) : (
             <div className="byl">
-              <div><b>David Safai</b>Editor · Publisher</div>
-              <div><b>Published</b>{formatDate(article.published_at)}</div>
+              <div><b>David Safai</b>Editor &middot; Publisher</div>
               {article.status_tag && <div><b>Status</b>{article.status_tag}</div>}
               {dateline && <div><b>Dateline</b>{dateline}</div>}
             </div>
@@ -287,7 +305,7 @@ export default async function PostPage(
             Los Angeles &middot;{' '}
             <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
           </div>
-          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+          <div className="sf-disclaimer">
             <Disclaimer />
           </div>
         </div>

@@ -40,7 +40,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
-            <Link href="/">Atlas <span style={{ color: 'var(--accent)' }}>Brief</span></Link>
+            <Link href="/">Atlas <span className="crumb-mark">Brief</span></Link>
             <span className="sep">/</span>
             <Link href="/atlas-brief">The Tape</Link>
             <span className="sep">/</span>
@@ -48,12 +48,12 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           </nav>
           <div className="cat">
             <span>{kicker}</span>
+            {dateStr && <span className="cat-date">{dateStr}</span>}
           </div>
           <h1>{post.title}</h1>
           {post.deck && <p className="deck">{post.deck}</p>}
           <div className="byl">
-            <div><b>{post.author || 'David Safai'}</b>Editor · Publisher</div>
-            {dateStr && <div><b>Published</b>{dateStr}</div>}
+            <div><b>{post.author || 'David Safai'}</b>Editor &middot; Publisher</div>
           </div>
         </div>
       </header>
@@ -84,7 +84,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
             &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
           </div>
           <div>{[kicker, dateStr].filter(Boolean).join(' · ')}</div>
-          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+          <div className="sf-disclaimer">
             <Disclaimer />
           </div>
         </div>
