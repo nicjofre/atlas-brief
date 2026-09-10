@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
-import { JsonLd, articleGraph } from '@/lib/seo/json-ld'
+import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
 import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
 import FreeformPost from './FreeformPost'
@@ -176,6 +176,13 @@ export default async function PostPage(
               }
             : null,
         })}
+      />
+      <JsonLd
+        data={breadcrumbGraph([
+          { name: 'Atlas Brief', path: '/' },
+          { name: 'The Tape', path: '/atlas-brief' },
+          { name: catLabel, path: `/atlas-brief/sections/${article.section_slug}` },
+        ])}
       />
       {showBar && <ArticleSubscribeBar />}
       <ArticleSubscribeModal enabled={showBar} />

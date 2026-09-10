@@ -5,7 +5,7 @@ import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
-import { JsonLd, articleGraph } from '@/lib/seo/json-ld'
+import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -49,6 +49,14 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
             // query can resolve to this page.
             address: address ? { streetAddress: address, locality } : null,
           })}
+        />
+      )}
+      {!preview && (
+        <JsonLd
+          data={breadcrumbGraph([
+            { name: 'Atlas Brief', path: '/' },
+            { name: 'The Tape', path: '/atlas-brief' },
+          ])}
         />
       )}
       {showBar && <ArticleSubscribeBar />}

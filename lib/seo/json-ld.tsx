@@ -88,6 +88,26 @@ export function siteGraph() {
   }
 }
 
+// Mirrors the crumb trail already rendered at the top of an article. Search
+// results use it for the path shown under the title instead of a bare URL, and
+// it tells a crawler where a page sits in the publication rather than leaving
+// it to infer that from the URL.
+//
+// Must match the visible breadcrumb: structured data that disagrees with the
+// page is worse than none.
+export function breadcrumbGraph(trail: { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map((step, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: step.name,
+      item: absoluteUrl(step.path),
+    })),
+  }
+}
+
 export type ArticleJsonLdInput = {
   headline: string
   description?: string | null
