@@ -22,10 +22,14 @@ import config from '../payload.config'
 // wrong question.
 const TARGETS: { slug: string; address: string; locality: string }[] = [
   { slug: 'what-did-apple-see-in-culver-city', address: '8888 Venice Blvd', locality: 'Culver City' },
-  { slug: 'The-Hidden-Ai-Boom', address: '1920 E Maple Ave', locality: 'El Segundo' },
   // Set earlier by direct SQL, so re-applied here to reach the versions table.
   { slug: '62-apartments-on-catalina-almost-no-way-to-build-more', address: '321 Tremont St', locality: 'Avalon' },
 ]
+
+// Vetoed after review. "The Hidden AI Boom" names exactly one address, but it
+// reads as a trend piece about the AI build-out rather than a note on Anduril's
+// building, so it should not compete for that address.
+const CLEAR: string[] = ['The-Hidden-Ai-Boom']
 
 async function main() {
   const payload = await getPayload({ config })
@@ -52,6 +56,28 @@ async function main() {
       overrideAccess: true,
     })
     console.log(`OK    ${t.slug} -> ${updated.propertyAddress}, ${updated.propertyLocality}`)
+  }
+
+  for (const slug of CLEAR) {
+    const { docs } = await payload.find({
+      collection: 'posts',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+    const doc = docs[0]
+    if (!doc) {
+      console.log(`SKIP  ${slug} — not found`)
+      continue
+    }
+    await payload.update({
+      collection: 'posts',
+      id: doc.id,
+      data: { propertyAddress: null, propertyLocality: null },
+      draft: false,
+      overrideAccess: true,
+    })
+    console.log(`CLEAR ${slug}`)
   }
 
   process.exit(0)
