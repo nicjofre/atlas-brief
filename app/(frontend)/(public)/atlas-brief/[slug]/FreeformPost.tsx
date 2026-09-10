@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Post, Media } from '@/payload-types'
 import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
-import Disclaimer from '../../Disclaimer'
+import Footer from '../../Footer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
 import './post.css'
@@ -78,17 +78,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
         </div>
       </section>
 
-      <footer className="site-footer">
-        <div className="wrap">
-          <div>
-            &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
-          </div>
-          <div>{[kicker, dateStr].filter(Boolean).join(' · ')}</div>
-          <div className="sf-disclaimer">
-            <Disclaimer />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

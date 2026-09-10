@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Tables } from '@/lib/db/types'
 import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
-import Disclaimer from '../../Disclaimer'
+import Footer from '../../Footer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
 import './post.css'
@@ -292,24 +292,7 @@ export default async function PostPage(
         </div>
       </section>
 
-      <footer className="site-footer">
-        <div className="wrap">
-          <div>
-            &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
-          </div>
-          <div>
-            Entry № {String(article.entry_num).padStart(2, '0')} &middot; {sectionLabel} &middot;{' '}
-            {formatDate(article.published_at)}
-          </div>
-          <div>
-            Los Angeles &middot;{' '}
-            <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
-          </div>
-          <div className="sf-disclaimer">
-            <Disclaimer />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

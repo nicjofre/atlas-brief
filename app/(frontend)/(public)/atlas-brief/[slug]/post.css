@@ -38,14 +38,14 @@
 .art-lead .lead-photo .cap{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding-top:10px;border-top:1px dotted var(--rule);margin-top:12px}
 .art-lead .lead-photo .cap b{color:var(--ink);letter-spacing:.14em}
 
-.deal-stats{padding:clamp(40px,5vw,72px) 0;border-bottom:1px solid var(--ink);background:var(--bg-alt)}
-.stats-head{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-red);margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--ink)}
+.deal-stats{padding:clamp(40px,5vw,72px) 0;border-top:3px solid var(--brand-red);border-bottom:3px solid var(--brand-red);background:var(--brand-navy)}
+.stats-head{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:20px}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
-.stats-grid .stat{padding:20px 24px;border-right:1px dotted var(--rule);background:var(--bg)}
+.stats-grid .stat{padding:18px 24px 20px;border-top:2px solid var(--brand-red);border-right:1px solid rgba(255,255,255,0.14);background:transparent}
 .stats-grid .stat:last-child{border-right:0}
-.stats-grid .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.stats-grid .v{font-family:var(--mono);font-size:22px;letter-spacing:-.01em;color:var(--ink);font-weight:500;margin-bottom:4px}
-.stats-grid .s{font-family:var(--serif);font-size:13px;color:var(--muted);font-style:italic}
+.stats-grid .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.60);margin-bottom:6px}
+.stats-grid .v{font-family:var(--mono);font-size:22px;letter-spacing:-.01em;color:var(--brand-blue);font-weight:600;margin-bottom:4px}
+.stats-grid .s{font-family:var(--serif);font-size:13px;color:rgba(255,255,255,0.55);font-style:italic}
 @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)} .stats-grid .stat:nth-child(2n){border-right:0} .stats-grid .stat{border-bottom:1px dotted var(--rule)}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr} .stats-grid .stat{border-right:0}}
 
@@ -132,15 +132,7 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
 .author-in .btns a:first-child{background:var(--ink);color:var(--bg)}
 @media(max-width:1024px){.author-in{grid-template-columns:1fr;gap:24px} .author-in .btns{flex-direction:row}}
 
-.site-footer{padding:48px 0;border-top:3px solid var(--brand-red);background:var(--brand-navy)}
-.site-footer .wrap{display:flex;flex-wrap:wrap;gap:32px;align-items:baseline;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:rgba(255,255,255,0.55)}
-.site-footer a{color:rgba(255,255,255,0.82)}
-.site-footer a:hover{color:#FFFFFF}
-/* .disclaimer defaults to the light treatment (it also runs on light pages), so
-   this footer needs the same override the navy site footer has. */
-.site-footer .disclaimer{color:rgba(255,255,255,0.46)}
-.site-footer .disclaimer b{color:rgba(255,255,255,0.72)}
-.sf-disclaimer{flex-basis:100%;padding-top:16px;margin-top:4px;border-top:1px solid rgba(255,255,255,0.12)}
+
 
 /* Live broker card (Option A) — headshot · details · firm logo. Reads from the
    listing's broker record; replaces the old baked-in .brokers block. */
