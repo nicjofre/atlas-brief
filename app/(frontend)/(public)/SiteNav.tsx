@@ -31,6 +31,10 @@ export default function SiteNav() {
           </div>
           <ul className="nav-links">
             <li><Link href="/">The Tape</Link></li>
+            {/* The only section with entries today, and where every article's
+                "Back to Board" lands — previously reachable only from inside
+                an article. */}
+            <li><Link href="/atlas-brief/sections/broker-activity">Broker Activity</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><Link href="/contact">Contact</Link></li>
           </ul>

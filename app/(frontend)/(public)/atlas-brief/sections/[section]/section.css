@@ -1,3 +1,13 @@
+/* ---------------------------------------------------------------------------
+   BACKUP — the colour declarations this page carried before the brand pass
+   (2026-09-11, from commit 03faafc). Paste back to restore. Delete this block
+   only after Lucas confirms.
+
+   .cat-eyebrow       -> color: var(--accent);
+   .cat-masthead h1   -> no colour (inherited --ink)
+   .cat-masthead h1 em-> color: var(--accent-ink);
+   --------------------------------------------------------------------------- */
+
 .cat-masthead {
   border-bottom: 3px double var(--ink);
   padding: clamp(48px, 6vw, 88px) 0 clamp(40px, 5vw, 64px);
@@ -16,7 +26,7 @@
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--brand-red);
   margin-bottom: 24px;
 }
 .cat-masthead h1 {
@@ -26,10 +36,13 @@
   line-height: 0.92;
   letter-spacing: -0.035em;
   margin: 0 0 28px;
+  color: var(--brand-navy);
 }
+/* "Broker" navy, "Activity" red — the same lockup as Atlas/Brief and
+   Atlas/Home Builders. */
 .cat-masthead h1 em {
   font-style: italic;
-  color: var(--accent-ink);
+  color: var(--brand-red);
 }
 .cat-dek {
   font-family: var(--serif);
@@ -79,3 +92,31 @@
     gap: 40px;
   }
 }
+
+/* Entry list scrolls in place — the same pane as the homepage's .tt-scroll,
+   down to the blue thumb that goes red on hover. Scoped to this page: feed.css
+   styles .archive-list for the Tape index too, which isn't a scrolling pane. */
+.archive-feed .archive-list {
+  max-height: clamp(520px, 74vh, 940px);
+  overflow-y: auto;
+  /* Chaining stays on: hitting the end carries you down the page rather than
+     parking you in the pane. */
+  padding-right: 18px;
+  scrollbar-color: var(--brand-blue) var(--rule-soft);
+}
+.archive-feed .archive-list:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 4px;
+}
+/* WebKit needs its own rules; Firefox uses scrollbar-color above. */
+.archive-feed .archive-list::-webkit-scrollbar { width: 10px; }
+.archive-feed .archive-list::-webkit-scrollbar-track {
+  background: var(--rule-soft);
+  border-radius: 5px;
+}
+.archive-feed .archive-list::-webkit-scrollbar-thumb {
+  background: var(--brand-blue);
+  border-radius: 5px;
+  border: 2px solid var(--rule-soft);
+}
+.archive-feed .archive-list::-webkit-scrollbar-thumb:hover { background: var(--brand-red); }

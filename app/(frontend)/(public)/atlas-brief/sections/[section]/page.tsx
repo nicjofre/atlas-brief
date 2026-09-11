@@ -112,7 +112,7 @@ export default async function SectionPage(
                   fontSize: 11,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  color: 'var(--accent)',
+                  color: 'var(--brand-red)',
                   marginBottom: 6,
                 }}
               >
@@ -139,7 +139,7 @@ export default async function SectionPage(
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 color: 'var(--muted)',
-                borderBottom: '1px solid var(--accent)',
+                borderBottom: '1px solid var(--brand-blue)',
                 paddingBottom: 1,
               }}
             >
@@ -147,7 +147,9 @@ export default async function SectionPage(
             </Link>
           </div>
 
-          <div className="archive-list">
+          {/* Scrolls in place, like the homepage's Tape/Dispatch list: 91 entries
+              below the masthead is a very long page otherwise. */}
+          <div className="archive-list" tabIndex={0} role="region" aria-label="Entries">
             {list.map((a, i) => <ArchiveRow key={a.id} a={a} pos={list.length - i} />)}
           </div>
         </div>
