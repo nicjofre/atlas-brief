@@ -173,7 +173,12 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
    Lucas wants a proper pass once David's block is settled. */
 .post-back{display:flex;justify-content:center;padding-top:clamp(40px,5vw,56px)}
 .post-back + .footer{margin-top:clamp(40px,5vw,56px)}
-.post-back a{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;border:1px solid var(--ink);white-space:nowrap}
+/* The mirror of the homepage's .tl-more button — same blue fill, radius and
+   padding, same red on hover, with the arrow reversed because this one goes
+   back. Blue for interactive, red on hover: the rule set on the homepage. */
+.post-back a{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFFFF;background:var(--brand-blue);border:1px solid var(--brand-blue);border-radius:3px;padding:11px 22px;white-space:nowrap;transition:background .15s,border-color .15s}
+.post-back a::before{content:"\2190";margin-right:10px}
+.post-back a:hover{background:var(--brand-red);border-color:var(--brand-red)}
 @media(max-width:1024px){.author-in{grid-template-columns:1fr;gap:24px}}
 
 
