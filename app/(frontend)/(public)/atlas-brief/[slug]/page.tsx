@@ -228,7 +228,8 @@ export default async function PostPage(
         <section className="deal-stats">
           <div className="wrap">
             <div className="stats-head">
-              Deal Stats · {property?.street_address ?? '—'}
+              <span className="stats-tag">Deal Stats</span>
+              <span className="stats-where">{property?.street_address ?? '—'}</span>
             </div>
             <div
               className="stats-grid"

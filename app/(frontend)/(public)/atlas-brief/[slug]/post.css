@@ -39,8 +39,21 @@
 .art-lead .lead-photo .cap b{color:var(--ink);letter-spacing:.14em}
 
 .deal-stats{padding:clamp(40px,5vw,72px) 0;border-bottom:1px solid var(--ink);background:var(--bg-alt)}
-.stats-head{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-red);margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--ink)}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+/* Only the words "Deal Stats" sit in the red block — the same object as the blue
+   author cell in the byline, same padding and radius. The address rides beside
+   it in plain mono. Children inherit the type so atlas-v2's phone-width
+   font-size override on .stats-head still reaches both. */
+.deal-stats .stats-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:24px}
+.deal-stats .stats-tag{background:var(--brand-red);color:#FFFFFF;padding:12px 16px;border-radius:3px}
+/* Hollow twin of the red block: same radius, 1px less padding so the border
+   doesn't make it stand 2px taller than the filled label beside it. */
+.deal-stats .stats-where{color:var(--ink);background:var(--bg);border:1px solid var(--ink);padding:11px 15px;border-radius:3px}
+/* Same 1px navy edge and 3px radius as the address chip, so the figures read as
+   one card. overflow:hidden keeps the white cells from squaring off the corners. */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--ink);border-radius:3px;overflow:hidden}
+/* Below 768px atlas-v2 gives every cell a dotted bottom rule; on the last one
+   that doubles up against the card's own edge. */
+.deal-stats .stats-grid .stat:last-child{border-bottom:0 !important}
 .stats-grid .stat{padding:20px 24px;border-right:1px dotted var(--rule);background:var(--bg)}
 .stats-grid .stat:last-child{border-right:0}
 .stats-grid .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
