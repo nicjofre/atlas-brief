@@ -1,16 +1,64 @@
+/* ---------------------------------------------------------------------------
+   BACKUP — the four colour declarations this page carried before the brand pass
+   (2026-09-11, from commit 8f26374). Paste any of these back over the live rule
+   to restore. Delete this block only after Lucas confirms.
+
+   .ab-top .eyebrow              -> color: var(--muted);   (plain mono line, not
+                                    a block: no display/background/padding/
+                                    border-radius, margin-bottom: 18px)
+   .ab-top h1                    -> no text-align (left, like the rest of the page)
+                                    and no color (inherited --ink)
+   .ab-body .prose               -> max-width: 60ch with no margin (column pinned
+   .ab-tail .prose                  to the left edge of .wrap); both sections
+   .section-head .num            -> color: var(--muted);
+   .project .p-head .n           -> color: var(--muted);
+   .project .p-head .cat         -> color: var(--accent);   <- old electric blue
+   --------------------------------------------------------------------------- */
+
 .ab-top {
   padding: clamp(40px, 5vw, 64px) 0 clamp(24px, 3vw, 40px);
   border-bottom: 1px solid var(--ink);
 }
+/* The label is the filled red block the article sections use — anchored left
+   where a kicker belongs, with the title centred beneath it. */
 .ab-top .eyebrow {
+  display: inline-block;
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: #FFFFFF;
+  background: var(--brand-red);
+  padding: 12px 16px;
+  border-radius: 3px;
+}
+/* The kicker row carries the gap now, not the block itself. */
+.ab-top .ab-kicker {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(24px, 3vw, 40px);
+}
+.ab-top .ab-standfirst {
+  margin: 0 0 0 auto;
+  max-width: 34ch;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+  text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 18px;
+}
+@media (max-width: 700px) {
+  .ab-top .ab-standfirst { margin-left: 0; text-align: left; }
 }
 .ab-top h1 {
+  text-align: center;
+  /* --brand-navy (#061832), the nav bar's own navy — not --ink (#0C1530), which
+     is a hair lighter and read as a different colour beside the header. */
+  color: var(--brand-navy);
   font-family: var(--serif);
   font-weight: 500;
   font-style: italic;
@@ -19,12 +67,17 @@
   letter-spacing: -0.03em;
   margin: 0;
 }
+/* "Brief" carries the red, the same lockup the nav and footer use. */
+.ab-top h1 em { color: var(--brand-red); font-style: italic; }
 
 .ab-body {
   padding: clamp(40px, 6vw, 80px) 0;
   border-bottom: 1px solid var(--ink);
 }
 .ab-body .prose {
+  /* The column keeps its 60ch measure — that's what makes it readable — but sits
+     centred in the section instead of hugging the left edge of a much wider page. */
+  margin: 0 auto;
   max-width: 60ch;
   font-family: var(--serif);
   font-size: clamp(18px, 1.4vw, 21px);
@@ -47,7 +100,7 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--brand-red);
   margin-bottom: 16px;
 }
 .ab-portfolio .section-head h2 {
@@ -73,10 +126,10 @@
   padding-bottom: 20px;
   margin-bottom: 0;
 }
-.project .p-head .n { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; }
+.project .p-head .n { font-family: var(--mono); font-size: 11px; color: var(--brand-red); letter-spacing: 0.12em; }
 .project .p-head .cat {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--accent); white-space: nowrap;
+  text-transform: uppercase; color: var(--muted); white-space: nowrap;
 }
 .project .p-head h3 {
   font-family: var(--serif); font-weight: 400;
@@ -126,6 +179,8 @@
   padding: clamp(40px, 6vw, 72px) 0;
 }
 .ab-tail .prose {
+  /* Centred to match .ab-body — the sign-off column reads as the same object. */
+  margin: 0 auto;
   max-width: 60ch;
   font-family: var(--serif);
   font-size: clamp(18px, 1.4vw, 21px);

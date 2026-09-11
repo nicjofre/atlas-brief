@@ -305,70 +305,82 @@
   .brief-side { padding-left: 0; border-left: 0; padding-top: 32px; border-top: 1px solid var(--ink); }
 }
 
-/* ---- Projects ---- */
-.projects {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-}
-.project { display: flex; flex-direction: column; }
-.project .p-head {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  gap: 16px;
-  align-items: baseline;
-  padding-bottom: 20px;
-  margin-bottom: 0;
-}
-.project .p-head .n { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; }
-.project .p-head .cat {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--accent); white-space: nowrap;
-}
-.project .p-head h3 {
-  font-family: var(--serif); font-weight: 400;
-  font-size: clamp(28px, 2.6vw, 40px);
-  line-height: 1; letter-spacing: -0.02em; margin: 0;
-}
-.project .f-wrap { margin-top: 20px; }
-.p-photo { margin: 20px 0 0; border: 1px solid var(--ink); overflow: hidden; background: var(--bg-alt); }
-.p-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; }
-.p-cap { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-top: 1px dotted var(--rule); background: var(--bg); }
-.project dl {
-  margin: 24px 0 0;
-  padding-top: 20px;
-  border-top: var(--tick);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-.project dl > div { display: flex; flex-direction: column; gap: 4px; }
-.project dt {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--muted);
-}
-.project dd {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: 17px;
-  letter-spacing: -0.005em;
-}
-.project p {
-  margin-top: 18px;
-  font-size: 15px;
-  color: var(--muted);
-  line-height: 1.6;
-  max-width: 48ch;
-}
-@media (max-width: 1024px) {
-  .projects { grid-template-columns: 1fr; gap: 64px; }
-}
-@media (max-width: 400px) {
-  .project dl { grid-template-columns: repeat(2, 1fr); }
-  .project .p-head { grid-template-columns: 36px 1fr; }
-  .project .p-head .cat { grid-column: 2; }
-}
+/* ---- Projects — DEAD, COMMENTED OUT 2026-09-11 ---------------------------
+   The portfolio moved to about/about.css and took this block with it; the
+   homepage renders no .project markup (verified: 0 occurrences of .project,
+   .projects, .p-head, .p-photo, .p-cap). Two identical copies in two route
+   stylesheets is a live hazard here — App Router keeps a visited route's CSS
+   in the document, so after a homepage visit whichever loaded last would win,
+   and About's brand-red pass could be silently overridden. Same class of bug
+   as .cap from this file breaking article figcaptions.
+
+   If the portfolio ever returns to the homepage, paste this back AND delete
+   about.css's copy — never run both.
+
+   .projects {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 48px;
+   }
+   .project { display: flex; flex-direction: column; }
+   .project .p-head {
+     display: grid;
+     grid-template-columns: 48px 1fr auto;
+     gap: 16px;
+     align-items: baseline;
+     padding-bottom: 20px;
+     margin-bottom: 0;
+   }
+   .project .p-head .n { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; }
+   .project .p-head .cat {
+     font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+     text-transform: uppercase; color: var(--accent); white-space: nowrap;
+   }
+   .project .p-head h3 {
+     font-family: var(--serif); font-weight: 400;
+     font-size: clamp(28px, 2.6vw, 40px);
+     line-height: 1; letter-spacing: -0.02em; margin: 0;
+   }
+   .project .f-wrap { margin-top: 20px; }
+   .p-photo { margin: 20px 0 0; border: 1px solid var(--ink); overflow: hidden; background: var(--bg-alt); }
+   .p-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; }
+   .p-cap { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-top: 1px dotted var(--rule); background: var(--bg); }
+   .project dl {
+     margin: 24px 0 0;
+     padding-top: 20px;
+     border-top: var(--tick);
+     display: grid;
+     grid-template-columns: repeat(4, 1fr);
+     gap: 16px;
+   }
+   .project dl > div { display: flex; flex-direction: column; gap: 4px; }
+   .project dt {
+     font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+     text-transform: uppercase; color: var(--muted);
+   }
+   .project dd {
+     margin: 0;
+     font-family: var(--serif);
+     font-weight: 500;
+     font-size: 17px;
+     letter-spacing: -0.005em;
+   }
+   .project p {
+     margin-top: 18px;
+     font-size: 15px;
+     color: var(--muted);
+     line-height: 1.6;
+     max-width: 48ch;
+   }
+   @media (max-width: 1024px) {
+     .projects { grid-template-columns: 1fr; gap: 64px; }
+   }
+   @media (max-width: 400px) {
+     .project dl { grid-template-columns: repeat(2, 1fr); }
+     .project .p-head { grid-template-columns: 36px 1fr; }
+     .project .p-head .cat { grid-column: 2; }
+   }
+   ------------------------------------------------------------------------- */
 
 /* ---- Who we serve ---- */
 .serve {

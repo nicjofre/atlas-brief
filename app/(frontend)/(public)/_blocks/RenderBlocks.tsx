@@ -17,6 +17,22 @@ export default function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
   )
 }
 
+// The house lockup is "Atlas <em>Brief</em>" — the nav, the footer, the masthead
+// and the Tape flag all render it that way. CMS titles are plain text, so the
+// mark gets applied here rather than asking an editor to type HTML.
+function withBriefMark(title?: string | null) {
+  if (!title) return null
+  const i = title.indexOf('Brief')
+  if (i === -1) return title
+  return (
+    <>
+      {title.slice(0, i)}
+      <em>{title.slice(i, i + 'Brief'.length)}</em>
+      {title.slice(i + 'Brief'.length)}
+    </>
+  )
+}
+
 function BlockItem({ block }: { block: Block }) {
   switch (block.blockType) {
     case 'hero':
@@ -34,8 +50,15 @@ function BlockItem({ block }: { block: Block }) {
       return (
         <header className="ab-top">
           <div className="wrap">
-            {block.eyebrow && <div className="eyebrow">{block.eyebrow}</div>}
-            <h1>{block.title}</h1>
+            {/* Label left, standfirst pushed to the right edge — the same row
+                shape as an article's kicker (badge left, date right). */}
+            {(block.eyebrow || block.subtitle) && (
+              <div className="ab-kicker">
+                {block.eyebrow && <div className="eyebrow">{block.eyebrow}</div>}
+                {block.subtitle && <p className="ab-standfirst">{block.subtitle}</p>}
+              </div>
+            )}
+            <h1>{withBriefMark(block.title)}</h1>
           </div>
         </header>
       )
