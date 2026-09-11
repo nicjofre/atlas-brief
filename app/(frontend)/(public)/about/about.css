@@ -96,7 +96,29 @@
   line-height: 1.6;
   color: var(--ink);
 }
+/* The three sides of the practice. They were inheriting body size and the
+   browser's default margins, so each section ran straight into the next. Navy
+   serif over a red rule — the same red that closes the portfolio band and the
+   section-head block. */
+.ab-body .prose h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+  margin: 2.2em 0 0.55em;
+  padding-top: clamp(14px, 1.6vw, 20px);
+  border-top: 2px solid var(--brand-red);
+}
+.ab-body .prose h2:first-child { margin-top: 0; }
 .ab-body .prose p { margin: 0 0 1.15em; }
+/* The opening line stands above the three sections as a lead. */
+.ab-body .prose > .payload-richtext > p:first-child {
+  font-size: clamp(20px, 1.7vw, 25px);
+  line-height: 1.45;
+  color: var(--ink);
+}
 .ab-body .prose p:last-child { margin-bottom: 0; }
 
 /* ---- Portfolio block (from old homepage) ----
@@ -237,9 +259,29 @@
 .ab-tail {
   padding: clamp(40px, 6vw, 72px) 0;
 }
-.ab-tail .prose {
-  /* Centred to match .ab-body — the sign-off column reads as the same object. */
+/* The roundel sits inside the column, in the white the short sign-off lines
+   leave beside them — level with "— David Safai" — rather than out past the
+   measure. Positioned rather than gridded: the space it fills only exists
+   because those last lines are short. Replaces the <hr> the sign-off used to
+   open with. */
+.ab-tail .ab-tail-in {
+  position: relative;
+  max-width: 60ch;
   margin: 0 auto;
+}
+.ab-tail .ab-tail-in .atlas-mark {
+  display: block;
+  position: absolute;
+  right: 16%;
+  /* Lowered so the roundel's centre line runs level with "— David Safai". */
+  bottom: clamp(2px, 0.8vw, 14px);
+}
+/* Narrow screens: the copy fills the measure, so there's no white to sit in. */
+@media (max-width: 760px) {
+  .ab-tail .ab-tail-in .atlas-mark { position: static; margin: 28px 0 0; }
+}
+.ab-tail .prose {
+  margin: 0;
   max-width: 60ch;
   font-family: var(--serif);
   font-size: clamp(18px, 1.4vw, 21px);

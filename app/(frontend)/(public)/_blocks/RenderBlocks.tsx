@@ -1,6 +1,7 @@
 import React from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Page, Media } from '@/payload-types'
+import AtlasMark from '../AtlasMark'
 
 type Block = NonNullable<Page['layout']>[number]
 
@@ -65,11 +66,26 @@ function BlockItem({ block }: { block: Block }) {
 
     case 'prose': {
       const isTail = block.variant === 'tail'
+      // The tail is the sign-off: the roundel stands to the left of the copy in
+      // place of the rule that used to sit above it.
+      if (isTail) {
+        return (
+          <section className="ab-tail">
+            <div className="wrap">
+              <div className="ab-tail-in">
+                <div className="prose">
+                  {block.content && <RichText data={block.content} />}
+                </div>
+                <AtlasMark size={96} />
+              </div>
+            </div>
+          </section>
+        )
+      }
       return (
-        <section className={isTail ? 'ab-tail' : 'ab-body'}>
+        <section className="ab-body">
           <div className="wrap">
             <div className="prose">
-              {isTail && <hr />}
               {block.content && <RichText data={block.content} />}
             </div>
           </div>
