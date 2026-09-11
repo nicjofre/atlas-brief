@@ -23,9 +23,21 @@ export async function proxy(request: NextRequest) {
   // multiple hosts serve the app, which splits referrers (the Google Maps
   // JavaScript API rejects any host not in the key's allowlist — e.g. the
   // vercel.app URL — with RefererNotAllowedMapError), cookies, and analytics.
+  //
+  // Production only. Preview deployments are served from *.vercel.app by
+  // definition, so canonicalizing there sent every preview straight to the live
+  // site — branch previews couldn't be reviewed at all, and the redirect made it
+  // look as though the deployment had built the wrong code. Maps may throw
+  // RefererNotAllowedMapError on a preview; that's the trade, and the fix is to
+  // allowlist the preview host in the Maps key if a reviewer needs the map.
   const CANONICAL_HOST = 'atlasbrief.la'
   const host = request.headers.get('host') ?? ''
-  if (host !== CANONICAL_HOST && (host.startsWith('www.') || host.endsWith('.vercel.app'))) {
+  const isProductionDeploy = process.env.VERCEL_ENV === 'production'
+  if (
+    isProductionDeploy &&
+    host !== CANONICAL_HOST &&
+    (host.startsWith('www.') || host.endsWith('.vercel.app'))
+  ) {
     const dest = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `https://${CANONICAL_HOST}`)
     return NextResponse.redirect(dest, 308)
   }
