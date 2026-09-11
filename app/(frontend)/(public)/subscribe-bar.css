@@ -1,0 +1,35 @@
+/* The reader-capture bar that rides the top of article and marketing pages.
+   Its layout still lives inline in ArticleSubscribeBar.tsx; what's here is
+   everything with a colour or a state, so the bar reads from the brand tokens
+   and can have hover and focus at all. It was hardcoded calcite hexes
+   (#2C3034 ink, #FBFAF9 paper, #FD7B41 accent, #EDBF9B sand) — the last of the
+   old palette on the site. */
+.asb {
+  background: var(--brand-navy);
+  color: #FFFFFF;
+  /* Red rule, the same one that closes the nav and the masthead. */
+  border-bottom: 2px solid var(--brand-red);
+  box-shadow: 0 1px 12px rgba(0,0,0,0.18);
+}
+.asb-input {
+  background: #FFFFFF;
+  color: var(--ink);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 3px;
+  transition: border-color .15s;
+}
+.asb-input:focus { outline: none; border-color: var(--brand-blue) }
+/* Blue at rest, red on hover — the site's button rule. */
+.asb-submit {
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  border: 1px solid var(--brand-blue);
+  border-radius: 3px;
+  transition: background .15s, border-color .15s;
+}
+.asb-submit:hover:not(:disabled) { background: var(--brand-red); border-color: var(--brand-red) }
+.asb-submit:disabled { opacity: 0.65; cursor: default }
+/* Brand red is only ~3:1 on navy; this lightened red clears 7:1 at 12px. */
+.asb-err { color: #FFB4B2 }
+.asb-dismiss { color: rgba(255,255,255,0.6); transition: color .15s }
+.asb-dismiss:hover { color: #FFFFFF }
