@@ -7,7 +7,10 @@
 .crumb a:hover{color:var(--ink);border-color:var(--brand-blue)}
 .crumb .sep{color:var(--muted-2)}
 .crumb-mark{color:var(--brand-red);font-style:italic}
-.art-top .cat{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-red);margin-bottom:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* 16px, not 28 — with the section/entry line gone the badge sits alone, and an
+   even gap above and below left it floating between the crumb and the
+   headline. The tighter gap attaches it to the headline it labels. */
+.art-top .cat{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-red);margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 /* Publication date rides the kicker row, pushed to the right edge. */
 .art-top .cat .cat-date{margin-left:auto;color:var(--muted);letter-spacing:.14em}
 .art-top .cat .badge-forsale{background:#0B5D1E;color:#FFFFFF;padding:4px 10px;font-size:10px;letter-spacing:.2em;font-weight:700}
@@ -24,6 +27,14 @@
    because briefs can render this row from byline_html in the database — a class
    on the JSX would miss that path entirely. */
 .byl-html{display:contents}
+/* ---------------------------------------------------------------------------
+   BACKUP — David's byline block as it stood before the navy trial (2026-09-10,
+   commit b032321). Paste these two lines back over the ones below to restore the
+   bright-blue cell exactly. Delete this block only after Lucas confirms.
+
+   .byl>div:first-child{background:var(--brand-blue);color:rgba(255,255,255,0.82);padding:12px 16px;border-radius:3px}
+   .byl>div:first-child b{color:#FFFFFF}
+   --------------------------------------------------------------------------- */
 .byl>div:first-child{background:var(--brand-blue);color:rgba(255,255,255,0.82);padding:12px 16px;border-radius:3px}
 .byl>div:first-child b{color:#FFFFFF}
 @media (max-width:720px){
@@ -136,34 +147,62 @@ article.prose table tr.total td{border-top:1px solid var(--ink);border-bottom:0;
 }
 
 .author{padding:clamp(48px,6vw,80px) 0;background:var(--bg-alt);border-bottom:1px solid var(--ink)}
-.author-in{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:start}
+/* ---------------------------------------------------------------------------
+   BACKUP — the author row before the two-column split (2026-09-10). Paste back
+   to restore. Delete only after Lucas confirms.
+
+   .author-in{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:start}
+   --------------------------------------------------------------------------- */
+/* Heading left, bio right. The "auto" track existed for the button column; with
+   the bio in it, both tracks are real columns. */
+.author-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,4vw,64px);align-items:start}
 .author-in .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-red);margin-bottom:12px}
-.author-in h3{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3vw,38px);line-height:1.05;letter-spacing:-.02em;margin:0 0 16px}
+.author-in h3{font-family:var(--serif);font-weight:500;font-size:clamp(32px,4.2vw,52px);line-height:1.02;letter-spacing:-.025em;margin:0 0 8px}
+/* The roles sit under the name rather than trailing it on one line — same
+   italic serif the broker cards use for a firm. */
+.author-role{font-family:var(--serif);font-style:italic;font-size:clamp(21px,2.1vw,28px);line-height:1.25;color:var(--ink-soft)}
 .author-in p{font-family:var(--serif);font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:54ch;margin:0}
-.author-in .btns{display:flex;flex-direction:column;gap:10px;white-space:nowrap}
-.author-in .btns a{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;border:1px solid var(--ink)}
-.author-in .btns a:first-child{background:var(--ink);color:var(--bg)}
-@media(max-width:1024px){.author-in{grid-template-columns:1fr;gap:24px} .author-in .btns{flex-direction:row}}
+/* Back to Board now sits under David's block rather than beside it, centred on
+   its own line. The old .btns column went with it — it held the removed
+   "Send a Listing" and its filled treatment. Deliberately plain for now;
+   Lucas wants a proper pass on it once David's block is settled. */
+/* Sits in the white run between the author band and the footer — outside every
+   section, centred on its own. The footer carries a sitewide margin-top:120px;
+   halving it here keeps that whole run about as tall as it was, with the button
+   centred in it instead of the space sitting empty. Deliberately plain for now;
+   Lucas wants a proper pass once David's block is settled. */
+.post-back{display:flex;justify-content:center;padding-top:clamp(40px,5vw,56px)}
+.post-back + .footer{margin-top:clamp(40px,5vw,56px)}
+.post-back a{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;border:1px solid var(--ink);white-space:nowrap}
+@media(max-width:1024px){.author-in{grid-template-columns:1fr;gap:24px}}
 
 
 
 /* Live broker card (Option A) — headshot · details · firm logo. Reads from the
    listing's broker record; replaces the old baked-in .brokers block. */
 .broker-cards-wrap{padding:clamp(40px,5vw,72px) 0;border-bottom:1px solid var(--ink)}
-.bc-head{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-red);margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--ink)}
+/* Same filled red block as the Deal Stats label, so the two sections announce
+   themselves the same way. */
+.bc-head{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#FFFFFF;background:var(--brand-red);padding:12px 16px;border-radius:3px;margin-bottom:24px}
 .bc-grid{display:grid;grid-template-columns:1fr;gap:28px;align-items:start}
 @media(min-width:760px){.bc-grid.cols-2{grid-template-columns:1fr 1fr}}
 .bc-group{display:flex;flex-direction:column;gap:14px}
-.bc-card{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:24px 26px;background:var(--bg-alt);border:1px solid var(--rule)}
-.bc-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg);border:1px solid var(--rule);flex-shrink:0}
+/* Brand navy — the same dark panel as the Four Takeaways band, so the article's
+   two filled blocks are the same colour rather than two different blues. White
+   text clears 15:1 here, which the bright blue never did at 11px. */
+.bc-card{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:24px 26px;background:var(--brand-navy);border-radius:3px;color:#FFFFFF}
+.bc-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg);border:1px solid rgba(255,255,255,.45);flex-shrink:0}
 .bc-photo-empty{display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;font-weight:500;color:var(--brand-red);letter-spacing:.02em}
 .bc-side{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-red);padding-bottom:6px;border-bottom:1px solid var(--rule)}
-.bc-name{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.015em;color:var(--ink);margin-bottom:1px}
-.bc-title{font-family:var(--serif);font-size:14px;color:var(--ink-soft);margin-bottom:1px}
-.bc-firm{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft);margin-bottom:12px}
-.bc-meta{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);line-height:1.75}
-.bc-meta a{color:var(--ink)}
-.bc-logo{height:42px;max-width:124px;width:auto;object-fit:contain;justify-self:end}
+.bc-name{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.015em;color:#FFFFFF;margin-bottom:1px}
+.bc-title{font-family:var(--serif);font-size:14px;color:#FFFFFF;margin-bottom:1px}
+.bc-firm{font-family:var(--serif);font-style:italic;font-size:15px;color:#FFFFFF;margin-bottom:12px}
+.bc-meta{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#FFFFFF;line-height:1.75}
+.bc-meta a{color:#FFFFFF;border-bottom:1px solid rgba(255,255,255,.5)}
+.bc-meta a:hover{border-color:#FFFFFF}
+/* Firm logos are dark artwork on transparent grounds; on blue they'd vanish.
+   A white pad keeps any logo readable without touching the asset. */
+.bc-logo{height:42px;max-width:124px;width:auto;object-fit:contain;justify-self:end;background:#FFFFFF;padding:8px 10px;border-radius:3px;box-sizing:content-box}
 @media(max-width:560px){.bc-card{grid-template-columns:auto 1fr;gap:16px;padding:20px}.bc-logo{grid-column:1 / -1;justify-self:start;margin-top:6px}}
 
 /* ===== Freeform post body (block layout) ===== */

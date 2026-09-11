@@ -103,10 +103,6 @@ export default async function PostPage(
 
   const sectionLabel =
     article.section_slug === 'broker-activity' ? 'Broker Activity' : article.section_slug
-  // Per-article override for the eyebrow line; falls back to the section name
-  // when an article doesn't override.
-  const catLabel = article.cat_label ?? sectionLabel
-
   const dateline = [property?.city, property?.state].filter(Boolean).join(', ')
 
   // Resolve hero photo — handles local paths, full URLs, and Supabase storage
@@ -154,11 +150,10 @@ export default async function PostPage(
             <span className="sep">/</span>
             <span>Entry № {String(article.entry_num).padStart(2, '0')}</span>
           </nav>
+          {/* Section and entry number are already the last two crumbs directly
+              above, so the kicker carries only the status badge and the date. */}
           <div className="cat">
             <span className={`badge-${badgeClass(listing?.status)}`}>{badgeLabel(listing?.status)}</span>
-            <span>
-              {catLabel} · Entry № {String(article.entry_num).padStart(2, '0')}
-            </span>
             <span className="cat-date">{formatDate(article.published_at)}</span>
           </div>
           <h1>
@@ -272,26 +267,34 @@ export default async function PostPage(
           <div className="author-in">
             <div>
               <div className="k">Written from the field</div>
-              <h3>David Safai, operator, developer, GC.</h3>
-              <p>
-                Atlas Home Builders, Inc. is a Los Angeles owner-operator and general contractor. If you are
-                a broker with a listing you want an honest read on, send the OM and the T-12 to{' '}
-                <a
-                  href="mailto:David@AtlasBrief.La"
-                  style={{ borderBottom: '1px solid var(--accent)', color: 'var(--ink)' }}
-                >
-                  David@AtlasBrief.La
-                </a>
-                .
-              </p>
+              <h3>David Safai</h3>
+              <div className="author-role">operator, developer, GC.</div>
             </div>
-            <div className="btns">
-              <a href="mailto:David@AtlasBrief.La">Send a Listing</a>
-              <Link href={`/atlas-brief/sections/${article.section_slug}`}>Back to Board</Link>
-            </div>
+            {/* The bio moved into the right-hand column the buttons used to
+                occupy: kicker and name read as the heading, the paragraph as
+                the body beside it. */}
+            <p>
+              Atlas Home Builders, Inc. is a Los Angeles owner-operator and general contractor. If you are
+              a broker with a listing you want an honest read on, send the OM and the T-12 to{' '}
+              <a
+                href="mailto:David@AtlasBrief.La"
+                style={{ borderBottom: '1px solid var(--accent)', color: 'var(--ink)' }}
+              >
+                David@AtlasBrief.La
+              </a>
+              .
+            </p>
           </div>
         </div>
       </section>
+
+      {/* "Send a Listing" removed 2026-09-10 — same call as retiring the Submit
+          a Deal CTA. "Back to Board" lives out here rather than inside David's
+          block: it's navigation away from the article, and it fills the empty
+          white run between the author band and the footer. */}
+      <div className="post-back">
+        <Link href={`/atlas-brief/sections/${article.section_slug}`}>Back to Board</Link>
+      </div>
 
       <Footer />
     </>
