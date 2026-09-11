@@ -18,20 +18,21 @@ export default function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
   )
 }
 
-// The house lockup is "Atlas <em>Brief</em>" — the nav, the footer, the masthead
-// and the Tape flag all render it that way. CMS titles are plain text, so the
-// mark gets applied here rather than asking an editor to type HTML.
+// The house lockup sets "Atlas" in navy and what follows it in red — the nav,
+// the footer, the masthead and the Tape flag all render "Atlas Brief" that way.
+// CMS titles are plain text, so the mark gets applied here rather than asking an
+// editor to type HTML. Any "Atlas <something>" title gets the same treatment.
 function withBriefMark(title?: string | null) {
   if (!title) return null
-  const i = title.indexOf('Brief')
-  if (i === -1) return title
-  return (
-    <>
-      {title.slice(0, i)}
-      <em>{title.slice(i, i + 'Brief'.length)}</em>
-      {title.slice(i + 'Brief'.length)}
-    </>
-  )
+  if (title.startsWith('Atlas ')) {
+    return (
+      <>
+        {'Atlas '}
+        <em>{title.slice('Atlas '.length)}</em>
+      </>
+    )
+  }
+  return title
 }
 
 function BlockItem({ block }: { block: Block }) {
@@ -41,9 +42,15 @@ function BlockItem({ block }: { block: Block }) {
         return (
           <header className="c-hero">
             <div className="wrap">
-              {block.eyebrow && <div className="k">{block.eyebrow}</div>}
-              <h1>{block.title}</h1>
-              {block.subtitle && <p>{block.subtitle}</p>}
+              {/* Same opening row as the About header: label left, standfirst
+                  pushed right, title centred beneath them. */}
+              {(block.eyebrow || block.subtitle) && (
+                <div className="c-kicker">
+                  {block.eyebrow && <div className="k">{block.eyebrow}</div>}
+                  {block.subtitle && <p className="c-standfirst">{block.subtitle}</p>}
+                </div>
+              )}
+              <h1>{withBriefMark(block.title)}</h1>
             </div>
           </header>
         )

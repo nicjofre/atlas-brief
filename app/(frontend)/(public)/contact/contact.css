@@ -1,35 +1,62 @@
-.c-hero{padding:clamp(64px,9vw,140px) 0 clamp(40px,5vw,72px);border-bottom:1px solid var(--ink)}
-.c-hero .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:24px}
-.c-hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(48px,8vw,128px);line-height:.92;letter-spacing:-.035em;margin:0 0 32px;max-width:14ch}
-.c-hero h1 em{font-style:italic;color:var(--ink-soft)}
-.c-hero p{font-family:var(--serif);font-size:clamp(18px,1.8vw,24px);line-height:1.5;color:var(--ink-soft);max-width:50ch;font-weight:300;margin:0}
+/* ---------------------------------------------------------------------------
+   BACKUP — every colour declaration this page carried before the brand pass
+   (2026-09-11, from commit 959830b). Paste any back over the live rule to
+   restore. Delete this block only after Lucas confirms.
+
+   .c-hero .k        -> color: var(--accent);  (plain mono line, not a block)
+   .c-form .k        -> color: var(--accent);  (plain mono line, not a block)
+   .c-side .k        -> color: var(--accent);  (plain mono line, not a block)
+   .fld label b      -> color: var(--accent);
+   .fld :focus       -> border-color: var(--accent);
+   .c-side dd a      -> border-bottom: 1px solid var(--accent);
+   .c-form button    -> background: var(--ink); color: var(--bg);
+                        border: 1px solid var(--ink);
+                        :hover -> background: transparent; color: var(--ink);
+   .c-hero h1 / p    -> no text-align (left)
+   --------------------------------------------------------------------------- */
+
+/* Tighter than the original clamp(64px,9vw,140px): with the redundant label
+   block gone the header is a title and one line, and didn't need that much air. */
+.c-hero{padding:clamp(36px,4.5vw,64px) 0 clamp(32px,4vw,56px);border-bottom:1px solid var(--ink)}
+/* Same opening row as .ab-top on About: filled red block left, standfirst
+   pushed to the right edge, title centred under them. */
+.c-hero .c-kicker{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)}
+.c-hero .k{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#FFFFFF;background:var(--brand-red);padding:12px 16px;border-radius:3px;margin-bottom:0}
+.c-hero .c-standfirst{margin:0 0 0 auto;max-width:34ch;text-align:right;font-family:var(--mono);font-size:11px;letter-spacing:.14em;line-height:1.6;text-transform:uppercase;color:var(--muted)}
+@media(max-width:700px){.c-hero .c-standfirst{margin-left:0;text-align:left}}
+.c-hero h1{text-align:center;color:var(--brand-navy);font-family:var(--serif);font-weight:500;font-size:clamp(48px,8vw,128px);line-height:.92;letter-spacing:-.035em;margin:0 auto 32px;max-width:14ch}
+/* "Atlas" navy, what follows it red — the house lockup. */
+.c-hero h1 em{font-style:italic;color:var(--brand-red)}
+.c-hero p{text-align:center;font-family:var(--serif);font-size:clamp(18px,1.8vw,24px);line-height:1.5;color:var(--ink-soft);max-width:50ch;font-weight:300;margin:0 auto}
 
 .c-main{display:grid;grid-template-columns:1.3fr 1fr;gap:0;border-bottom:1px solid var(--ink)}
 .c-form{padding:clamp(56px,7vw,96px) 48px clamp(56px,7vw,96px) var(--pad-x);border-right:1px solid var(--ink)}
-.c-form .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.c-form .k{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFFFF;background:var(--brand-red);padding:12px 16px;border-radius:3px;margin-bottom:24px}
 .c-form h2{font-family:var(--serif);font-weight:500;font-size:clamp(32px,4vw,52px);line-height:1;letter-spacing:-.025em;margin:0 0 32px;font-style:italic}
 form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
 .fld{display:flex;flex-direction:column;gap:8px}
 .fld.full{grid-column:1 / -1}
 .fld label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.fld label b{color:var(--accent);font-weight:500;margin-left:4px}
+.fld label b{color:var(--brand-red);font-weight:500;margin-left:4px}
 .fld input,.fld select,.fld textarea{background:transparent;border:0;border-bottom:1px solid var(--rule);padding:10px 0;font-family:var(--serif);font-size:20px;letter-spacing:-.005em;color:var(--ink);outline:none;transition:border-color .15s}
-.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--brand-blue)}
 .fld textarea{resize:vertical;min-height:120px;line-height:1.5;font-size:18px}
 .fld .hint{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted-2)}
-.c-form button{margin-top:24px;padding:16px 22px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;transition:background .15s,color .15s;grid-column:1 / -1;justify-self:start}
-.c-form button:hover{background:transparent;color:var(--ink)}
+.c-form button{margin-top:24px;padding:16px 22px;background:var(--brand-blue);color:#FFFFFF;border:1px solid var(--brand-blue);border-radius:3px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;transition:background .15s,border-color .15s;grid-column:1 / -1;justify-self:start}
+.c-form button:hover{background:var(--brand-red);border-color:var(--brand-red)}
 .c-form .consent{grid-column:1 / -1;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);line-height:1.6}
 
 .c-side{padding:clamp(56px,7vw,96px) var(--pad-x) clamp(56px,7vw,96px) 48px;background:var(--bg-alt)}
-.c-side .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+/* Plain red mono, not a block — three filled blocks on one page was one too many. */
+.c-side .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-red);margin-bottom:20px}
 .c-side h3{font-family:var(--serif);font-weight:500;font-size:clamp(26px,2.8vw,36px);line-height:1.1;letter-spacing:-.015em;margin:0 0 28px;font-style:italic}
 .c-side dl{margin:0;display:flex;flex-direction:column;gap:24px;padding-top:24px;border-top:1px solid var(--ink)}
 .c-side dl > div{display:grid;grid-template-columns:120px 1fr;gap:24px;padding-bottom:22px;border-bottom:1px dotted var(--rule);align-items:baseline}
 .c-side dl > div:last-child{border-bottom:0}
 .c-side dt{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .c-side dd{margin:0;font-family:var(--serif);font-size:19px;line-height:1.4;letter-spacing:-.005em}
-.c-side dd a{color:var(--ink);border-bottom:1px solid var(--accent);padding-bottom:1px}
+.c-side dd a{color:var(--ink);border-bottom:1px solid var(--brand-blue);padding-bottom:1px}
+.c-side dd a:hover{border-color:var(--brand-red)}
 
 @media(max-width:1024px){.c-main{grid-template-columns:1fr} .c-form{border-right:0;border-bottom:1px solid var(--ink);padding:56px var(--pad-x)} .c-side{padding:56px var(--pad-x)} form.c-fields{grid-template-columns:1fr}}
 
