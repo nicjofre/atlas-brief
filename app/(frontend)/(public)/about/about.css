@@ -10,6 +10,18 @@
                                     and no color (inherited --ink)
    .ab-body .prose               -> max-width: 60ch with no margin (column pinned
    .ab-tail .prose                  to the left edge of .wrap); both sections
+   .ab-portfolio .section-head h2 -> left-aligned, max-width: 20ch, no margin
+   .ab-portfolio .section-head   -> inherited atlas-v2's 3-column grid
+   .ab-portfolio                 -> white band: padding clamp(48px,6vw,88px) 0;
+                                    border-bottom: 1px solid var(--ink); no
+                                    background, no red rules, no .wrap inset
+   .ab-portfolio h2              -> no colour (inherited --ink)
+   .p-photo                      -> border: 1px solid var(--ink)
+   .p-cap                        -> background: var(--bg)
+   .projects                     -> gap: 48px (flat)
+   .project                      -> display:flex; flex-direction:column; and
+                                    nothing else — no padding, background or
+                                    borders; .projects gap was 48px
    .section-head .num            -> color: var(--muted);
    .project .p-head .n           -> color: var(--muted);
    .project .p-head .cat         -> color: var(--accent);   <- old electric blue
@@ -87,12 +99,34 @@
 .ab-body .prose p { margin: 0 0 1.15em; }
 .ab-body .prose p:last-child { margin-bottom: 0; }
 
-/* ---- Portfolio block (from old homepage) ---- */
+/* ---- Portfolio block (from old homepage) ----
+   Built as the Four Takeaways band is on article pages: a navy surround closed
+   by 3px red rules, with the content sitting on it as light cards. */
 .ab-portfolio {
-  padding: clamp(48px, 6vw, 88px) 0;
-  border-bottom: 1px solid var(--ink);
+  padding: clamp(40px, 5.5vw, 80px) 0;
+  border-top: 3px solid var(--brand-red);
+  border-bottom: 3px solid var(--brand-red);
+  background: var(--brand-navy);
 }
+/* Extra inset over --pad-x so the navy reads as a surround on all four sides
+   rather than two thin strips above and below the cards. */
+.ab-portfolio .wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 calc(var(--pad-x) + clamp(0px, 3vw, 56px));
+}
+/* atlas-v2's .section-head is a 3-column grid (140px | 1fr | auto) built for a
+   numeral, a heading and a "see all" link. This one has only the heading, so it
+   was landing in the 140px track and wrapping to five lines. Block layout, and
+   the heading centres itself. */
 .ab-portfolio .section-head {
+  display: block;
+  text-align: center;
+  background: var(--bg);
+  padding: clamp(24px, 3vw, 40px) clamp(20px, 3vw, 40px);
+  border-radius: 3px;
+  /* The red rule closes the white block; the heading itself carries none. */
+  border-bottom: 3px solid var(--brand-red);
   margin-bottom: clamp(32px, 4vw, 56px);
 }
 .ab-portfolio .section-head .num {
@@ -103,21 +137,43 @@
   color: var(--brand-red);
   margin-bottom: 16px;
 }
+/* Centred to match the header and both prose columns. The 20ch cap stays — it's
+   what keeps the line breaking where it should — so the margin does the centring. */
 .ab-portfolio .section-head h2 {
   font-family: var(--serif);
   font-weight: 500;
   font-size: clamp(32px, 4.5vw, 64px);
   line-height: 1;
   letter-spacing: -0.025em;
+  /* inline-block so the red rule hugs the words rather than running the full
+     width of the white block. */
+  display: inline-block;
   margin: 0;
-  max-width: 20ch;
+  /* No measure cap — it reads as one line, which is how Lucas wants it. Balance
+     only kicks in once a narrow viewport forces a wrap. */
+  text-wrap: balance;
+  text-align: center;
+  color: var(--brand-navy);
 }
 .projects {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  /* More air than the old 48px: these are cards on a navy ground now, not two
+     columns of text, and they need the band to read between them. */
+  gap: clamp(32px, 3.4vw, 64px);
 }
-.project { display: flex; flex-direction: column; }
+/* The same card object as .kt-card: light ground, red left edge, and translucent
+   white hairlines — a light-grey rule sized for a white page goes muddy here. */
+.project {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 2.6vw, 34px);
+  background: var(--bg-alt);
+  border-left: 3px solid var(--brand-red);
+  border-top: 1px solid rgba(255,255,255,0.22);
+  border-right: 1px solid rgba(255,255,255,0.22);
+  border-bottom: 1px solid rgba(255,255,255,0.22);
+}
 .project .p-head {
   display: grid;
   grid-template-columns: 48px 1fr auto;
@@ -136,9 +192,12 @@
   font-size: clamp(28px, 2.6vw, 40px);
   line-height: 1; letter-spacing: -0.02em; margin: 0;
 }
-.p-photo { margin: 20px 0 0; border: 1px solid var(--ink); overflow: hidden; background: var(--bg-alt); }
+/* The navy frame was sized for a white page; inside a light card on a navy band
+   it read as a second, competing edge against the card's own red one. Hairline
+   instead, and the caption sits on the card rather than on its own white strip. */
+.p-photo { margin: 20px 0 0; border: 1px solid var(--rule); overflow: hidden; background: var(--bg-alt); }
 .p-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; }
-.p-cap { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-top: 1px dotted var(--rule); background: var(--bg); }
+.p-cap { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-top: 1px dotted var(--rule); background: transparent; }
 .project dl {
   margin: 24px 0 0;
   padding-top: 20px;
