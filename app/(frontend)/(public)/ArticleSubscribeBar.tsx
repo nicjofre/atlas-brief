@@ -9,7 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // A thin subscribe bar that reveals once the reader has scrolled into the
 // article, then stays pinned. Hidden at the very top so it doesn't fight the
 // masthead. Suppressed for anyone who's already subscribed or dismissed it.
-export default function ArticleSubscribeBar() {
+export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
   const [mounted, setMounted] = useState(false)
   const [suppressed, setSuppressed] = useState(true)
   const [scrolledIn, setScrolledIn] = useState(false)
@@ -53,7 +53,7 @@ export default function ArticleSubscribeBar() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), source: 'article_bar' }),
+        body: JSON.stringify({ email: email.trim(), source: 'article_bar', source_slug: slug }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Something went wrong.')

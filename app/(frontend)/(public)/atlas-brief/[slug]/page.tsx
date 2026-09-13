@@ -16,6 +16,7 @@ import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import ArticleSignupBox from '../../ArticleSignupBox'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -184,8 +185,8 @@ export default async function PostPage(
           { name: catLabel, path: `/atlas-brief/sections/${article.section_slug}` },
         ])}
       />
-      {showBar && <ArticleSubscribeBar />}
-      <ArticleSubscribeModal enabled={showBar} />
+      {showBar && <ArticleSubscribeBar slug={slug} />}
+      <ArticleSubscribeModal enabled={showBar} slug={slug} />
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
@@ -237,6 +238,11 @@ export default async function PostPage(
               {dateline && <div><b>Dateline</b>{dateline}</div>}
             </div>
           )}
+          {/* Sits inside the headline block, above the hero photo, so it's on
+              screen without scrolling. Unlike the pop-up it needs no trigger,
+              which is the point: in-app browsers are exactly where a
+              scroll-and-timer modal is least dependable. */}
+          <ArticleSignupBox slug={slug} enabled={showBar} />
         </div>
       </header>
 

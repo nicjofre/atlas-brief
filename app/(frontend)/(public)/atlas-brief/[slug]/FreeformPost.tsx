@@ -5,6 +5,7 @@ import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import ArticleSignupBox from '../../ArticleSignupBox'
 import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
 import './post.css'
 
@@ -59,10 +60,10 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           ])}
         />
       )}
-      {showBar && <ArticleSubscribeBar />}
+      {showBar && <ArticleSubscribeBar slug={post.slug} />}
       {/* Never in the CMS Live Preview iframe — a pop-up firing mid-edit would
           just be in David's way. */}
-      {!preview && <ArticleSubscribeModal enabled={showBar} />}
+      {!preview && <ArticleSubscribeModal enabled={showBar} slug={post.slug} />}
       {/* In the CMS Live Preview iframe, refresh the render on save. Not
           rendered on the public page — only in preview. */}
       {preview && <RefreshRouteOnSave />}
@@ -88,6 +89,8 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
             {dateStr && <div><b>Published</b>{dateStr}</div>}
             {address && locality && <div><b>Dateline</b>{locality}</div>}
           </div>
+          {/* Not in the CMS preview iframe — David is editing, not reading. */}
+          {!preview && <ArticleSignupBox slug={post.slug} enabled={showBar} />}
         </div>
       </header>
 

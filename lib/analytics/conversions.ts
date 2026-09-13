@@ -19,10 +19,13 @@ declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void
     dataLayer?: unknown[]
+    fbq?: (...args: unknown[]) => void
   }
 }
 
 export const GOOGLE_ADS_ID = 'AW-18292132689'
+// Meta pixel, from David's Events Manager.
+export const META_PIXEL_ID = '2079437932288187'
 export const GA4_ID = 'G-K7RPZMTWNB'
 
 // send_to values from the Google Ads conversion actions David created.
@@ -85,4 +88,14 @@ export function trackNewsletterSignup(
     send_to: GA4_ID,
     method: source,
   })
+  trackMetaLead(source)
+}
+
+// Meta's standard event for a newsletter signup. Fires only where the pixel
+// actually loaded (production), so it no-ops on localhost and previews exactly
+// like the Google side. `content_name` carries the capture surface so Events
+// Manager can be broken down the same way GA4 and the database are.
+function trackMetaLead(source: string): void {
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return
+  window.fbq('track', 'Lead', { content_name: source })
 }

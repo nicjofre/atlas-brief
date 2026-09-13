@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import SiteNav from './SiteNav'
 import LinkedInInsight from './LinkedInInsight'
 import GoogleTag from './GoogleTag'
+import MetaPixel from './MetaPixel'
 import TrackPageView from './TrackPageView'
 import { JsonLd, siteGraph } from '@/lib/seo/json-ld'
 import './atlas-v2.css'
@@ -69,6 +70,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <TrackPageView />
       <LinkedInInsight />
       <GoogleTag />
+      <MetaPixel />
     </>
   )
 }
