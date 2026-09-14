@@ -11,8 +11,6 @@
    even gap above and below left it floating between the crumb and the
    headline. The tighter gap attaches it to the headline it labels. */
 .art-top .cat{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-red);margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-/* Publication date rides the kicker row, pushed to the right edge. */
-.art-top .cat .cat-date{margin-left:auto;color:var(--muted);letter-spacing:.14em}
 .art-top .cat .badge-forsale{background:#0B5D1E;color:#FFFFFF;padding:4px 10px;font-size:10px;letter-spacing:.2em;font-weight:700}
 .art-top .cat .badge-sold{background:#B3261E;color:#FFFFFF;padding:4px 10px;font-size:10px;letter-spacing:.2em;font-weight:700}
 .art-top h1{font-family:var(--serif);font-weight:500;font-size:clamp(40px,6.6vw,104px);line-height:.98;letter-spacing:-.03em;margin:0 0 32px;max-width:20ch}
@@ -35,6 +33,9 @@
    .byl>div:first-child{background:var(--brand-blue);color:rgba(255,255,255,0.82);padding:12px 16px;border-radius:3px}
    .byl>div:first-child b{color:#FFFFFF}
    --------------------------------------------------------------------------- */
+/* The blue block goes to whatever leads the row. On main's markup that's the
+   Property cell — the building leads the byline, the way it leads the search
+   title — and on a brief with no address it's the first stored cell. */
 .byl>div:first-child{background:var(--brand-blue);color:rgba(255,255,255,0.82);padding:12px 16px;border-radius:3px}
 .byl>div:first-child b{color:#FFFFFF}
 @media (max-width:720px){

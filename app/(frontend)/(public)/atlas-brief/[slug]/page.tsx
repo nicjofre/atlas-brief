@@ -131,6 +131,10 @@ export default async function PostPage(
 
   const sectionLabel =
     article.section_slug === 'broker-activity' ? 'Broker Activity' : article.section_slug
+  // Section name for the structured data. The visible kicker doesn't print it —
+  // the breadcrumb directly above already does — but main's JSON-LD names the
+  // section for search and answer engines.
+  const catLabel = article.cat_label ?? sectionLabel
   const dateline = [property?.city, property?.state].filter(Boolean).join(', ')
 
   // Resolve hero photo — handles local paths, full URLs, and Supabase storage
@@ -208,9 +212,10 @@ export default async function PostPage(
           </nav>
           {/* Section and entry number are already the last two crumbs directly
               above, so the kicker carries only the status badge and the date. */}
+          {/* Badge only. The date lives in the byline's Published cell, which is
+              where main puts it — printing it here as well showed it twice. */}
           <div className="cat">
             <span className={`badge-${badgeClass(listing?.status)}`}>{badgeLabel(listing?.status)}</span>
-            <span className="cat-date">{formatDate(article.published_at)}</span>
           </div>
           <h1>
             <HeadlineText text={article.headline} />

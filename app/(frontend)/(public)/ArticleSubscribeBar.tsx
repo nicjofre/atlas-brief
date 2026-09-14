@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { captureSuppressed, markSubscribed, markCaptureDismissed } from '@/lib/subscribe-flag'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
+import './subscribe-bar.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -75,7 +76,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
 
   return (
     <div
-      className="asb"
+      className="subbar"
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         transform: visible ? 'translateY(0)' : 'translateY(-100%)',
@@ -99,7 +100,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
                 onChange={e => { setEmail(e.target.value); if (status === 'error') setStatus('idle') }}
                 placeholder="you@email.com"
                 aria-label="Email address"
-                className="asb-input"
+                className="subbar-input"
                 style={{
                   padding: '7px 11px', fontSize: 14, minWidth: 200,
                   fontFamily: 'ui-monospace, Menlo, monospace',
@@ -108,7 +109,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="asb-submit"
+                className="subbar-submit"
                 style={{
                   padding: '8px 16px', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
                   cursor: 'pointer', fontFamily: 'ui-monospace, Menlo, monospace',
@@ -118,11 +119,11 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
                 {status === 'loading' ? 'Adding…' : 'Subscribe'}
               </button>
             </form>
-            {err && <span className="asb-err" style={{ fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' }}>{err}</span>}
+            {err && <span className="subbar-err" style={{ fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' }}>{err}</span>}
             <button
               onClick={dismiss}
               aria-label="Dismiss"
-              className="asb-dismiss"
+              className="subbar-dismiss"
               style={{ background: 'none', border: 'none', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: '0 4px', marginLeft: 'auto' }}
             >
               ×
