@@ -1,3 +1,16 @@
+/* ---------------------------------------------------------------------------
+   BACKUP — the hero block before the comp rebuild (2026-09-14, from 913bc03).
+   The page was a text-only preview: no photo, dark type on white, the headline
+   reading "Your building is almost certainly over-assessed." Paste back to
+   restore. Delete only after Lucas confirms.
+
+   .tax-hero    { padding: clamp(44px, 7vw, 96px) 0 clamp(48px, 8vw, 104px); }
+   .tax-eyebrow { color: var(--accent-ink); margin: 0 0 22px; }
+   .tax-h1      { max-width: 16ch; font-size: var(--h-hero); }
+   .tax-h1 em   { font-style: italic; color: var(--accent-ink); }
+   .tax-lede    { color: var(--ink-soft); margin: 26px 0 0; max-width: 56ch; }
+   --------------------------------------------------------------------------- */
+
 /* Tax Appeals service preview — compact. Uses the global atlas-v2 design
    tokens (--bg, --ink, --accent, --serif, etc.) defined in atlas-v2.css. */
 
@@ -127,4 +140,100 @@
   letter-spacing: 0.06em;
   color: var(--muted-2);
   margin: 16px 0 0;
+}
+
+/* ---- Hero, per the identity sheet's Tax Appeals comp ---------------------
+   Skyline photo under a navy wash, red kicker, the service name large in white,
+   a short red rule, then the promise. */
+.tax-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(56px, 9vw, 128px) 0 clamp(44px, 6vw, 84px);
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+}
+/* PLACEHOLDER — the sheet calls for the LA skyline. /hero-la.jpg was never in
+   public/, so this stands in with the same shot the homepage masthead uses. */
+.tax-hero-photo {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(6,24,50,.62) 0%, rgba(6,24,50,.78) 62%, rgba(6,24,50,.94) 100%),
+    url('/images/projects/olympic-towers-1200.jpg') center 42% / cover no-repeat;
+}
+.tax-hero-inner { position: relative; z-index: 1; }
+.tax-hero .tax-eyebrow {
+  color: var(--brand-red);
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+.tax-hero .tax-h1 {
+  color: #FFFFFF;
+  max-width: none;
+  font-size: clamp(48px, 8vw, 116px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+/* The short red rule under the name, as drawn on the sheet. */
+.tax-hero .tax-h1::after {
+  content: "";
+  display: block;
+  width: clamp(72px, 9vw, 132px);
+  height: 4px;
+  background: var(--brand-red);
+  margin: clamp(18px, 2vw, 28px) 0 0;
+}
+.tax-hero .tax-lede {
+  color: rgba(255,255,255,0.88);
+  font-size: clamp(17px, 1.7vw, 24px);
+  margin: clamp(18px, 2vw, 26px) 0 0;
+  max-width: 46ch;
+}
+
+/* ---- Three columns ------------------------------------------------------- */
+.tax-three { padding: clamp(40px, 5.5vw, 76px) 0; border-bottom: 1px solid var(--rule); }
+.tax-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 3.4vw, 56px);
+}
+.tax-col + .tax-col { border-left: 1px solid var(--rule); padding-left: clamp(24px, 3.4vw, 56px); }
+/* Icon over the heading, as drawn on the sheet. */
+.tax-ico { display: block; color: var(--brand-red); margin-bottom: 14px; }
+.tax-ico svg { width: 30px; height: 30px; display: block; }
+.tax-col h2 {
+  margin: 0 0 12px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(20px, 1.9vw, 26px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--brand-navy);
+}
+.tax-col p {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ---- Offer + waitlist ---------------------------------------------------- */
+.tax-offer { padding: clamp(40px, 5.5vw, 76px) 0 clamp(48px, 7vw, 96px); }
+.tax-offer .tax-price { margin-top: 0; }
+/* Primary button in the site's blue-to-red, at the size the comp draws it. */
+.tax-btn-primary {
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  border: 1px solid var(--brand-blue);
+  border-radius: 3px;
+  padding: 14px 26px;
+  transition: background .15s, border-color .15s;
+}
+.tax-btn-primary:hover:not(:disabled) { background: var(--brand-red); border-color: var(--brand-red); }
+
+@media (max-width: 860px) {
+  .tax-cols { grid-template-columns: 1fr; }
+  .tax-col + .tax-col { border-left: 0; padding-left: 0; }
 }
