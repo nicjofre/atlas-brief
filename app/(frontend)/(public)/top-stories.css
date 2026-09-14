@@ -1,0 +1,65 @@
+/* Top Stories — the front-page package. Three columns divided by hairlines,
+   the way a broadsheet front page is ruled: lead | stack | most read. */
+.top-stories { padding: clamp(28px, 3.4vw, 48px) 0 clamp(28px, 3.5vw, 48px); border-bottom: 1px solid var(--ink); }
+.ts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr) minmax(0, 3fr);
+  gap: 0 clamp(24px, 2.6vw, 40px);
+}
+.ts-grid > * + * { border-left: 1px solid var(--rule); padding-left: clamp(24px, 2.6vw, 40px); }
+.top-stories.no-rail .ts-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); }
+
+/* Kicker line shared by every card: place or section on the left, date after. */
+.ts-kicker {
+  display: flex; gap: 10px; align-items: baseline;
+  font-family: var(--sans); font-size: 12px; line-height: 1.2;
+  margin-bottom: 8px;
+}
+.ts-kicker span { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-red); }
+.ts-kicker time { color: var(--muted); }
+
+/* Lead */
+.ts-lead { min-width: 0; }
+.ts-lead-img { display: block; margin-bottom: 16px; overflow: hidden; }
+.ts-lead-img img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; display: block; transition: opacity .15s; }
+.ts-lead-img:hover img { opacity: .92; }
+.ts-lead-hed { margin: 0 0 10px; font-family: var(--serif); font-weight: 600; font-size: clamp(26px, 2.6vw, 38px); line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; }
+.ts-lead-hed a { color: var(--ink); }
+.ts-lead-hed a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.ts-lead-dek { margin: 0; font-family: var(--serif); font-size: 17px; line-height: 1.5; color: var(--ink-soft); max-width: 58ch; }
+
+/* Stack of secondary stories */
+.ts-stack { display: flex; flex-direction: column; min-width: 0; }
+.ts-item { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 16px; align-items: start; padding: 14px 0; border-top: 1px solid var(--rule-soft); }
+.ts-item:first-child { padding-top: 0; border-top: 0; }
+.ts-item-text { min-width: 0; }
+.ts-item-hed { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 18px; line-height: 1.25; letter-spacing: -.01em; }
+.ts-item-hed a { color: var(--ink); }
+.ts-item-hed a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ts-item-img { display: block; }
+.ts-item-img img { width: 96px; height: 72px; object-fit: cover; display: block; }
+
+/* Most read */
+.ts-rail { min-width: 0; }
+.ts-rail-hed { margin: 0 0 6px; font-family: var(--sans); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+.ts-rail ol { list-style: none; margin: 0; padding: 0; counter-reset: mr; }
+.ts-rail li { counter-increment: mr; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; padding: 12px 0; border-top: 1px solid var(--rule-soft); }
+.ts-rail li:first-child { border-top: 0; padding-top: 4px; }
+.ts-rail li::before { content: counter(mr); font-family: var(--serif); font-size: 26px; font-weight: 600; line-height: .9; color: var(--brand-blue); }
+.ts-rail a { font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink); }
+.ts-rail a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 1100px) {
+  .ts-grid, .top-stories.no-rail .ts-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); row-gap: 28px; }
+  .ts-rail { grid-column: 1 / -1; border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 18px; }
+  .ts-rail ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+  .ts-rail li:nth-child(2) { border-top: 0; padding-top: 4px; }
+}
+@media (max-width: 720px) {
+  .ts-grid, .top-stories.no-rail .ts-grid { grid-template-columns: 1fr; }
+  .ts-grid > * + * { border-left: 0; padding-left: 0; }
+  .ts-stack { border-top: 1px solid var(--rule); padding-top: 4px; }
+  .ts-lead-hed { font-size: 26px; }
+  .ts-rail ol { grid-template-columns: 1fr; }
+  .ts-rail li:nth-child(2) { border-top: 1px solid var(--rule-soft); padding-top: 12px; }
+}

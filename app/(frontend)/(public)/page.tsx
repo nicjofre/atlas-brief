@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Footer from './Footer'
 import DispatchBanner from './DispatchBanner'
 import TapeTabs from './TapeTabs'
-import FeatureSlot from './FeatureSlot'
+import TopStories from './TopStories'
 import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
 import './home.css'
@@ -15,8 +15,11 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const articles = await getArticles()
-  // Newest article gets the centered lead slot; the rest run as the tape.
-  const [lead, ...rest] = articles
+  // The five newest make the Top Stories package (one lead, four stacked);
+  // everything after runs as the tape.
+  const [lead, ...afterLead] = articles
+  const stack = afterLead.slice(0, 4)
+  const rest = afterLead.slice(4)
 
   // Trending: rank the articles we already have by reader counts. Anything the
   // ranking names that isn't in the published set (unpublished, deleted) simply
@@ -29,46 +32,23 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Masthead built to the identity sheet's banner: LA photo on the left,
-          red diagonal cut, navy panel carrying the lockup and the positioning
-          line. The ghosted A is a pseudo-element on .flag-inner. */}
+      {/* Masthead cut to the banner from the identity sheet: LA photo, red
+          diagonal, navy panel. Only the positioning line lives on it now — the
+          lockup is already in the nav, and the topics strip, editor line and
+          mission statement that used to follow were cut so the stories start
+          one scroll sooner. */}
       <header className="flag">
         <div className="flag-photo" aria-hidden="true" />
         <div className="flag-slash" aria-hidden="true" />
         <div className="flag-inner">
-          <div className="flag-lockup">
-            <span className="flag-wordmark">Atlas<em>Brief</em></span>
-            <span className="flag-tagline">
-              Los Angeles<br />Real Estate<br />Intelligence
-            </span>
-          </div>
-
           <h1 className="flag-headline">
-            What LA Real Estate<br />
-            <span className="fh-blue">Insiders Won&apos;t Tell You<span className="fh-dot">.</span></span>
+            LA Real Estate,<br />
+            <span className="fh-blue">Read by Someone<br />Who Owns It<span className="fh-dot">.</span></span>
           </h1>
-
-          <p className="flag-kicker">
-            <span>Deals</span><span>Capital</span><span>Owners</span>
-            <span>Development</span><span>The Operator Take</span>
-          </p>
-
-          <div className="flag-right">
-            <b>Editor &amp; Publisher</b> &middot; David Safai &middot; Los Angeles, Cal.
-          </div>
         </div>
       </header>
 
-      <section className="tape-masthead">
-        <div className="wrap">
-          <p className="tm-deck">
-            A running log of Los Angeles real estate &mdash; what trades, what&apos;s listed, what the
-            numbers actually say. Written by David Safai, operator · developer · GC.
-          </p>
-        </div>
-      </section>
-
-      {lead && <FeatureSlot lead={lead} trending={trending} />}
+      {lead && <TopStories lead={lead} stack={stack} mostRead={trending} />}
 
       <section className="tape-feed">
         <div className="wrap">

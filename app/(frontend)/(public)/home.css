@@ -711,10 +711,11 @@
   z-index: 1;
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: clamp(34px, 4.6vw, 64px) var(--pad-x);
+  /* A shorter band now that the headline is alone on it. */
+  padding: clamp(40px, 5.2vw, 76px) var(--pad-x);
   display: grid;
   justify-items: start;
-  gap: clamp(18px, 2.4vw, 30px);
+  align-content: center;
 }
 /* Ghosted A watermark, as on the sheet's banner. */
 .flag-inner::before {
