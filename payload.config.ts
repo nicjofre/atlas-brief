@@ -52,6 +52,10 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // Dev-mode schema push diffs this branch's config against the shared
+    // database and offers to drop any column it doesn't know about. Set
+    // PAYLOAD_DB_PUSH=false when running a branch that lags main's schema.
+    push: process.env.PAYLOAD_DB_PUSH !== 'false',
     pool: {
       connectionString: process.env.DATABASE_URI || '',
       // Supabase's session-mode pooler caps total client connections at 15.
