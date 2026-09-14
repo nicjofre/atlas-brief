@@ -30,10 +30,17 @@ export default function TopStories({
   lead,
   stack,
   mostRead,
+  leadLabel,
+  stackLabel,
 }: {
   lead: ArticleCard
   stack: ArticleCard[]
   mostRead: ArticleCard[]
+  // Optional column headings. The front page runs without them — the masthead
+  // says what the package is — but a section page uses them to divide the
+  // newest entry from the rest of the week.
+  leadLabel?: string
+  stackLabel?: string
 }) {
   const hasMostRead = mostRead.length >= 3
   return (
@@ -41,6 +48,7 @@ export default function TopStories({
       <div className="wrap">
         <div className="ts-grid">
           <article className="ts-lead">
+            {leadLabel && <h3 className="ts-col-hed">{leadLabel}</h3>}
             {lead.heroUrl && (
               <Link href={`/atlas-brief/${lead.slug}`} className="ts-lead-img" tabIndex={-1} aria-hidden="true">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -58,6 +66,7 @@ export default function TopStories({
           </article>
 
           <div className="ts-stack">
+            {stackLabel && <h3 className="ts-col-hed">{stackLabel}</h3>}
             {stack.map(a => (
               <article key={a.id} className="ts-item">
                 <div className="ts-item-text">

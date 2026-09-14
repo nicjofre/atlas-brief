@@ -4,6 +4,8 @@ import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
 import { getArticles, type ArticleCard } from '@/lib/db/articles'
+import { calmHeadline } from '@/lib/db/headline-case'
+import TopStories from '../../../TopStories'
 import {
   HeadlineText,
   formatDateLong,
@@ -25,7 +27,7 @@ const SECTION_REGISTRY: Record<string, {
   'broker-activity': {
     name: 'Broker',
     emName: 'Activity',
-    eyebrow: 'Atlas Brief · Section 07',
+    eyebrow: 'Atlas Brief',
     deck:
       "A running listings board for LA multifamily: what's for sale, what just sold, and what an operator thinks of the number.",
     heroImage: '/images/brief/cat-broker-activity.jpg',
@@ -60,6 +62,30 @@ export default async function SectionPage(
   const sold = list.filter(a => a.listing?.status === 'sold').length
   const forSale = list.filter(a => a.listing?.status === 'for_sale').length
 
+  // The section opens with the front-page package: newest entry large, the rest
+  // of the week stacked beside it, everything older in the feed below. No Most
+  // Read rail — this reads as a running news feed, not a front page, and
+  // TopStories widens the two columns to fill when the rail is empty.
+  //
+  // The stack is a real seven-day window rather than "the next four", so the
+  // package re-forms on its own as David publishes: a new entry becomes the
+  // lead, yesterday's lead drops into the stack, and anything that ages out of
+  // the week falls into the feed. On a quiet week the window can come back
+  // empty, so it falls back to the five most recent and says so instead of
+  // claiming they're from this week.
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  const [lead, ...afterLead] = list
+  const withinWeek = afterLead.filter(a => {
+    if (!a.published_at) return false
+    const t = new Date(a.published_at).getTime()
+    return !Number.isNaN(t) && Date.now() - t <= WEEK_MS
+  })
+  const thisWeek = withinWeek.length > 0
+  const stack = (thisWeek ? withinWeek : afterLead).slice(0, 5)
+  const stackLabel = thisWeek ? 'Others This Week' : 'Most Recent'
+  const stackSlugs = new Set(stack.map(a => a.slug))
+  const rest = afterLead.filter(a => !stackSlugs.has(a.slug))
+
   return (
     <>
       <header className="cat-masthead">
@@ -67,8 +93,7 @@ export default async function SectionPage(
           <div>
             <div className="cat-eyebrow">{section.eyebrow}</div>
             <h1>
-              {section.name}<br />
-              <em>{section.emName}</em>
+              {section.name} <em>{section.emName}</em>
             </h1>
             <p className="cat-dek">{section.deck}</p>
             <div className="cat-meta">
@@ -84,6 +109,16 @@ export default async function SectionPage(
           </div>
         </div>
       </header>
+
+      {lead && (
+        <TopStories
+          lead={lead}
+          stack={stack}
+          mostRead={[]}
+          leadLabel="Latest"
+          stackLabel={stackLabel}
+        />
+      )}
 
       <section
         className="archive-feed"
@@ -152,7 +187,7 @@ export default async function SectionPage(
           {/* Scrolls in place, like the homepage's Tape/Dispatch list: 91 entries
               below the masthead is a very long page otherwise. */}
           <div className="archive-list" tabIndex={0} role="region" aria-label="Entries">
-            {list.map((a, i) => <ArchiveRow key={a.id} a={a} pos={list.length - i} />)}
+            {rest.map((a, i) => <ArchiveRow key={a.id} a={a} pos={rest.length - i} />)}
           </div>
         </div>
       </section>
@@ -162,19 +197,45 @@ export default async function SectionPage(
   )
 }
 
-function ArchiveRow({ a, pos }: { a: ArticleCard; pos: number }) {
+const MONTHS_AP = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.']
+
+// AP-style date, the same stamp the front-page package uses.
+function apDate(s: string | null | undefined): string {
+  if (!s) return ''
+  const d = new Date(s)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
+}
+
+// Status leads — this is a listings board, so "SOLD" is the first thing an
+// operator scans for — then the neighbourhood, the way Top Stories runs place
+// before date.
+function rowKicker(a: ArticleCard): string {
+  const status = statusKicker(a.listing?.status)
+  const p = a.listing?.property
+  const place = p?.neighborhood ?? p?.city ?? a.cat_label ?? sectionLabel(a.section_slug)
+  return [status, place].filter(Boolean).join(' · ')
+}
+
+// Rows in the front-page language: sans kicker in red, serif headline that
+// underlines on hover, thumbnail on the right, hairline between entries.
+function ArchiveRow({ a }: { a: ArticleCard; pos: number }) {
   return (
     <Link href={`/atlas-brief/${a.slug}`} className="arc-row">
-      <div className="arc-num">№ {String(pos).padStart(2, '0')}</div>
-      <div className="arc-kicker">
-        {statusKicker(a.listing?.status)}<br />
-        {a.cat_label ?? sectionLabel(a.section_slug)}
+      <div className="arc-text">
+        <div className="arc-kicker">
+          <span>{rowKicker(a)}</span>
+          <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
+        </div>
+        <h3 className="arc-title">{calmHeadline(a.headline)}</h3>
+        {(a.excerpt ?? a.deck) && <p className="arc-deck">{a.excerpt ?? a.deck}</p>}
       </div>
-      <div>
-        <h3 className="arc-title"><HeadlineText text={a.headline} /></h3>
-        <p className="arc-deck">{a.excerpt ?? a.deck}</p>
-      </div>
-      <div className="arc-date">{formatDateLong(a.published_at)}</div>
+      {a.heroUrl && (
+        <div className="arc-thumb">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={a.heroUrl} alt="" width={200} height={134} loading="lazy" />
+        </div>
+      )}
     </Link>
   )
 }

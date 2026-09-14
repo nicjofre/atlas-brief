@@ -120,3 +120,207 @@
   border: 2px solid var(--rule-soft);
 }
 .archive-feed .archive-list::-webkit-scrollbar-thumb:hover { background: var(--brand-red); }
+
+/* ---- Feed rows in the front-page language -------------------------------
+   Scoped to .archive-feed on purpose: feed.css styles .arc-row for the Tape
+   index too, and that page hasn't been touched pending David's call on it.
+   Everything here mirrors top-stories.css — sans kicker in red, serif headline
+   that underlines on hover, thumbnail right, hairline between entries. */
+.archive-feed .arc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: clamp(16px, 2vw, 28px);
+  align-items: start;
+  padding: clamp(16px, 1.8vw, 22px) 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 0;
+  color: var(--ink);
+}
+.archive-feed .arc-row:first-child { border-top: 0; padding-top: 0; }
+/* No background wash on hover — the headline underlines instead, as on the
+   front page. */
+.archive-feed .arc-row:hover { background: transparent; }
+.archive-feed .arc-text { min-width: 0; }
+
+.archive-feed .arc-kicker {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  padding-top: 0;
+  margin-bottom: 8px;
+}
+.archive-feed .arc-kicker span {
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+.archive-feed .arc-kicker time { color: var(--muted); }
+
+.archive-feed .arc-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.15;
+  letter-spacing: -.015em;
+  color: var(--ink);
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.archive-feed .arc-row:hover .arc-title {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.archive-feed .arc-deck {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 62ch;
+}
+.archive-feed .arc-thumb { display: block; }
+.archive-feed .arc-thumb img {
+  width: 200px;
+  height: 134px;
+  object-fit: cover;
+  display: block;
+  transition: opacity .15s;
+}
+.archive-feed .arc-row:hover .arc-thumb img { opacity: .92; }
+
+@media (max-width: 820px) {
+  .archive-feed .arc-row { grid-template-columns: minmax(0, 1fr) 104px; gap: 14px; }
+  .archive-feed .arc-thumb img { width: 104px; height: 78px; }
+  .archive-feed .arc-title { font-size: 18px !important; }
+  .archive-feed .arc-deck { display: none; }
+}
+
+/* ---- Masthead: the homepage flag, with the section's own photo -----------
+   Same recipe as .flag in home.css — navy ground, photo masked off along a
+   105deg cut, a red diagonal on the seam, red rule underneath — so a section
+   opens the way the front page does. Shorter band: a lead photo sits directly
+   beneath it now, and two tall images stacked was too much. */
+.cat-masthead {
+  --flag-cut: 105deg;
+  --flag-stop: 46%;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+}
+/* ---------------------------------------------------------------------------
+   PARKED — the masthead photo treatment (2026-09-14). The band reads better as
+   plain navy for now, so the photo is hidden rather than deleted: the asset
+   stays in public/images/brief/, the markup still renders it, and re-enabling
+   is a matter of deleting `.cat-hero-img{display:none}` below and pasting these
+   rules back. Delete this block only after Lucas confirms.
+
+   .cat-hero-img {
+     position: absolute;
+     inset: 0;
+     margin: 0;
+     -webkit-mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+             mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+   }
+   .cat-hero-img img {
+     width: 100%;
+     height: 100%;
+     aspect-ratio: auto;
+     object-fit: cover;
+     object-position: 32% 42%;
+     border: 0;
+     display: block;
+   }
+   .cat-img-caption { display: none; }
+   .cat-masthead::after {
+     content: "";
+     position: absolute;
+     inset: 0;
+     pointer-events: none;
+     background: linear-gradient(var(--flag-cut),
+       transparent 0 calc(var(--flag-stop) - 5px),
+       var(--brand-red) calc(var(--flag-stop) - 5px) calc(var(--flag-stop) + 5px),
+       transparent calc(var(--flag-stop) + 5px));
+   }
+   --------------------------------------------------------------------------- */
+/* Photo off. The panel is navy, and with nothing to sit beside, the section
+   name centres in the band. */
+.cat-hero-img { display: none; }
+.cat-masthead::after { display: none; }
+.cat-masthead-inner,
+.cat-masthead-inner > div:first-child { margin-left: 0; text-align: center; }
+/* One line: the name and its italic half sit together rather than stacking. */
+.cat-masthead h1 { text-wrap: balance; }
+.cat-masthead .cat-meta { justify-content: center; }
+
+.cat-masthead-inner {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: clamp(26px, 3.2vw, 48px) var(--pad-x);
+  align-items: center;
+}
+
+/* The ghosted A from the identity sheet's banner, as on the homepage flag —
+   same 5% white, sat behind the type, run to the right edge exactly as the
+   front page does it. */
+.cat-masthead-inner::before {
+  content: "A";
+  position: absolute;
+  right: -0.06em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(180px, 22vw, 320px);
+  line-height: 0.7;
+  color: rgba(255,255,255,0.05);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 14px; }
+.cat-masthead h1 {
+  color: #FFFFFF;
+  font-size: clamp(32px, 4.2vw, 62px);
+  line-height: 0.95;
+  margin: 0 0 14px;
+}
+.cat-masthead h1 em { color: var(--brand-red); }
+.cat-masthead .cat-dek {
+  color: rgba(255,255,255,0.82);
+  max-width: 44ch;
+  /* `auto` on the sides, not 0: this shorthand sits after the centring rule and
+     was resetting it. */
+  margin: 0 auto 18px;
+  font-size: clamp(15px, 1.3vw, 18px);
+}
+.cat-masthead .cat-meta {
+  color: rgba(255,255,255,0.7);
+  border-top: 1px solid rgba(255,255,255,0.22);
+  padding-top: 14px;
+  gap: 22px;
+}
+
+@media (max-width: 900px) {
+  /* No room for the diagonal to read: the photo goes quiet behind the text. */
+  .cat-masthead-inner > div:first-child { margin-left: 0; }
+  .cat-hero-img {
+    -webkit-mask-image: none;
+            mask-image: none;
+    opacity: .28;
+  }
+  .cat-masthead::after { display: none; }
+}
