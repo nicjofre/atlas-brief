@@ -84,6 +84,29 @@ export const Posts: CollectionConfig = {
       type: 'textarea',
       admin: { description: 'One-sentence standfirst under the headline. Also the share/dispatch teaser.' },
     },
+    // Owners and brokers search by street address and nothing else. Tape briefs
+    // get theirs from a linked property record; a post has none, so when the
+    // piece is about a specific building the address has to be typed here.
+    // Filling it in puts the address at the front of the search title, into the
+    // byline, and into the structured data crawlers read — the same treatment a
+    // brief gets. Left blank (a market essay), the post is unchanged.
+    {
+      name: 'propertyAddress',
+      type: 'text',
+      admin: {
+        description:
+          'Optional. Street address, if this piece is about a specific building — e.g. "321 Tremont St". Leads the Google result title and appears in the byline. Leave blank for general essays.',
+      },
+    },
+    {
+      name: 'propertyLocality',
+      type: 'text',
+      admin: {
+        description:
+          'Optional. City or neighbourhood for the address above — e.g. "Avalon". Only used when Property Address is set.',
+        condition: (data) => !!data?.propertyAddress,
+      },
+    },
     { name: 'heroImage', type: 'upload', relationTo: 'media' },
     { name: 'heroCaption', type: 'text' },
     {

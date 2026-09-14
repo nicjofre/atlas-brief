@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
 import { getArticles, type ArticleCard } from '@/lib/db/articles'
 import {
@@ -41,10 +42,11 @@ export async function generateMetadata(
   const { section: slug } = await params
   const section = SECTION_REGISTRY[slug]
   if (!section) return { title: 'Atlas Brief' }
-  return {
+  return pageMetadata({
     title: `${section.name} ${section.emName} · Atlas Brief`,
     description: section.deck,
-  }
+    path: `/atlas-brief/sections/${slug}`,
+  })
 }
 
 export default async function SectionPage(

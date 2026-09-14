@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
+import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
 import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
 import FreeformPost from './FreeformPost'
@@ -14,6 +16,7 @@ import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
 import Footer from '../../Footer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import ArticleSignupBox from '../../ArticleSignupBox'
 import './post.css'
 
 type Takeaway = { bold: string; text: string }
@@ -22,26 +25,58 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params
-  const article = await getArticleBySlug(slug)
+  // A slug is either a brief or a post, never both, so look in both stores at
+  // once. Sequentially, a post paid for a wasted brief lookup before its own
+  // query even started — slow enough on a cold render that Next streamed the
+  // shell first and flushed the tags into the body instead of <head>.
+  const { isEnabled: draft } = await draftMode()
+  const [article, post] = await Promise.all([
+    getArticleBySlug(slug),
+    getPostBySlug(slug, draft).catch(() => null),
+  ])
+
   if (!article) {
-    // Not a brief — maybe a freeform post.
-    const { isEnabled: draft } = await draftMode()
-    const post = await getPostBySlug(slug, draft)
     if (!post) return { title: 'Atlas Brief' }
-    const title = `${post.title} — Atlas Brief`
-    const description = post.deck ?? undefined
     const hero = post.heroImage && typeof post.heroImage === 'object' ? post.heroImage.url : undefined
-    const images = hero ? [hero] : undefined
-    return {
-      title,
-      description,
-      openGraph: { type: 'article', title, description, url: `/atlas-brief/${slug}`, images },
-      twitter: { card: 'summary_large_image', title, description, images },
-    }
+    // Essays about a specific building get the same address-first treatment as
+    // briefs, when David has filled the address in. Market essays don't.
+    const postAddress = post.propertyAddress?.trim() || null
+    const postLocality = post.propertyLocality?.trim() || null
+    return pageMetadata({
+      title: postAddress ? `${postAddress} — ${post.title}` : `${post.title} — Atlas Brief`,
+      description: postAddress
+        ? [`${postAddress}${postLocality ? `, ${postLocality}` : ''}.`, post.deck].filter(Boolean).join(' ')
+        : (post.deck ?? undefined),
+      path: `/atlas-brief/${slug}`,
+      images: hero ? [hero] : undefined,
+      type: 'article',
+      publishedTime: post.publishedAt ?? undefined,
+      modifiedTime: post.updatedAt ?? undefined,
+      socialTitle: `${post.title} — Atlas Brief`,
+    })
   }
+
   const plainHeadline = (article.headline ?? '').replace(/\*/g, '')
-  const title = `${plainHeadline} — Atlas Brief`
-  const description = article.deck ?? undefined
+  const address = article.listing?.property?.street_address ?? null
+  const locality = article.listing?.property?.city ?? null
+
+  // Lead the search title with the street address. People look these buildings
+  // up by address and nothing else, and not one headline in the archive
+  // contains one — they name the block or the buyer, never the number.
+  //
+  // Address FIRST, not appended: Google truncates around 60 characters, and on
+  // a typical headline an appended address falls past the cut and is never
+  // seen. The "— Atlas Brief" suffix is dropped on these for the same reason;
+  // those characters are worth more spent on the headline.
+  const title = address
+    ? `${address} — ${plainHeadline}`
+    : `${plainHeadline} — Atlas Brief`
+
+  // Same reasoning for the snippet: open with the address, then David's deck.
+  const deck = article.deck ?? undefined
+  const description = address
+    ? [`${address}${locality ? `, ${locality}` : ''}.`, deck].filter(Boolean).join(' ')
+    : deck
 
   // Share card uses the property's hero photo (overrides the sitewide banner).
   const supabase = await createClient()
@@ -49,25 +84,18 @@ export async function generateMetadata(
     supabase,
     article.hero_photo_url ?? article.listing?.hero_photo_url ?? null
   )
-  const images = heroUrl ? [heroUrl] : undefined
 
-  return {
+  return pageMetadata({
     title,
     description,
-    openGraph: {
-      type: 'article',
-      title,
-      description,
-      url: `/atlas-brief/${slug}`,
-      images,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images,
-    },
-  }
+    path: `/atlas-brief/${slug}`,
+    images: heroUrl ? [heroUrl] : undefined,
+    type: 'article',
+    publishedTime: article.published_at ?? undefined,
+    modifiedTime: article.updated_at ?? undefined,
+    // Social keeps the headline as written.
+    socialTitle: `${plainHeadline} — Atlas Brief`,
+  })
 }
 
 // Every published brief stores its byline as HTML (all 91 of them), and that
@@ -133,8 +161,36 @@ export default async function PostPage(
 
   return (
     <>
-      {showBar && <ArticleSubscribeBar />}
-      <ArticleSubscribeModal enabled={showBar} />
+      {/* NewsArticle for this brief. `about` carries the street address, which
+          is the whole point: it's what lets a search or an LLM resolve "what
+          happened at 630 Masselin" to this page. */}
+      <JsonLd
+        data={articleGraph({
+          headline: (article.headline ?? '').replace(/\*/g, ''),
+          description: article.deck,
+          path: `/atlas-brief/${slug}`,
+          datePublished: article.published_at,
+          dateModified: article.updated_at,
+          images: [heroUrl],
+          section: catLabel,
+          address: property
+            ? {
+                streetAddress: property.street_address,
+                locality: property.city,
+                region: property.state,
+              }
+            : null,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbGraph([
+          { name: 'Atlas Brief', path: '/' },
+          { name: 'The Tape', path: '/atlas-brief' },
+          { name: catLabel, path: `/atlas-brief/sections/${article.section_slug}` },
+        ])}
+      />
+      {showBar && <ArticleSubscribeBar slug={slug} />}
+      <ArticleSubscribeModal enabled={showBar} slug={slug} />
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
@@ -160,23 +216,39 @@ export default async function PostPage(
             <HeadlineText text={article.headline} />
           </h1>
           {article.deck && <p className="deck">{article.deck}</p>}
+          {/* The street address leads the byline. It's the fact a reader
+              arrived looking for, and it's what makes the visible page agree
+              with a <title> that now opens with the address — without which
+              Google will happily rewrite that title back to the headline.
+              Every published brief carries a stored byline_html, so the cell is
+              rendered alongside it: display:contents dissolves the wrapper so
+              David's cells stay direct children of the .byl grid. */}
           {article.byline_html ? (
             <div className="byl">
-              <div><b>David Safai</b>Editor &middot; Publisher</div>
-              {/* display:contents on the wrapper keeps the stored cells as direct
-                  grid items instead of collapsing them into one column. */}
+              {property?.street_address && (
+                <div><b>Property</b>{property.street_address}</div>
+              )}
               <div
-                className="byl-html"
-                dangerouslySetInnerHTML={{ __html: stripPublishedCell(article.byline_html) }}
+                style={{ display: 'contents' }}
+                dangerouslySetInnerHTML={{ __html: article.byline_html }}
               />
             </div>
           ) : (
             <div className="byl">
-              <div><b>David Safai</b>Editor &middot; Publisher</div>
+              {property?.street_address && (
+                <div><b>Property</b>{property.street_address}</div>
+              )}
+              <div><b>David Safai</b>Editor · Publisher</div>
+              <div><b>Published</b>{formatDate(article.published_at)}</div>
               {article.status_tag && <div><b>Status</b>{article.status_tag}</div>}
               {dateline && <div><b>Dateline</b>{dateline}</div>}
             </div>
           )}
+          {/* Sits inside the headline block, above the hero photo, so it's on
+              screen without scrolling. Unlike the pop-up it needs no trigger,
+              which is the point: in-app browsers are exactly where a
+              scroll-and-timer modal is least dependable. */}
+          <ArticleSignupBox slug={slug} enabled={showBar} />
         </div>
       </header>
 

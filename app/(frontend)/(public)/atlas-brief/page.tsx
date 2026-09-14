@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../Footer'
 import { getArticles, type ArticleCard } from '@/lib/db/articles'
 import {
@@ -12,11 +13,12 @@ import {
 } from '@/lib/db/article-render'
 import './feed.css'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Atlas Brief · LA Real Estate, Construction, and Policy',
   description:
     'Atlas Brief: an operator-first read of LA real estate, construction costs, development, and policy. Written by David Safai.',
-}
+  path: '/atlas-brief',
+})
 
 export default async function AtlasBriefIndex() {
   const articles = await getArticles()

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
+import { trackNewsletterSignup, CONVERSIONS } from '@/lib/analytics/conversions'
 import { markSubscribed } from '@/lib/subscribe-flag'
 
 const PDF_URL = '/atlas-survival-guide.pdf'
@@ -29,7 +29,7 @@ export default function GuideForm() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) { setState('error'); setMessage(data?.error || 'Something went wrong. Please try again.'); return }
-      trackConversion(CONVERSIONS.whitePaper)
+      trackNewsletterSignup('survival_guide', CONVERSIONS.whitePaper)
       markSubscribed()
       setEmailed(data?.emailed !== false)
       setState('done')

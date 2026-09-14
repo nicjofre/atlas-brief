@@ -1,20 +1,24 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Link from 'next/link'
 import BriefingForm from './BriefingForm'
 import './rso-briefing.css'
 
+// Keeps its own share headline (deliberately punchier than the page title),
+// so it passes explicit values rather than the defaults.
 export const metadata: Metadata = {
-  title: 'The RSO Intelligence Briefing · Atlas Brief',
-  description:
-    'The three laws stacked above every LA apartment — state, county, and city — in plain English. What each does, what just changed, and what it costs at the property level. A free briefing from Atlas Brief.',
-  openGraph: {
-    type: 'article',
+  ...pageMetadata({
     title: 'Death by a thousand cuts — the RSO Intelligence Briefing',
     description:
       'Costa-Hawkins is still standing, but the reset is being ground down through a dozen smaller rules. The three laws above every LA apartment, in plain English.',
-    url: '/rso-briefing',
+    path: '/rso-briefing',
     images: ['/images/rso-briefing-building.png'],
-  },
+    type: 'article',
+  }),
+  // The browser-tab / search-result title stays descriptive.
+  title: 'The RSO Intelligence Briefing · Atlas Brief',
+  description:
+    'The three laws stacked above every LA apartment — state, county, and city — in plain English. What each does, what just changed, and what it costs at the property level. A free briefing from Atlas Brief.',
 }
 
 // David's RSO Intelligence Briefing landing page. Layout is his; the static

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../Footer'
 import WaitlistForm from './WaitlistForm'
 import './tax-appeals.css'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Tax Appeals · Atlas Brief',
   description:
     'Atlas Tax Appeals — we find over-assessed LA County multifamily and file the property-tax appeal for you, at a fraction of what the big firms charge. Join the waitlist.',
-}
+  path: '/tax-appeals',
+})
 
 export default function TaxAppealsPage() {
   return (

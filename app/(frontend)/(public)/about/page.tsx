@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import { notFound } from 'next/navigation'
 import Footer from '../Footer'
 import RenderBlocks from '../_blocks/RenderBlocks'
@@ -10,11 +11,12 @@ import './about.css'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'About · Atlas Brief',
   description:
     'Atlas is a Los Angeles real estate practice with three sides: Atlas Brief (publication), Atlas Home Builders, Inc. (general contractor), and Atlas Home Pro (acquisitions).',
-}
+  path: '/about',
+})
 
 export default async function AboutPage() {
   const page = await getPageBySlug('about')

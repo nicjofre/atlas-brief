@@ -1096,6 +1096,7 @@ export type Database = {
           resend_contact_id: string | null
           role: string | null
           source: string | null
+          source_slug: string | null
           status: string
           track_token: string
           unsubscribed_at: string | null
@@ -1110,6 +1111,7 @@ export type Database = {
           resend_contact_id?: string | null
           role?: string | null
           source?: string | null
+          source_slug?: string | null
           status?: string
           track_token?: string
           unsubscribed_at?: string | null
@@ -1124,6 +1126,7 @@ export type Database = {
           resend_contact_id?: string | null
           role?: string | null
           source?: string | null
+          source_slug?: string | null
           status?: string
           track_token?: string
           unsubscribed_at?: string | null

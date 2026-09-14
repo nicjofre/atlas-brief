@@ -5,6 +5,8 @@ import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
 import Footer from '../../Footer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import ArticleSignupBox from '../../ArticleSignupBox'
+import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
 import './post.css'
 
 function fmtDate(s: string | null | undefined): string {
@@ -26,13 +28,42 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
   const hero = asMedia(post.heroImage)
   const kicker = post.kicker || 'Dispatch'
   const dateStr = fmtDate(post.publishedAt)
+  // Set only on essays about a specific building (the CMS field is optional).
+  const address = post.propertyAddress?.trim() || null
+  const locality = post.propertyLocality?.trim() || null
 
   return (
     <>
-      {showBar && <ArticleSubscribeBar />}
+      {/* Structured data for the essay. Skipped in the CMS preview iframe,
+          which isn't a public URL. */}
+      {!preview && (
+        <JsonLd
+          data={articleGraph({
+            headline: post.title ?? '',
+            description: post.deck,
+            path: `/atlas-brief/${post.slug}`,
+            datePublished: post.publishedAt ?? post.createdAt,
+            dateModified: post.updatedAt,
+            images: [hero?.url],
+            section: kicker,
+            // Names the building when the essay is about one, so an address
+            // query can resolve to this page.
+            address: address ? { streetAddress: address, locality } : null,
+          })}
+        />
+      )}
+      {!preview && (
+        <JsonLd
+          data={breadcrumbGraph([
+            { name: 'Atlas Brief', path: '/' },
+            { name: 'The Tape', path: '/atlas-brief' },
+          ])}
+        />
+      )}
+      {showBar && <ArticleSubscribeBar slug={post.slug} />}
       {/* Never in the CMS Live Preview iframe — a pop-up firing mid-edit would
           just be in David's way. */}
-      {!preview && <ArticleSubscribeModal enabled={showBar} />}
+      {!preview && <ArticleSubscribeModal enabled={showBar} slug={post.slug} />}
       {/* In the CMS Live Preview iframe, refresh the render on save. Not
           rendered on the public page — only in preview. */}
       {preview && <RefreshRouteOnSave />}
@@ -53,8 +84,14 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           <h1>{post.title}</h1>
           {post.deck && <p className="deck">{post.deck}</p>}
           <div className="byl">
-            <div><b>{post.author || 'David Safai'}</b>Editor &middot; Publisher</div>
+            {/* Matches the brief layout: the building leads, when there is one. */}
+            {address && <div><b>Property</b>{address}</div>}
+            <div><b>{post.author || 'David Safai'}</b>Editor · Publisher</div>
+            {dateStr && <div><b>Published</b>{dateStr}</div>}
+            {address && locality && <div><b>Dateline</b>{locality}</div>}
           </div>
+          {/* Not in the CMS preview iframe — David is editing, not reading. */}
+          {!preview && <ArticleSignupBox slug={post.slug} enabled={showBar} />}
         </div>
       </header>
 

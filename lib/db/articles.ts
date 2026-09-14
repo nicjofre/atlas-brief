@@ -67,6 +67,10 @@ export type ArticleCard = Pick<
   | 'excerpt'
   | 'published_at'
 > & {
+  // Drives <lastmod> in the sitemap, so crawlers re-fetch edited pieces.
+  // Declared here rather than Pick'd from the articles table: that column is
+  // non-null for briefs, but a bridged Payload post can arrive without one.
+  updated_at: string | null
   heroUrl: string | null
   // 'post' = a freeform Payload post bridged into the feed; undefined/'brief' =
   // a normal Tape brief. Cards branch on this to skip listing-only chrome
@@ -100,6 +104,7 @@ function postToCard(post: Post): ArticleCard {
     deck: post.deck ?? null,
     excerpt: null,
     published_at: post.publishedAt ?? post.createdAt ?? null,
+    updated_at: post.updatedAt ?? null,
     heroUrl: hero,
     kind: 'post',
     listing: null,
@@ -113,7 +118,7 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
     .select(
       `
       id, slug, section_slug, cat_label, entry_num, tape_tier,
-      headline, deck, excerpt, published_at,
+      headline, deck, excerpt, published_at, updated_at,
       hero_photo_url,
       listing:listings (
         status, hero_photo_url,
@@ -149,6 +154,7 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
       deck: string | null
       excerpt: string | null
       published_at: string | null
+      updated_at: string | null
       hero_photo_url: string | null
       listing: {
         status: string | null
@@ -170,6 +176,7 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
       deck: r.deck,
       excerpt: r.excerpt,
       published_at: r.published_at,
+      updated_at: r.updated_at,
       heroUrl: resolveHeroUrl(supabase, raw),
       listing: r.listing
         ? { status: r.listing.status, property: r.listing.property }

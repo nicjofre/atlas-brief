@@ -1,0 +1,123 @@
+/* In-article signup box, sitting under the headline block.
+   Reads as part of the page furniture rather than an ad: same paper, same
+   rules, same monospace labels as the byline directly above it. Tokens come
+   from :root in atlas-v2.css, which the public layout loads on every route. */
+
+.asb {
+  margin: 28px 0 0;
+  padding: 20px 22px;
+  background: var(--bg-alt);
+  border: 1px solid var(--ink);
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 380px);
+  gap: 20px 32px;
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .asb {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px;
+  }
+}
+
+.asb-kicker {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.asb-pitch {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Visible to screen readers only. The field is obvious enough sighted, but it
+   still needs a programmatic label. */
+.asb-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.asb-row {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .asb-row { flex-direction: column; }
+}
+
+.asb-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  /* 16px keeps iOS Safari and in-app browsers from zooming the viewport on
+     focus, which on Instagram's browser leaves the page awkwardly scaled. */
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+}
+
+.asb-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.asb-row button {
+  flex: 0 0 auto;
+  padding: 12px 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.asb-row button:hover { background: transparent; color: var(--ink); }
+.asb-row button:disabled { opacity: 0.6; cursor: default; }
+
+.asb-err {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #c0392b;
+  margin: 8px 0 0;
+}
+
+/* Confirmation replaces the form in place, keeping the block height stable so
+   the article doesn't jump under the reader. */
+.asb-done {
+  display: block;
+  text-align: center;
+}
+
+.asb-done-text {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+}

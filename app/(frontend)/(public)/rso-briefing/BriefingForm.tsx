@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { trackConversion, CONVERSIONS } from '@/lib/analytics/conversions'
+import { trackNewsletterSignup, CONVERSIONS } from '@/lib/analytics/conversions'
 import { markSubscribed } from '@/lib/subscribe-flag'
 
 type State = 'idle' | 'submitting' | 'done' | 'error'
@@ -28,7 +28,7 @@ export default function BriefingForm() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) { setState('error'); setMessage(data?.error || 'Something went wrong. Please try again.'); return }
-      trackConversion(CONVERSIONS.whitePaper)
+      trackNewsletterSignup('rso_briefing', CONVERSIONS.whitePaper)
       markSubscribed()
       setEmailed(data?.emailed !== false)
       setState('done')

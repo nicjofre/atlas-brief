@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from './Footer'
 import DispatchBanner from './DispatchBanner'
 import TapeTabs from './TapeTabs'
@@ -7,11 +8,12 @@ import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
 import './home.css'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'The Tape · Atlas Brief',
   description:
     "A running log of Los Angeles real estate — what trades, what's listed, what the numbers actually say. By David Safai.",
-}
+  path: '/',
+})
 
 export default async function HomePage() {
   const articles = await getArticles()

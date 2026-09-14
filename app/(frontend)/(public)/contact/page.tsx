@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo/metadata'
 import { notFound } from 'next/navigation'
 import Footer from '../Footer'
 import RenderBlocks from '../_blocks/RenderBlocks'
@@ -10,10 +11,11 @@ import './contact.css'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Contact · Atlas Brief',
   description: 'Atlas Home Builders, Inc. — based in Los Angeles. Editorial, construction, and acquisition inquiries.',
-}
+  path: '/contact',
+})
 
 export default async function ContactPage() {
   const page = await getPageBySlug('contact')
