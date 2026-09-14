@@ -1,0 +1,155 @@
+/* WSJ-style article treatment — preview only. Every rule is scoped under .wsj so
+   nothing here touches the live template. Type: Newsreader stands in for
+   Escrow (headlines) and Exchange (body); Inter Tight for Retina (everything
+   else). Colour is the site's navy ink on white with the paper's greys; the
+   brand red appears once, on the section flag. */
+
+.wsj{
+  --wsj-ink: var(--ink);
+  --wsj-body: #1F2333;
+  --wsj-grey: #555B6E;
+  --wsj-grey-2: #8A90A3;
+  --wsj-rule: #D3D6DF;
+  --wsj-rule-2: #EDEFF3;
+  --wsj-link: #1F55DB;
+  /* The photo, the figures box and the copy share one column, so nothing
+     opens up between the text and the rail. The headline alone runs wider. */
+  --wsj-head: 880px;
+  --wsj-col: 680px;
+  --wsj-text: var(--wsj-col);
+  --wsj-rail: 300px;
+  --wsj-gutter: 56px;
+  max-width: calc(var(--wsj-col) + var(--wsj-gutter) + var(--wsj-rail) + 2 * var(--pad-x));
+  margin: 0 auto;
+  padding: 36px var(--pad-x) 0;
+  color: var(--wsj-ink);
+}
+
+/* ---- Head: flag / headline / deck / byline ---- */
+.wsj-head{max-width:var(--wsj-head);padding-bottom:18px;border-bottom:1px solid var(--wsj-rule)}
+.wsj-flag{display:inline-block;font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-red);margin-bottom:14px}
+.wsj-flag:hover{text-decoration:underline}
+.wsj-hed{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4.6vw,54px);line-height:1.08;letter-spacing:-.018em;margin:0 0 14px;font-variation-settings:"opsz" 72;text-wrap:balance}
+.wsj-hed em{font-style:italic;font-weight:500}
+.wsj-dek{font-family:var(--sans);font-weight:300;font-size:clamp(18px,1.6vw,21px);line-height:1.4;color:var(--wsj-grey);margin:0 0 22px;max-width:60ch}
+.wsj-byline{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;font-family:var(--sans);font-size:14px;color:var(--wsj-grey)}
+.wsj-by{display:flex;align-items:center;gap:10px;color:var(--wsj-ink)}
+.wsj-by b{font-weight:700}
+.wsj-follow{font-size:11px;font-weight:600;letter-spacing:.02em;padding:3px 10px;border:1px solid var(--wsj-ink);border-radius:999px;color:var(--wsj-ink)}
+.wsj-follow:hover{background:var(--wsj-ink);color:#fff}
+.wsj-time{font-size:13px}
+.wsj-tools{display:flex;gap:18px;margin-left:auto}
+.wsj-tools button{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--wsj-ink);padding:0}
+.wsj-tools button:hover{color:var(--wsj-link)}
+.wsj-tools svg{width:15px;height:15px;fill:currentColor}
+
+/* ---- Two columns: story + rail ---- */
+.wsj-grid{display:grid;grid-template-columns:minmax(0,var(--wsj-col)) var(--wsj-rail);column-gap:var(--wsj-gutter);padding-top:22px}
+.wsj-main{min-width:0}
+
+.wsj-hero{margin:0 0 28px}
+.wsj-hero img{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;display:block}
+.wsj-hero figcaption{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--wsj-grey);padding-top:8px}
+.wsj-cap{margin-right:8px}
+.wsj-credit{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--wsj-grey-2)}
+
+/* Key figures for a brief: a boxed table that sits above the copy, the way a
+   Journal story on a deal carries its numbers. Hidden for essays. */
+.wsj-facts{max-width:var(--wsj-text);margin:0 0 32px;border-top:3px solid var(--wsj-ink);border-bottom:1px solid var(--wsj-rule);padding:14px 0 6px}
+.wsj-facts h2{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px}
+.wsj-facts dl{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 20px;margin:0}
+.wsj-facts dl>div{display:flex;flex-direction:column;gap:2px;padding-bottom:10px}
+.wsj-facts dt{font-family:var(--sans);font-size:12px;color:var(--wsj-grey)}
+.wsj-facts dd{font-family:var(--serif);font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em}
+
+/* ---- Body copy ---- */
+.wsj-text{max-width:var(--wsj-text);font-family:var(--serif);font-size:19px;line-height:1.62;color:var(--wsj-body);font-variation-settings:"opsz" 18}
+.wsj-text p,.wsj-text .post-prose p{margin:0 0 1.15em;font-family:var(--serif);font-size:19px;line-height:1.6;color:var(--wsj-body)}
+/* The copy bolds every figure and name. Set as running prose that reads as
+   ad copy, so the Journal treatment drops inline bold to normal weight.
+   Flip this back to 600 to restore it. */
+.wsj-text p strong,.wsj-text p b,.wsj-text li strong,.wsj-text li b{font-weight:400;color:inherit}
+.wsj-text a{color:var(--wsj-link);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;border:0}
+.wsj-text h2,.wsj-text .post-prose h2{font-family:var(--sans);font-weight:600;font-size:20px;line-height:1.3;letter-spacing:-.005em;color:var(--wsj-ink);margin:1.8em 0 .55em;text-transform:none}
+.wsj-text h2::before{content:none}
+.wsj-text h3,.wsj-text .post-prose h3{font-family:var(--sans);font-weight:600;font-size:18px;line-height:1.35;color:var(--wsj-ink);margin:1.6em 0 .5em}
+.wsj-text ul,.wsj-text ol,.wsj-text .post-prose ul,.wsj-text .post-prose ol{font-family:var(--serif);font-size:19px;line-height:1.6;color:var(--wsj-body);margin:0 0 1.35em;padding-left:1.3em}
+.wsj-text li{margin:0 0 .45em}
+.wsj-text blockquote,.wsj-text .post-prose blockquote{margin:1.6em 0;padding:0 0 0 20px;border-left:2px solid var(--wsj-ink);font-style:normal;color:var(--wsj-body)}
+.wsj-text .post-prose{margin:0}
+.wsj-text .prose{font-family:inherit;font-size:inherit;line-height:inherit;color:inherit}
+.wsj-text .drop::first-letter{font-size:inherit;float:none;padding:0;font-weight:inherit}
+
+/* Photos inside the copy */
+.wsj-text .post-figure{margin:2em 0}
+.wsj-text .post-figure img{width:100%;height:auto;display:block;border:0;max-height:none}
+.wsj-text .post-figure-full{margin-left:0;margin-right:0;width:100%;max-width:100%}
+.wsj-text .post-figure-full img{aspect-ratio:auto;max-height:none}
+.wsj-text .post-figure figcaption,.wsj-text .post-gallery figcaption,.wsj-text .post-embed figcaption{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--wsj-grey);text-transform:none;letter-spacing:0;padding-top:8px;border:0;margin:0;max-width:none}
+.wsj-text .post-gallery{margin:2em 0}
+.wsj-text .post-gallery-grid{display:grid;gap:8px}
+.wsj-text .post-gallery-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border:0}
+
+/* Pull quote — the Journal sets these big, serif, flush left, with a thick rule. */
+.wsj-text .post-pullquote{margin:2em 0;padding:18px 0;border-top:3px solid var(--wsj-ink);border-bottom:1px solid var(--wsj-rule);text-align:left}
+.wsj-text .post-pullquote p{font-family:var(--serif);font-weight:500;font-size:26px;line-height:1.3;letter-spacing:-.01em;color:var(--wsj-ink);margin:0}
+.wsj-text .post-pullquote cite{display:block;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--wsj-grey);font-style:normal;text-transform:none;letter-spacing:0;margin-top:12px}
+
+/* Tables from briefs */
+.wsj-text table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:14px;margin:1.5em 0}
+.wsj-text th,.wsj-text td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--wsj-rule-2)}
+.wsj-text th{font-size:12px;font-weight:700;color:var(--wsj-grey);border-bottom:1px solid var(--wsj-ink)}
+.wsj-text td.n,.wsj-text th.n{text-align:right}
+.wsj-text .table-fig .cap{font-family:var(--sans);font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--wsj-ink);margin-bottom:6px}
+.wsj-text .speculation{background:var(--wsj-rule-2);border:0;padding:20px 24px;margin:1.6em 0;font-size:16px}
+.wsj-text .speculation .tag{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--wsj-ink);margin-bottom:6px}
+
+.wsj-text .wsj-writeto{font-size:17px;margin-top:2.2em;padding-top:1.4em;border-top:1px solid var(--wsj-rule)}
+.wsj-text .wsj-appeared{font-family:var(--sans);font-size:13px;color:var(--wsj-grey);font-style:italic}
+
+/* ---- Rail ---- */
+.wsj-rail{min-width:0}
+.wsj-rail h2{font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.02em;margin:0;padding:10px 0 12px;border-top:3px solid var(--wsj-ink)}
+.wsj-popular{position:sticky;top:84px}
+.wsj-popular ol{list-style:none;margin:0;padding:0;counter-reset:pop}
+.wsj-popular li{counter-increment:pop;border-top:1px solid var(--wsj-rule-2)}
+.wsj-popular li:first-child{border-top:0}
+.wsj-popular a{display:grid;grid-template-columns:26px minmax(0,1fr) 72px;gap:12px;align-items:start;padding:14px 0}
+.wsj-popular a::before{content:counter(pop);font-family:var(--serif);font-size:24px;font-weight:600;line-height:1;color:var(--wsj-grey-2)}
+.wsj-pop-hed{font-family:var(--sans);font-size:15px;font-weight:600;line-height:1.35;color:var(--wsj-ink)}
+.wsj-popular a:hover .wsj-pop-hed{text-decoration:underline}
+.wsj-popular img{width:72px;height:72px;object-fit:cover;display:block}
+.wsj-signup{margin-top:36px;padding:18px;border:1px solid var(--wsj-rule);background:#FAFBFD}
+.wsj-signup h2{border-top:0;padding:0 0 8px;font-size:18px;font-family:var(--serif);font-weight:600}
+.wsj-signup p{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--wsj-grey);margin:0 0 14px}
+.wsj-signup-btn{display:inline-block;font-family:var(--sans);font-size:13px;font-weight:600;color:#fff;background:var(--wsj-ink);padding:9px 16px}
+.wsj-signup-btn:hover{background:var(--brand-blue)}
+
+/* ---- What to read next ---- */
+.wsj-next{margin-top:64px;padding-top:12px;border-top:3px solid var(--wsj-ink)}
+.wsj-next h2{font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.02em;margin:0 0 18px}
+.wsj-next-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.wsj-next-card{display:flex;flex-direction:column;gap:8px;min-width:0}
+.wsj-next-card img,.wsj-next-noimg{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;background:var(--wsj-rule-2);margin-bottom:4px}
+.wsj-next-sec{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--wsj-grey)}
+.wsj-next-hed{font-family:var(--serif);font-size:18px;font-weight:600;line-height:1.25;letter-spacing:-.01em;color:var(--wsj-ink)}
+.wsj-next-card:hover .wsj-next-hed{text-decoration:underline}
+.wsj-next-time{font-family:var(--sans);font-size:12px;color:var(--wsj-grey-2)}
+
+/* The footer normally sits 120px below the last section; the read-next grid
+   already ends on its own rhythm. */
+.wsj + .footer{margin-top:64px}
+
+@media (max-width:1100px){
+  .wsj-grid{grid-template-columns:1fr}
+  .wsj-rail{margin-top:56px;max-width:var(--wsj-text)}
+  .wsj-popular{position:static}
+  .wsj-next-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .wsj{padding-top:22px}
+  .wsj-tools{margin-left:0;width:100%}
+  .wsj-facts dl{grid-template-columns:repeat(2,1fr)}
+  .wsj-text,.wsj-text p,.wsj-text .post-prose p,.wsj-text ul,.wsj-text ol{font-size:18px}
+  .wsj-next-grid{grid-template-columns:1fr}
+}
