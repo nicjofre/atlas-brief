@@ -269,7 +269,7 @@
   z-index: 1;
   grid-template-columns: 1fr;
   gap: 0;
-  padding: clamp(26px, 3.2vw, 48px) var(--pad-x);
+  padding: clamp(20px, 2.2vw, 32px) var(--pad-x);
   align-items: center;
 }
 
@@ -284,19 +284,19 @@
   transform: translateY(-50%);
   font-family: var(--serif);
   font-weight: 600;
-  font-size: clamp(180px, 22vw, 320px);
+  font-size: clamp(130px, 15vw, 220px);
   line-height: 0.7;
   color: rgba(255,255,255,0.05);
   pointer-events: none;
   z-index: -1;
 }
 
-.cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 14px; }
+.cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 10px; }
 .cat-masthead h1 {
   color: #FFFFFF;
-  font-size: clamp(32px, 4.2vw, 62px);
+  font-size: clamp(28px, 3.4vw, 50px);
   line-height: 0.95;
-  margin: 0 0 14px;
+  margin: 0 0 10px;
 }
 .cat-masthead h1 em { color: var(--brand-red); }
 .cat-masthead .cat-dek {
@@ -304,13 +304,13 @@
   max-width: 44ch;
   /* `auto` on the sides, not 0: this shorthand sits after the centring rule and
      was resetting it. */
-  margin: 0 auto 18px;
-  font-size: clamp(15px, 1.3vw, 18px);
+  margin: 0 auto 14px;
+  font-size: clamp(14px, 1.15vw, 16px);
 }
 .cat-masthead .cat-meta {
   color: rgba(255,255,255,0.7);
   border-top: 1px solid rgba(255,255,255,0.22);
-  padding-top: 14px;
+  padding-top: 12px;
   gap: 22px;
 }
 
