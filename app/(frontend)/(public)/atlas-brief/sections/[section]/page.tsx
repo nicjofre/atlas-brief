@@ -30,7 +30,10 @@ const SECTION_REGISTRY: Record<string, {
     eyebrow: 'Atlas Brief',
     deck:
       "A running listings board for LA multifamily: what's for sale, what just sold, and what an operator thinks of the number.",
-    heroImage: '/images/brief/cat-broker-activity.jpg',
+    // Carol M. Highsmith, Library of Congress — public domain, no attribution
+    // required. Replaces the olympic-towers placeholder the sheet's LA skyline
+    // was standing in for.
+    heroImage: '/images/la-skyline-dusk.jpg',
   },
 }
 
@@ -88,7 +91,13 @@ export default async function SectionPage(
 
   return (
     <>
-      <header className="cat-masthead">
+      {/* The photo rides on the band itself as a custom property, not on the
+          markup inside the capped wrap — positioned in there it kept stopping
+          short of the band's right edge. */}
+      <header
+        className="cat-masthead"
+        style={{ ['--cat-hero' as string]: `url(${section.heroImage})` }}
+      >
         <div className="cat-masthead-inner">
           <div>
             <div className="cat-eyebrow">{section.eyebrow}</div>

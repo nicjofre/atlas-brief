@@ -254,12 +254,32 @@
        transparent calc(var(--flag-stop) + 5px));
    }
    --------------------------------------------------------------------------- */
-/* Photo off. The panel is navy, and with nothing to sit beside, the section
-   name centres in the band. */
+/* Photo back on — the LA skyline at dusk, full bleed under a navy wash. It's a
+   background on the band rather than the <img> in the markup: that markup sits
+   inside .cat-masthead-inner, which is capped at --maxw with page padding, so
+   however it was positioned it kept stopping short of the band's edges. On the
+   band, inset:0 is the band. */
+.cat-masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to bottom, rgba(6,24,50,0.68) 0%, rgba(6,24,50,0.82) 100%),
+    var(--cat-hero);
+  background-size: cover, cover;
+  background-position: center, center 52%;
+  background-repeat: no-repeat, no-repeat;
+}
 .cat-hero-img { display: none; }
 .cat-masthead::after { display: none; }
 .cat-masthead-inner,
-.cat-masthead-inner > div:first-child { margin-left: 0; text-align: center; }
+.cat-masthead-inner > div:first-child {
+  margin-left: 0;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
 /* One line: the name and its italic half sit together rather than stacking. */
 .cat-masthead h1 { text-wrap: balance; }
 .cat-masthead .cat-meta { justify-content: center; }
@@ -271,24 +291,6 @@
   gap: 0;
   padding: clamp(20px, 2.2vw, 32px) var(--pad-x);
   align-items: center;
-}
-
-/* The ghosted A from the identity sheet's banner, as on the homepage flag —
-   same 5% white, sat behind the type, run to the right edge exactly as the
-   front page does it. */
-.cat-masthead-inner::before {
-  content: "A";
-  position: absolute;
-  right: -0.06em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: clamp(130px, 15vw, 220px);
-  line-height: 0.7;
-  color: rgba(255,255,255,0.05);
-  pointer-events: none;
-  z-index: -1;
 }
 
 .cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 10px; }
@@ -315,12 +317,11 @@
 }
 
 @media (max-width: 900px) {
-  /* No room for the diagonal to read: the photo goes quiet behind the text. */
+  /* The photo used to be knocked back to 28% here, from the version where the
+     type sat directly on it. The wash handles legibility now, so it stays at
+     full strength; only the crop tightens so the towers still read in a
+     narrower band. */
   .cat-masthead-inner > div:first-child { margin-left: 0; }
-  .cat-hero-img {
-    -webkit-mask-image: none;
-            mask-image: none;
-    opacity: .28;
-  }
+  .cat-hero-img img { object-position: center 46%; }
   .cat-masthead::after { display: none; }
 }
