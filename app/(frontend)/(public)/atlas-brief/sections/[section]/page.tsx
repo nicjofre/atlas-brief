@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
 import { getArticles, type ArticleCard } from '@/lib/db/articles'
-import { calmHeadline } from '@/lib/db/headline-case'
+import SectionFeed from './SectionFeed'
 import TopStories from '../../../TopStories'
 import {
   HeadlineText,
@@ -138,69 +138,12 @@ export default async function SectionPage(
         }}
       >
         <div className="wrap">
-          <div
-            className="front-head"
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              paddingBottom: 24,
-              borderBottom: '1px solid var(--ink)',
-              marginBottom: 32,
-              flexWrap: 'wrap',
-              gap: 16,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: 'var(--mono)',
-                  fontSize: 11,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color: 'var(--brand-red)',
-                  marginBottom: 6,
-                }}
-              >
-                Dispatches
-              </div>
-              <h2
-                style={{
-                  fontFamily: 'var(--serif)',
-                  fontWeight: 500,
-                  fontSize: 'clamp(28px, 3.4vw, 44px)',
-                  lineHeight: 1.05,
-                  letterSpacing: '-0.02em',
-                  margin: 0,
-                }}
-              >
-                Every entry, newest first.
-              </h2>
-            </div>
-            <Link
-              href="/atlas-brief"
-              style={{
-                fontFamily: 'var(--mono)',
-                fontSize: 11,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                borderBottom: '1px solid var(--brand-blue)',
-                paddingBottom: 1,
-              }}
-            >
-              ← All sections
-            </Link>
-          </div>
-
-          {/* Scrolls in place, like the homepage's Tape/Dispatch list: 91 entries
-              below the masthead is a very long page otherwise. The wrapper
-              carries the fade at the foot of the pane. */}
-          <div className="arc-scroll-wrap">
-          <div className="archive-list" tabIndex={0} role="region" aria-label="Entries">
-            {rest.map((a, i) => <ArchiveRow key={a.id} a={a} pos={rest.length - i} />)}
-          </div>
-          </div>
+          {/* No head here any more: the tabs below name the list and carry the
+              counts, and "Every entry, newest first" stopped being true the
+              moment a status filter was applied. */}
+          {/* Tabs + the scrolling pane. Client-side because the filter is a
+              reader control, and the rows are on the page either way. */}
+          <SectionFeed rows={rest} sectionLabel={sectionLabel(slug)} />
         </div>
       </section>
 
@@ -209,45 +152,3 @@ export default async function SectionPage(
   )
 }
 
-const MONTHS_AP = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.']
-
-// AP-style date, the same stamp the front-page package uses.
-function apDate(s: string | null | undefined): string {
-  if (!s) return ''
-  const d = new Date(s)
-  if (Number.isNaN(d.getTime())) return ''
-  return `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
-}
-
-// Status leads — this is a listings board, so "SOLD" is the first thing an
-// operator scans for — then the neighbourhood, the way Top Stories runs place
-// before date.
-function rowKicker(a: ArticleCard): string {
-  const status = statusKicker(a.listing?.status)
-  const p = a.listing?.property
-  const place = p?.neighborhood ?? p?.city ?? a.cat_label ?? sectionLabel(a.section_slug)
-  return [status, place].filter(Boolean).join(' · ')
-}
-
-// Rows in the front-page language: sans kicker in red, serif headline that
-// underlines on hover, thumbnail on the right, hairline between entries.
-function ArchiveRow({ a }: { a: ArticleCard; pos: number }) {
-  return (
-    <Link href={`/atlas-brief/${a.slug}`} className="arc-row">
-      <div className="arc-text">
-        <div className="arc-kicker">
-          <span>{rowKicker(a)}</span>
-          <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
-        </div>
-        <h3 className="arc-title">{calmHeadline(a.headline)}</h3>
-        {(a.excerpt ?? a.deck) && <p className="arc-deck">{a.excerpt ?? a.deck}</p>}
-      </div>
-      {a.heroUrl && (
-        <div className="arc-thumb">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={a.heroUrl} alt="" width={200} height={134} loading="lazy" />
-        </div>
-      )}
-    </Link>
-  )
-}
