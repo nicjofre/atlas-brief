@@ -1,3 +1,10 @@
+// UNTOUCHED BASELINE: this file is Nic's (commit e9d9421) and was unmodified as
+// of 44a0706. Anything Atlas Brief adds below is marked. To see the original:
+//     git show 44a0706:'app/(frontend)/(public)/atlas-brief/wsj-preview/[slug]/page.tsx'
+// It isn't copied inline — at 347 lines a duplicate would double the file and
+// conflict the next time Nic edits it. The stylesheet beside it does carry a
+// full snapshot, since that's what we restyle.
+
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -10,6 +17,9 @@ import { createClient } from '@/lib/supabase/server'
 import type { Media, Post } from '@/payload-types'
 import PostBlocks from '../../../_blocks/PostBlocks'
 import Footer from '../../../Footer'
+// ADDED BY ATLAS BRIEF (2026-09-16)
+import WsjSubscribe from './WsjSubscribe'
+import ArticleSubscribeModal from '../../../ArticleSubscribeModal'
 import './wsj.css'
 
 // PREVIEW ONLY — a Wall Street Journal-style treatment of a single article, so
@@ -214,6 +224,10 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
 
   return (
     <>
+      {/* ADDED BY ATLAS BRIEF (2026-09-16): the site's signup pop-up, which the
+          Subscribe buttons open. enabled={false} keeps its own scroll trigger
+          off here — on this route it opens only when asked. */}
+      <ArticleSubscribeModal enabled={false} slug={slug} />
       <div className="wsj">
         <header className="wsj-head">
           <Link href={a.sectionHref} className="wsj-flag">{a.section}</Link>
@@ -226,6 +240,8 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
             </div>
             {date && <time className="wsj-time" dateTime={a.publishedAt ?? undefined}>{date} 6:00 am PT</time>}
             <div className="wsj-tools">
+              {/* ADDED BY ATLAS BRIEF (2026-09-16) */}
+              <WsjSubscribe variant="tool" />
               <button type="button"><ShareIcon />Share</button>
               <button type="button"><TextIcon />Text</button>
               <button type="button"><ClockIcon />{minutes} min read</button>
@@ -261,14 +277,21 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
 
             <div className="wsj-text">
               {a.body}
-              <p className="wsj-writeto">
-                Write to {a.author} at <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
-              </p>
-              {date && (
-                <p className="wsj-appeared">
-                  Appeared in the {date} edition of The Tape.
-                </p>
-              )}
+              {/* ADDED BY ATLAS BRIEF (2026-09-16): the sign-off lines run left,
+                  the subscribe button sits opposite them. */}
+              <div className="wsj-signoff">
+                <div>
+                  <p className="wsj-writeto">
+                    Write to {a.author} at <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
+                  </p>
+                  {date && (
+                    <p className="wsj-appeared">
+                      Appeared in the {date} edition of The Tape.
+                    </p>
+                  )}
+                </div>
+                <WsjSubscribe variant="foot" />
+              </div>
             </div>
           </div>
 

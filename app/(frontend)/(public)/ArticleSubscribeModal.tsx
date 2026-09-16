@@ -128,6 +128,17 @@ export default function ArticleSubscribeModal({
     }
   }, [enabled])
 
+  // --- Open on demand -----------------------------------------------------
+  // A button anywhere on the page can ask for this modal by dispatching
+  // `atlas:open-subscribe`. Deliberate intent, so it ignores the suppression
+  // that governs the automatic trigger: someone who dismissed the pop-up and
+  // then clicked Subscribe wants the form.
+  useEffect(() => {
+    const onAsk = () => setOpen(true)
+    window.addEventListener('atlas:open-subscribe', onAsk)
+    return () => window.removeEventListener('atlas:open-subscribe', onAsk)
+  }, [])
+
   const close = useCallback((remember: boolean) => {
     if (remember) markModalDismissed()
     setOpen(false)
