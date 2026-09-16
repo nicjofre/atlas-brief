@@ -298,6 +298,34 @@
   overflow: auto;
 }
 .tax-dialog::backdrop { background: rgba(6,12,30,0.72); }
+
+/* It arrived fully formed, which read as a jump. Now the backdrop washes in and
+   the card rises a few pixels with it — fast enough not to feel like waiting.
+   Closing runs the same thing backwards; the component holds the dialog open
+   for the duration, since a closed dialog leaves the top layer immediately and
+   has nothing left to animate. */
+.tax-dialog[open] { animation: tax-dialog-in 180ms cubic-bezier(.2, .7, .3, 1) both; }
+.tax-dialog[open]::backdrop { animation: tax-backdrop-in 220ms ease-out both; }
+.tax-dialog.is-closing { animation: tax-dialog-out 160ms ease-in both; }
+.tax-dialog.is-closing::backdrop { animation: tax-backdrop-out 160ms ease-in both; }
+
+@keyframes tax-dialog-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes tax-dialog-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(6px) scale(.99); }
+}
+@keyframes tax-backdrop-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes tax-backdrop-out { from { opacity: 1 } to { opacity: 0 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tax-dialog[open],
+  .tax-dialog[open]::backdrop,
+  .tax-dialog.is-closing,
+  .tax-dialog.is-closing::backdrop { animation: none; }
+}
 .tax-dialog-card {
   position: relative;
   background: var(--brand-navy);
