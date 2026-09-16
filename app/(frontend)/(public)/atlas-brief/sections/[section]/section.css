@@ -96,6 +96,20 @@
 /* Entry list scrolls in place — the same pane as the homepage's .tt-scroll,
    down to the blue thumb that goes red on hover. Scoped to this page: feed.css
    styles .archive-list for the Tape index too, which isn't a scrolling pane. */
+/* The pane fades out at its foot, as the homepage's list does, so the cut-off
+   row reads as "there's more" rather than as the end. The inset on the right
+   clears the scrollbar so the fade doesn't wash over it. */
+.arc-scroll-wrap { position: relative; }
+.arc-scroll-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 18px;
+  bottom: 0;
+  height: 64px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), var(--bg));
+}
 .archive-feed .archive-list {
   max-height: clamp(520px, 74vh, 940px);
   overflow-y: auto;

@@ -194,9 +194,12 @@ export default async function SectionPage(
           </div>
 
           {/* Scrolls in place, like the homepage's Tape/Dispatch list: 91 entries
-              below the masthead is a very long page otherwise. */}
+              below the masthead is a very long page otherwise. The wrapper
+              carries the fade at the foot of the pane. */}
+          <div className="arc-scroll-wrap">
           <div className="archive-list" tabIndex={0} role="region" aria-label="Entries">
             {rest.map((a, i) => <ArchiveRow key={a.id} a={a} pos={rest.length - i} />)}
+          </div>
           </div>
         </div>
       </section>
