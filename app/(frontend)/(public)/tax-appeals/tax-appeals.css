@@ -238,65 +238,126 @@
   .tax-col + .tax-col { border-left: 0; padding-left: 0; }
 }
 
-/* ---- Closing card -------------------------------------------------------
-   The offer and waitlist sit in a brand-blue card, centred, on the white page —
-   the page's one filled block, so it closes on something rather than trailing
-   into white. */
+/* ---- Closing block -------------------------------------------------------
+   White and centred, like the rest of the page. The navy is reserved for the
+   dialog now, so the section reads as page copy that ends in one button rather
+   than a slab. */
 .tax-offer {
-  padding: clamp(40px, 5.5vw, 76px) 0 clamp(56px, 7vw, 96px);
+  /* Tight under the note: the footer follows straight after, and the run of
+     white there was reading as the page having ended early. */
+  padding: clamp(40px, 5.5vw, 76px) 0 clamp(24px, 3vw, 44px);
   background: var(--bg);
 }
 .tax-offer > .tax-wrap {
   max-width: 1040px;
-  background: var(--brand-navy);
-  border-radius: 3px;
-  padding: clamp(32px, 4.2vw, 60px) clamp(24px, 4vw, 56px);
   text-align: center;
 }
 .tax-offer .tax-price {
-  color: #FFFFFF;
+  color: var(--ink);
   max-width: 46ch;
   margin: 0 auto;
 }
-/* The yellow marker was the last of the calcite palette here. Emphasis is now a
-   rule under white type: on a filled card, coloured text would have to fight
-   the ground, and a rule doesn't. */
+/* The yellow marker was the last of the calcite palette here; the emphasis is a
+   red rule under the words instead. */
 .tax-offer .tax-mark {
   background: transparent;
-  color: #FFFFFF;
+  color: var(--ink);
   padding: 0;
   border-radius: 0;
   border-bottom: 2px solid var(--brand-red);
   font-weight: 500;
 }
 .tax-offer .tax-steps {
-  color: rgba(255,255,255,0.9);
+  color: var(--muted);
   margin-top: 26px;
   justify-content: center;
 }
-.tax-offer .tax-steps b { color: #FFFFFF; }
+.tax-offer .tax-steps b { color: var(--brand-red); }
+.tax-offer .tax-cta-row { display: flex; justify-content: center; margin-top: 30px; }
+.tax-offer .tax-note { color: var(--muted); margin-top: 18px; }
 
-/* The form block centres in the card, but the fields themselves stay as they
-   were — left-aligned labels and values. Centred placeholder text read as a
-   different kind of control. */
-.tax-offer .tax-cta-row { display: flex; justify-content: center; }
-.tax-offer .tax-form { margin: 0 auto; text-align: left; }
-.tax-offer .tax-input {
+/* ---- Waitlist dialog -----------------------------------------------------
+   The section closes on one button; the form opens in a dialog whose card is
+   the same navy object the section used to be. */
+.tax-open { font-size: 13px; padding: 16px 32px; }
+
+.tax-dialog {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  max-width: min(560px, calc(100vw - 32px));
+  width: 100%;
+  color: #FFFFFF;
+  /* A modal <dialog> centres itself with `margin: auto`, which a global reset
+     zeroes — hence the top-left corner. inset:0 plus auto margins puts it back
+     in the middle on both axes. */
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: min(88vh, 720px);
+  overflow: auto;
+}
+.tax-dialog::backdrop { background: rgba(6,12,30,0.72); }
+.tax-dialog-card {
+  position: relative;
+  background: var(--brand-navy);
+  border-top: 3px solid var(--brand-red);
+  border-radius: 3px;
+  padding: clamp(28px, 4vw, 44px);
+  text-align: left;
+}
+.tax-dialog-x {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: 0;
+  color: rgba(255,255,255,0.6);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  transition: color .15s;
+}
+.tax-dialog-x:hover { color: #FFFFFF; }
+.tax-dialog-kicker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+  margin: 0 0 10px;
+}
+.tax-dialog-hed {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  color: #FFFFFF;
+}
+.tax-dialog-sub {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.82);
+  margin: 0 0 22px;
+  max-width: 40ch;
+}
+/* The form takes the same treatment it had on the navy card. */
+.tax-dialog .tax-form { max-width: none; }
+.tax-dialog .tax-input {
   background: #FFFFFF;
   color: var(--ink);
   border-color: rgba(255,255,255,0.45);
 }
-.tax-offer .tax-input:focus { border-color: var(--brand-blue); }
-/* Blue button on the navy card — the site's primary, red on hover. */
-.tax-offer .tax-btn-primary {
+.tax-dialog .tax-input:focus { border-color: var(--brand-blue); }
+.tax-dialog .tax-btn-primary {
   background: var(--brand-blue);
   color: #FFFFFF;
   border-color: var(--brand-blue);
 }
-.tax-offer .tax-btn-primary:hover:not(:disabled) {
-  background: var(--brand-red);
-  border-color: var(--brand-red);
-}
-.tax-offer .tax-form-err { color: #FFE2E1; }
-.tax-offer .tax-note { color: rgba(255,255,255,0.78); margin-top: 18px; }
-.tax-offer .tax-form-done { color: #FFFFFF; align-items: center; }
+.tax-dialog .tax-btn-primary:hover:not(:disabled) { background: var(--brand-red); border-color: var(--brand-red); }
+.tax-dialog .tax-form-err { color: #FFB4B2; }
+.tax-dialog .tax-form-done { color: #FFFFFF; }

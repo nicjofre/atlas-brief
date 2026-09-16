@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../Footer'
-import WaitlistForm from './WaitlistForm'
+import WaitlistModal from './WaitlistModal'
 import './tax-appeals.css'
 
 export const metadata: Metadata = pageMetadata({
@@ -111,7 +111,7 @@ export default function TaxAppealsPage() {
             </div>
 
             <div className="tax-cta-row">
-              <WaitlistForm />
+              <WaitlistModal />
             </div>
             <p className="tax-note">Launching 2026. Join the list to be first in line.</p>
           </div>
