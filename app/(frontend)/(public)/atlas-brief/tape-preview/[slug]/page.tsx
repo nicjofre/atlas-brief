@@ -193,6 +193,24 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
         )}
 
         <div className="tp-grid">
+          {/* First in the DOM, placed into the rail column on desktop. Stacked
+              on a phone the rail lands after the article, and the takeaways are
+              the one part of it that belongs beside the glance rather than
+              after everything. */}
+          {takeaways.length > 0 && (
+            <section className="tp-takeaways">
+              <h2>What matters</h2>
+              <ol>
+                {takeaways.map((t, i) => (
+                  <li key={i}>
+                    {t.bold && <b>{t.bold}</b>}
+                    {t.text}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
           <div className="tp-main">
             {heroUrl && (
               <figure className="tp-hero">
@@ -236,23 +254,6 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
           </div>
 
           <aside className="tp-rail">
-            {/* Takeaways ride the rail rather than interrupting the copy: on a
-                deal page they're the summary someone skims instead of reading,
-                which is what a rail is for. */}
-            {takeaways.length > 0 && (
-              <section className="tp-takeaways">
-                <h2>What matters</h2>
-                <ol>
-                  {takeaways.map((t, i) => (
-                    <li key={i}>
-                      {t.bold && <b>{t.bold}</b>}
-                      {t.text}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-
             {/* The brokers sit between the takeaways and Most Popular: on a deal
                 page they're reference, which is what the rail is for. */}
             {brokerGroups.length > 0 && (

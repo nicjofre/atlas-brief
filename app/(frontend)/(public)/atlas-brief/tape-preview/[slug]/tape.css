@@ -180,8 +180,14 @@
   grid-template-columns: minmax(0, var(--tp-col)) var(--tp-rail);
   column-gap: var(--tp-gutter);
   padding-top: 22px;
+  align-items: start;
 }
-.tp-main { min-width: 0; }
+/* Explicit placement, so the DOM can order for the phone while the desktop
+   keeps the takeaways at the top of the rail: article left spanning both rows,
+   takeaways top-right, the rest of the rail beneath them. */
+.tp-main { min-width: 0; grid-column: 1; grid-row: 1 / span 2; }
+.tp-takeaways { grid-column: 2; grid-row: 1; }
+.tp-rail { grid-column: 2; grid-row: 2; }
 .tp-hero { margin: 0 0 26px; }
 .tp-hero img { width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; display: block; }
 .tp-hero figcaption {
@@ -456,7 +462,9 @@
 .tp-popular a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 @media (max-width: 1000px) {
+  /* One column: placement goes back to DOM order — takeaways, article, rail. */
   .tp-grid { grid-template-columns: 1fr; }
+  .tp-main, .tp-takeaways, .tp-rail { grid-column: 1; grid-row: auto; }
   .tp-rail { margin-top: 36px; border-top: 1px solid var(--rule); padding-top: 20px; }
   .tp-ribbon { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); }
   .tp-ribbon > div:nth-child(2n) { border-right: 0; }
