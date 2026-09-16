@@ -537,8 +537,11 @@
 }
 
 .ab-tail {
-  padding: clamp(40px, 6vw, 72px) 0;
+  padding: clamp(28px, 3.4vw, 48px) 0 clamp(20px, 2.4vw, 32px);
 }
+/* The footer carries a sitewide margin-top: 120px. After the sign-off that read
+   as the page having ended twice, so it's halved here and nowhere else. */
+.ab-tail + .footer { margin-top: clamp(40px, 5vw, 64px); }
 /* The roundel sits inside the column, in the white the short sign-off lines
    leave beside them — level with "— David Safai" — rather than out past the
    measure. Positioned rather than gridded: the space it fills only exists
@@ -570,3 +573,144 @@
 }
 .ab-tail .prose p { margin: 0 0 1.15em; }
 .ab-tail .prose p:last-child { margin-bottom: 0; }
+
+/* ---- Split body ----------------------------------------------------------
+   The three arms on the left, the buildings on the right. Both blocks were
+   written as full-width bands, so inside the split they give up their own
+   wrap, padding and band behaviour and become two columns of one section. */
+.ab-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 3.4vw, 64px);
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(28px, 3.4vw, 52px) var(--pad-x);
+  align-items: start;
+  border-bottom: 1px solid var(--ink);
+}
+.ab-split > section { padding: 0; border: 0; background: none; }
+/* The rule between the columns, as on the homepage's Top Stories grid. It's
+   what makes two columns of different depth read as typeset rather than as
+   content that stopped early. */
+.ab-split > section + section {
+  border-left: 1px solid var(--rule);
+  padding-left: clamp(28px, 3.4vw, 64px);
+}
+.ab-split .wrap { max-width: none; margin: 0; padding: 0; }
+
+/* Left: the arms. Left-aligned now that it's a column rather than a centred
+   page — centring a 60ch measure inside half the width reads as an accident. */
+.ab-split .ab-body .prose { margin: 0; max-width: none; }
+.ab-split .ab-body .prose h2:first-child { margin-top: 0; }
+
+/* Right: the buildings, stacked in the narrower column. The navy band goes —
+   it was a full-bleed device and can't be one here — so the cards carry the
+   red edge on white. */
+.ab-split .ab-portfolio .section-head {
+  background: none;
+  border-bottom: 3px solid var(--brand-red);
+  padding: 0 0 clamp(12px, 1.4vw, 18px);
+  margin-bottom: clamp(20px, 2.4vw, 30px);
+  text-align: left;
+}
+.ab-split .ab-portfolio .section-head h2 {
+  color: var(--brand-navy);
+  font-size: clamp(22px, 2.1vw, 30px);
+  text-align: left;
+  max-width: none;
+}
+.ab-split .projects { grid-template-columns: 1fr; gap: clamp(16px, 1.8vw, 24px); }
+.ab-split .project {
+  background: var(--bg-alt);
+  border-left: 3px solid var(--brand-red);
+  border-top: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: clamp(14px, 1.5vw, 20px);
+}
+.ab-split .project .p-head { grid-template-columns: 34px 1fr; gap: 8px; padding-bottom: 12px; }
+.ab-split .project .p-head .cat { grid-column: 2; }
+.ab-split .project .p-head h3 { font-size: clamp(17px, 1.4vw, 21px); }
+/* Shorter photos: at 3:2 the two cards outweighed three sections of prose. */
+.ab-split .project .p-photo { margin-top: 12px; }
+.ab-split .project .p-photo img { aspect-ratio: 16 / 9; }
+.ab-split .project .p-cap { font-size: 9px; padding: 8px 10px; }
+.ab-split .project dl {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+.ab-split .project dt { font-size: 9px; }
+.ab-split .project dd { font-size: 14px; }
+.ab-split .project p { margin-top: 12px; font-size: 14px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .ab-split { grid-template-columns: 1fr; gap: 36px; }
+  /* Stacked, the rule would run across the page rather than between columns. */
+  .ab-split > section + section { border-left: 0; padding-left: 0; }
+}
+
+/* ---- Building deck -------------------------------------------------------
+   One card at a time, stepped by the blue arrows the homepage's trending wheel
+   uses. Native scroll-snap carries the motion, so swipe and momentum work
+   without reimplementing them. */
+/* Dots under the deck, as on the homepage's trending wheel: the affordance sits
+   with the cards rather than crowding the heading. */
+.bd-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.bd-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rule);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.bd-dot.is-active { background: var(--brand-red); transform: scale(1.25); }
+.bd-dot:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+
+.bd-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* The arrows and the counter are the affordance; a scrollbar under the card
+     reads as a stray control. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.bd-track::-webkit-scrollbar { display: none; }
+.bd-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bd-track { scroll-behavior: auto; }
+}
+
+/* ---- Lead line -----------------------------------------------------------
+   The body's opening sentence, lifted out of the left column to run centred
+   under the masthead — it introduces both columns, so it shouldn't sit in one
+   of them. */
+.ab-lead {
+  padding: clamp(24px, 3vw, 44px) var(--pad-x) clamp(4px, 1vw, 12px);
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+.ab-lead p {
+  margin: 0 auto;
+  max-width: 54ch;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: clamp(19px, 1.8vw, 26px);
+  line-height: 1.45;
+  color: var(--ink);
+}
