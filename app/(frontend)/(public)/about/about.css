@@ -1,7 +1,264 @@
+/* ===========================================================================
+   SNAPSHOT — the About page as built to David's comp, 2026-09-15, commit 9c7396c.
+
+   Kept because Lucas is redesigning this page and wants the comp version
+   recoverable in one paste. This is the whole stylesheet at that moment, with
+   its own comments stripped so the wrapper doesn't close early.
+
+   The markup that goes with it: RenderBlocks renders the about hero as
+   .ab-top > .wrap > (.ab-kicker > .eyebrow + .ab-standfirst) + h1 + .ab-arms,
+   where .ab-arms is the hardcoded "Real Estate · Construction · Acquisitions"
+   line, shown only when block.style === 'about'. CMS at the time: hero eyebrow
+   "About", title "Atlas", subtitle the standfirst; projects block eyebrow
+   cleared.
+
+   .ab-top {
+     padding: clamp(26px, 3vw, 42px) 0 clamp(20px, 2.4vw, 32px);
+     border-bottom: 1px solid var(--ink);
+   }
+   .ab-top .eyebrow {
+     display: inline-block;
+     font-family: var(--mono);
+     font-size: 11px;
+     letter-spacing: 0.16em;
+     text-transform: uppercase;
+     color: #FFFFFF;
+     background: var(--brand-red);
+     padding: 12px 16px;
+     border-radius: 3px;
+   }
+   .ab-top .ab-kicker {
+     display: flex;
+     align-items: center;
+     gap: 24px;
+     flex-wrap: wrap;
+     margin-bottom: clamp(18px, 2.2vw, 28px);
+   }
+   .ab-top .ab-standfirst {
+     margin: 0 0 0 auto;
+     max-width: 34ch;
+     text-align: right;
+     font-family: var(--mono);
+     font-size: 11px;
+     letter-spacing: 0.14em;
+     line-height: 1.6;
+     text-transform: uppercase;
+     color: var(--muted);
+   }
+   @media (max-width: 700px) {
+     .ab-top .ab-standfirst { margin-left: 0; text-align: left; }
+   }
+   .ab-top h1 {
+     text-align: center;
+     color: var(--brand-navy);
+     font-family: var(--serif);
+     font-weight: 500;
+     font-style: italic;
+     font-size: clamp(42px, 5.2vw, 76px);
+     line-height: 1;
+     letter-spacing: -0.03em;
+     margin: 0;
+   }
+   .ab-top h1 em { color: var(--brand-red); font-style: italic; }
+   .ab-arms {
+     margin: clamp(10px, 1.2vw, 16px) auto 0;
+     text-align: center;
+     font-family: var(--sans);
+     font-size: clamp(12px, 1.1vw, 15px);
+     font-weight: 600;
+     letter-spacing: 0.16em;
+     text-transform: uppercase;
+     color: var(--brand-navy);
+   }
+   .ab-arms::after {
+     content: "";
+     display: block;
+     width: clamp(64px, 7vw, 104px);
+     height: 3px;
+     background: var(--brand-red);
+     margin: clamp(10px, 1.2vw, 16px) auto 0;
+   }
+   .ab-body {
+     padding: clamp(40px, 6vw, 80px) 0;
+     border-bottom: 1px solid var(--ink);
+   }
+   .ab-body .prose {
+     margin: 0 auto;
+     max-width: 60ch;
+     font-family: var(--serif);
+     font-size: clamp(18px, 1.4vw, 21px);
+     line-height: 1.6;
+     color: var(--ink);
+   }
+   .ab-body .prose h2 {
+     font-family: var(--serif);
+     font-style: italic;
+     font-weight: 500;
+     font-size: clamp(24px, 2.4vw, 34px);
+     line-height: 1.1;
+     letter-spacing: -0.02em;
+     color: var(--brand-navy);
+     margin: 2.2em 0 0.55em;
+     padding-top: clamp(14px, 1.6vw, 20px);
+     border-top: 2px solid var(--brand-red);
+   }
+   .ab-body .prose h2:first-child { margin-top: 0; }
+   .ab-body .prose p { margin: 0 0 1.15em; }
+   .ab-body .prose > .payload-richtext > p:first-child {
+     font-size: clamp(20px, 1.7vw, 25px);
+     line-height: 1.45;
+     color: var(--ink);
+   }
+   .ab-body .prose p:last-child { margin-bottom: 0; }
+   .ab-portfolio {
+     padding: clamp(40px, 5.5vw, 80px) 0;
+     border-top: 3px solid var(--brand-red);
+     border-bottom: 3px solid var(--brand-red);
+     background: var(--brand-navy);
+   }
+   .ab-portfolio .wrap {
+     max-width: var(--maxw);
+     margin: 0 auto;
+     padding: 0 calc(var(--pad-x) + clamp(0px, 3vw, 56px));
+   }
+   .ab-portfolio .section-head {
+     display: block;
+     text-align: center;
+     background: var(--bg);
+     padding: clamp(24px, 3vw, 40px) clamp(20px, 3vw, 40px);
+     border-radius: 3px;
+     border-bottom: 3px solid var(--brand-red);
+     margin-bottom: clamp(32px, 4vw, 56px);
+   }
+   .ab-portfolio .section-head .num {
+     font-family: var(--mono);
+     font-size: 11px;
+     letter-spacing: 0.14em;
+     text-transform: uppercase;
+     color: var(--brand-red);
+     margin-bottom: 16px;
+   }
+   .ab-portfolio .section-head h2 {
+     font-family: var(--serif);
+     font-weight: 500;
+     font-size: clamp(32px, 4.5vw, 64px);
+     line-height: 1;
+     letter-spacing: -0.025em;
+     display: inline-block;
+     margin: 0;
+     text-wrap: balance;
+     text-align: center;
+     color: var(--brand-navy);
+   }
+   .projects {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: clamp(32px, 3.4vw, 64px);
+   }
+   .project {
+     display: flex;
+     flex-direction: column;
+     padding: clamp(24px, 2.6vw, 34px);
+     background: var(--bg-alt);
+     border-left: 3px solid var(--brand-red);
+     border-top: 1px solid rgba(255,255,255,0.22);
+     border-right: 1px solid rgba(255,255,255,0.22);
+     border-bottom: 1px solid rgba(255,255,255,0.22);
+   }
+   .project .p-head {
+     display: grid;
+     grid-template-columns: 48px 1fr auto;
+     gap: 16px;
+     align-items: baseline;
+     padding-bottom: 20px;
+     margin-bottom: 0;
+   }
+   .project .p-head .n { font-family: var(--mono); font-size: 11px; color: var(--brand-red); letter-spacing: 0.12em; }
+   .project .p-head .cat {
+     font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+     text-transform: uppercase; color: var(--muted); white-space: nowrap;
+   }
+   .project .p-head h3 {
+     font-family: var(--serif); font-weight: 400;
+     font-size: clamp(28px, 2.6vw, 40px);
+     line-height: 1; letter-spacing: -0.02em; margin: 0;
+   }
+   .p-photo { margin: 20px 0 0; border: 1px solid var(--rule); overflow: hidden; background: var(--bg-alt); }
+   .p-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; }
+   .p-cap { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-top: 1px dotted var(--rule); background: transparent; }
+   .project dl {
+     margin: 24px 0 0;
+     padding-top: 20px;
+     border-top: var(--tick);
+     display: grid;
+     grid-template-columns: repeat(4, 1fr);
+     gap: 16px;
+   }
+   .project dl > div { display: flex; flex-direction: column; gap: 4px; }
+   .project dt {
+     font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+     text-transform: uppercase; color: var(--muted);
+   }
+   .project dd {
+     margin: 0;
+     font-family: var(--serif);
+     font-weight: 500;
+     font-size: 17px;
+     letter-spacing: -0.005em;
+   }
+   .project p {
+     margin-top: 18px;
+     font-size: 15px;
+     color: var(--muted);
+     line-height: 1.6;
+     max-width: 48ch;
+   }
+   @media (max-width: 1024px) {
+     .projects { grid-template-columns: 1fr; gap: 64px; }
+   }
+   @media (max-width: 400px) {
+     .project dl { grid-template-columns: repeat(2, 1fr); }
+     .project .p-head { grid-template-columns: 36px 1fr; }
+     .project .p-head .cat { grid-column: 2; }
+   }
+   .ab-tail {
+     padding: clamp(40px, 6vw, 72px) 0;
+   }
+   .ab-tail .ab-tail-in {
+     position: relative;
+     max-width: 60ch;
+     margin: 0 auto;
+   }
+   .ab-tail .ab-tail-in .atlas-mark {
+     display: block;
+     position: absolute;
+     right: 16%;
+     bottom: clamp(2px, 0.8vw, 14px);
+   }
+   @media (max-width: 760px) {
+     .ab-tail .ab-tail-in .atlas-mark { position: static; margin: 28px 0 0; }
+   }
+   .ab-tail .prose {
+     margin: 0;
+     max-width: 60ch;
+     font-family: var(--serif);
+     font-size: clamp(18px, 1.4vw, 21px);
+     line-height: 1.6;
+     color: var(--ink);
+   }
+   .ab-tail .prose p { margin: 0 0 1.15em; }
+   .ab-tail .prose p:last-child { margin-bottom: 0; }
+   =========================================================================== */
+
 /* ---------------------------------------------------------------------------
-   BACKUP — the four colour declarations this page carried before the brand pass
-   (2026-09-11, from commit 8f26374). Paste any of these back over the live rule
-   to restore. Delete this block only after Lucas confirms.
+   PRE-BRAND-UPDATE VERSION — kept deliberately.
+
+   The four colour declarations this page carried before the brand pass
+   (2026-09-11, from commit 8f26374), i.e. the last state of the page on the old
+   calcite palette. Superseded by the snapshot above, which is the comp build —
+   this one goes back further, to before any of the brand work. Keep both: this
+   is the only record of the original. Paste any line back over the live rule to
+   restore it.
 
    .ab-top .eyebrow              -> color: var(--muted);   (plain mono line, not
                                     a block: no display/background/padding/
@@ -28,7 +285,7 @@
    --------------------------------------------------------------------------- */
 
 .ab-top {
-  padding: clamp(40px, 5vw, 64px) 0 clamp(24px, 3vw, 40px);
+  padding: clamp(26px, 3vw, 42px) 0 clamp(20px, 2.4vw, 32px);
   border-bottom: 1px solid var(--ink);
 }
 /* The label is the filled red block the article sections use — anchored left
@@ -50,7 +307,7 @@
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: clamp(24px, 3vw, 40px);
+  margin-bottom: clamp(18px, 2.2vw, 28px);
 }
 .ab-top .ab-standfirst {
   margin: 0 0 0 auto;
@@ -74,13 +331,33 @@
   font-family: var(--serif);
   font-weight: 500;
   font-style: italic;
-  font-size: clamp(48px, 6.5vw, 96px);
+  font-size: clamp(42px, 5.2vw, 76px);
   line-height: 1;
   letter-spacing: -0.03em;
   margin: 0;
 }
 /* "Brief" carries the red, the same lockup the nav and footer use. */
 .ab-top h1 em { color: var(--brand-red); font-style: italic; }
+/* The three sides of the practice, set under the name and closed by a short red
+   rule — the sheet's About comp. */
+.ab-arms {
+  margin: clamp(10px, 1.2vw, 16px) auto 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: clamp(12px, 1.1vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+}
+.ab-arms::after {
+  content: "";
+  display: block;
+  width: clamp(64px, 7vw, 104px);
+  height: 3px;
+  background: var(--brand-red);
+  margin: clamp(10px, 1.2vw, 16px) auto 0;
+}
 
 .ab-body {
   padding: clamp(40px, 6vw, 80px) 0;
@@ -102,6 +379,9 @@
    section-head block. */
 .ab-body .prose h2 {
   font-family: var(--serif);
+  /* Italic, per the comp — it separates the three arms from the body serif
+     around them without another weight or colour. */
+  font-style: italic;
   font-weight: 500;
   font-size: clamp(24px, 2.4vw, 34px);
   line-height: 1.1;

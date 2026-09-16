@@ -67,6 +67,12 @@ function BlockItem({ block }: { block: Block }) {
               </div>
             )}
             <h1>{withBriefMark(block.title)}</h1>
+            {/* The practice's three sides, per the identity sheet's About comp.
+                Hardcoded rather than a CMS field: adding one to the hero block
+                means a schema change, and this is brand copy, not page copy. */}
+            {block.style === 'about' && (
+              <p className="ab-arms">Real Estate · Construction · Acquisitions</p>
+            )}
           </div>
         </header>
       )
