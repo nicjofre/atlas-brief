@@ -51,6 +51,7 @@ function BlockItem({ block }: { block: Block }) {
                 </div>
               )}
               <h1>{withBriefMark(block.title)}</h1>
+              <p className="hero-arms">Real Estate · Construction · Acquisitions</p>
             </div>
           </header>
         )
@@ -71,7 +72,7 @@ function BlockItem({ block }: { block: Block }) {
                 Hardcoded rather than a CMS field: adding one to the hero block
                 means a schema change, and this is brand copy, not page copy. */}
             {block.style === 'about' && (
-              <p className="ab-arms">Real Estate · Construction · Acquisitions</p>
+              <p className="hero-arms">Real Estate · Construction · Acquisitions</p>
             )}
           </div>
         </header>

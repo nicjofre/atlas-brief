@@ -1136,6 +1136,28 @@ html, body {
   }
 }
 
+/* Hero arms line — "Real Estate · Construction · Acquisitions" under the name
+   on About and Contact, closed by a short red rule. Lives here rather than in a
+   route stylesheet because two pages use it and a second copy would drift. */
+.hero-arms {
+  margin: clamp(10px, 1.2vw, 16px) auto 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: clamp(12px, 1.1vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+}
+.hero-arms::after {
+  content: "";
+  display: block;
+  width: clamp(64px, 7vw, 104px);
+  height: 3px;
+  background: var(--brand-red);
+  margin: clamp(10px, 1.2vw, 16px) auto 0;
+}
+
 /* ============================================================
    STATUS BADGES — authoritative, WSJ/Reuters-level presence
    Applied sitewide: article headers, log boards, front-page rails

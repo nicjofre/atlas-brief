@@ -338,26 +338,7 @@
 }
 /* "Brief" carries the red, the same lockup the nav and footer use. */
 .ab-top h1 em { color: var(--brand-red); font-style: italic; }
-/* The three sides of the practice, set under the name and closed by a short red
-   rule — the sheet's About comp. */
-.ab-arms {
-  margin: clamp(10px, 1.2vw, 16px) auto 0;
-  text-align: center;
-  font-family: var(--sans);
-  font-size: clamp(12px, 1.1vw, 15px);
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--brand-navy);
-}
-.ab-arms::after {
-  content: "";
-  display: block;
-  width: clamp(64px, 7vw, 104px);
-  height: 3px;
-  background: var(--brand-red);
-  margin: clamp(10px, 1.2vw, 16px) auto 0;
-}
+/* The arms line moved to atlas-v2.css as .hero-arms — Contact uses it too. */
 
 .ab-body {
   padding: clamp(40px, 6vw, 80px) 0;
