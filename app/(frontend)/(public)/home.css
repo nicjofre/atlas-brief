@@ -1,3 +1,159 @@
+/* ===========================================================================
+   BASELINE — this stylesheet was unmodified as of ad8c159. For the whole file:
+       git show ad8c159:'app/(frontend)/(public)/home.css'
+   Not copied inline: at 1,686 lines a duplicate doubles the file and conflicts
+   the next time Nic edits it. The masthead block, which the 2026-09-17 pass is
+   aimed at, is snapshotted below.
+
+   SNAPSHOT — the masthead, .flag through .flag-rule, as of ad8c159:
+
+   .flag {
+     --flag-cut: 105deg;
+     --flag-stop: 46%;
+     position: relative;
+     overflow: hidden;
+     background: var(--brand-navy);
+     border-bottom: 3px solid var(--brand-red);
+   }
+   .flag-photo {
+     position: absolute;
+     inset: 0;
+     background: var(--brand-navy) url('/images/projects/olympic-towers-1200.jpg') center 58% / cover no-repeat;
+     -webkit-mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+             mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+   }
+   .flag-slash {
+     position: absolute;
+     inset: 0;
+     background: linear-gradient(var(--flag-cut),
+       transparent 0 calc(var(--flag-stop) - 5px),
+       var(--brand-red) calc(var(--flag-stop) - 5px) calc(var(--flag-stop) + 5px),
+       transparent calc(var(--flag-stop) + 5px));
+   }
+   .flag-inner {
+     position: relative;
+     z-index: 1;
+     max-width: var(--maxw);
+     margin: 0 auto;
+     padding: clamp(40px, 5.2vw, 76px) var(--pad-x);
+     display: grid;
+     justify-items: start;
+     align-content: center;
+   }
+   .flag-inner::before {
+     content: "A";
+     position: absolute;
+     right: -0.06em;
+     top: 50%;
+     transform: translateY(-50%);
+     font-family: var(--serif);
+     font-weight: 600;
+     font-size: clamp(200px, 26vw, 380px);
+     line-height: 0.7;
+     color: rgba(255,255,255,0.05);
+     pointer-events: none;
+     z-index: -1;
+   }
+   .flag-lockup {
+     display: flex;
+     align-items: center;
+     gap: 20px;
+     margin-left: 52%;
+   }
+   .flag-wordmark {
+     font-family: var(--serif);
+     font-weight: 500;
+     font-size: clamp(30px, 3.2vw, 44px);
+     line-height: 0.92;
+     letter-spacing: -0.02em;
+     color: #FFFFFF;
+   }
+   .flag-wordmark em {
+     display: block;
+     font-style: italic;
+     color: var(--brand-red);
+   }
+   .flag-tagline {
+     font-family: var(--sans);
+     font-size: 11px;
+     font-weight: 600;
+     line-height: 1.5;
+     letter-spacing: 0.2em;
+     text-transform: uppercase;
+     color: rgba(255,255,255,0.78);
+     border-left: 1px solid rgba(255,255,255,0.32);
+     padding-left: 20px;
+     white-space: nowrap;
+   }
+   .flag-headline {
+     margin: 0;
+     margin-left: 52%;
+     font-family: var(--sans);
+     font-weight: 700;
+     font-size: clamp(26px, 3.5vw, 52px);
+     line-height: 1.02;
+     letter-spacing: -0.02em;
+     text-transform: uppercase;
+     color: #FFFFFF;
+   }
+   .fh-blue { color: var(--brand-blue); }
+   .fh-dot { color: var(--brand-red); }
+   .flag-kicker {
+     margin: 0;
+     margin-left: 52%;
+     padding-top: 14px;
+     border-top: 2px solid var(--brand-red);
+     display: flex;
+     flex-wrap: wrap;
+     gap: 6px 14px;
+     font-family: var(--sans);
+     font-size: 10.5px;
+     font-weight: 600;
+     letter-spacing: 0.18em;
+     text-transform: uppercase;
+     color: rgba(255,255,255,0.80);
+   }
+   .flag-kicker span + span::before {
+     content: "·";
+     color: var(--brand-red);
+     margin-right: 14px;
+   }
+   .flag-right {
+     margin-left: 52%;
+     font-family: var(--sans);
+     font-size: 10.5px;
+     font-weight: 500;
+     letter-spacing: 0.16em;
+     text-transform: uppercase;
+     color: rgba(255,255,255,0.55);
+   }
+   .flag-right b { color: rgba(255,255,255,0.85); font-weight: 600; }
+   @media (max-width: 860px) {
+     .flag { --flag-stop: 100%; }
+     .flag-photo {
+       inset: 0 0 auto 0;
+       height: 150px;
+       -webkit-mask-image: none;
+               mask-image: none;
+     }
+     .flag-slash {
+       inset: 150px 0 auto 0;
+       height: 4px;
+       background: var(--brand-red);
+     }
+     .flag-inner { padding-top: 178px; }
+     .flag-lockup,
+     .flag-headline,
+     .flag-kicker,
+     .flag-right { margin-left: 0; }
+     .flag-inner::before { font-size: 220px; right: -0.12em; }
+   }
+   @media (max-width: 520px) {
+     .flag-lockup { flex-direction: column; align-items: flex-start; gap: 12px; }
+     .flag-tagline { border-left: 0; padding-left: 0; }
+   }
+   =========================================================================== */
+
 /* ============================================================
    HOMEPAGE — page-specific
    ============================================================ */
@@ -680,250 +836,97 @@
    carrying the stacked wordmark, tagline, positioning line and kicker.
    The photo's mask and the red slash share one gradient angle/stop so their
    diagonals line up exactly — change --flag-cut and both follow. */
+/* ---- Masthead ------------------------------------------------------------
+   The wordmark is the masthead, the way a paper's is. The photo, the diagonal,
+   the ghosted A and the slogan are gone — four devices doing one job, and the
+   slogan read as marketing rather than a publication's name. The 145-line
+   original is snapshotted at the top of this file. */
 .flag {
-  --flag-cut: 105deg;
-  --flag-stop: 46%;
-  position: relative;
-  overflow: hidden;
   background: var(--brand-navy);
   border-bottom: 3px solid var(--brand-red);
 }
-.flag-photo {
-  position: absolute;
-  inset: 0;
-  /* PLACEHOLDER photo — /hero-la.jpg was referenced here but has never existed
-     in public/, so this panel has been rendering flat navy. Swap in the LA
-     skyline shot from the identity sheet when you have the asset. */
-  background: var(--brand-navy) url('/images/projects/olympic-towers-1200.jpg') center 58% / cover no-repeat;
-  -webkit-mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
-          mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
-}
-.flag-slash {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(var(--flag-cut),
-    transparent 0 calc(var(--flag-stop) - 5px),
-    var(--brand-red) calc(var(--flag-stop) - 5px) calc(var(--flag-stop) + 5px),
-    transparent calc(var(--flag-stop) + 5px));
-}
 .flag-inner {
-  position: relative;
-  z-index: 1;
   max-width: var(--maxw);
   margin: 0 auto;
-  /* A shorter band now that the headline is alone on it. */
-  padding: clamp(40px, 5.2vw, 76px) var(--pad-x);
-  display: grid;
-  justify-items: start;
-  align-content: center;
-}
-/* Ghosted A watermark, as on the sheet's banner. */
-.flag-inner::before {
-  content: "A";
-  position: absolute;
-  right: -0.06em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: clamp(200px, 26vw, 380px);
-  line-height: 0.7;
-  color: rgba(255,255,255,0.05);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Lockup: stacked wordmark + hairline + tracked tagline. */
-.flag-lockup {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-left: 52%;
+  padding: clamp(24px, 3vw, 44px) var(--pad-x) clamp(14px, 1.7vw, 22px);
+  text-align: center;
 }
 .flag-wordmark {
+  margin: 0;
   font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(30px, 3.2vw, 44px);
+  font-weight: 600;
+  font-size: clamp(44px, 9vw, 132px);
   line-height: 0.92;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: #FFFFFF;
 }
-.flag-wordmark em {
-  display: block;
-  font-style: italic;
-  color: var(--brand-red);
-}
-.flag-tagline {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.78);
-  border-left: 1px solid rgba(255,255,255,0.32);
-  padding-left: 20px;
-  white-space: nowrap;
-}
-
-/* Positioning line — the sheet's condensed display setting. */
-.flag-headline {
-  margin: 0;
-  margin-left: 52%;
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: clamp(26px, 3.5vw, 52px);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  color: #FFFFFF;
-}
-.fh-blue { color: var(--brand-blue); }
-.fh-dot { color: var(--brand-red); }
-
-/* Red rule + tracked kicker beneath the headline. */
-.flag-kicker {
-  margin: 0;
-  margin-left: 52%;
-  padding-top: 14px;
-  border-top: 2px solid var(--brand-red);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  font-family: var(--sans);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.80);
-}
-.flag-kicker span + span::before {
-  content: "·";
-  color: var(--brand-red);
-  margin-right: 14px;
-}
-.flag-right {
-  margin-left: 52%;
-  font-family: var(--sans);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-}
-.flag-right b { color: rgba(255,255,255,0.85); font-weight: 600; }
-
-/* Below the cut the diagonal stops earning its keep: photo becomes a band on
-   top and the panel content goes full width. */
-@media (max-width: 860px) {
-  .flag { --flag-stop: 100%; }
-  .flag-photo {
-    inset: 0 0 auto 0;
-    height: 150px;
-    -webkit-mask-image: none;
-            mask-image: none;
-  }
-  .flag-slash {
-    inset: 150px 0 auto 0;
-    height: 4px;
-    background: var(--brand-red);
-  }
-  .flag-inner { padding-top: 178px; }
-  .flag-lockup,
-  .flag-headline,
-  .flag-kicker,
-  .flag-right { margin-left: 0; }
-  .flag-inner::before { font-size: 220px; right: -0.12em; }
-}
-@media (max-width: 520px) {
-  .flag-lockup { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .flag-tagline { border-left: 0; padding-left: 0; }
-}
-
-/*
-.flag {
-  padding: clamp(28px, 4vw, 48px) 0 clamp(16px, 2vw, 24px);
-  border-bottom: 1px double var(--ink);
-}
-.flag-inner {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--pad-x);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 32px;
-  align-items: end;
-}
-.flag-left,
-.flag-right {
+.flag-wordmark em { font-style: italic; color: var(--brand-red); }
+/* Dateline under the name, on a hairline — where a paper puts city and date. */
+.flag-dateline {
+  /* Tight to the wordmark: its 0.92 line-height already leaves room under the
+     descenders, so the old 20px read as a gap rather than a gutter. */
+  margin: clamp(2px, 0.4vw, 6px) auto 0;
+  padding-top: clamp(8px, 0.9vw, 11px);
+  max-width: 34ch;
+  border-top: 1px solid rgba(255,255,255,0.28);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
-  line-height: 1.7;
+  color: rgba(255,255,255,0.72);
 }
-.flag-left b,
-.flag-right b {
-  color: var(--ink);
-  font-weight: 600;
+
+/* ---- Ticker --------------------------------------------------------------
+   The strip under the masthead. The track holds the lines twice and slides by
+   half its width, so when the animation loops the second copy is exactly where
+   the first began and the seam is invisible. */
+.ticker {
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
 }
-.flag-right { text-align: right; }
-.flag-title {
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(30px, 3.4vw, 46px);
-  line-height: 0.86;
-  letter-spacing: -0.04em;
-  text-align: center;
-  margin: 0;
-  color: var(--ink);
-}
-.flag-title em {
-  font-style: italic;
-  color: var(--brand-red);
-}
-.flag-rule {
-  max-width: var(--maxw);
-  margin: 14px auto 0;
-  padding: 0 var(--pad-x);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
+.ticker-track {
+  display: flex;
+  width: max-content;
   align-items: center;
-  gap: 18px;
+  gap: 0;
+  animation: ticker-run 48s linear infinite;
+}
+/* Hovering stops it, so a line someone wants to read can be read. */
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker-item {
+  flex: none;
+  padding: 10px clamp(20px, 3vw, 44px);
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
+  white-space: nowrap;
+  position: relative;
 }
-.flag-rule hr {
-  border: 0;
-  border-top: 1px solid var(--ink);
-  margin: 0;
-}
-.flag-rule .dot {
-  width: 4px;
-  height: 4px;
-  background: var(--ink);
+/* A red bullet between lines rather than a rule — at this size a divider reads
+   as a broken border. */
+.ticker-item::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  justify-self: center;
-} */
-/*
-@media (max-width: 1024px) {
-  .flag-inner {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 10px;
-  }
-  .flag-left,
-  .flag-right { text-align: center; }
-  .flag-rule { grid-template-columns: 1fr auto 1fr; }
-  .flag-rule hr:nth-child(3),
-  .flag-rule .dot:nth-child(2),
-  .flag-rule span:nth-child(4) { display: none; }
+  background: var(--brand-red);
 }
-  */
+@keyframes ticker-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No crawl: the first line sits still and the rest are reachable by scroll. */
+  .ticker-track { animation: none; }
+  .ticker { overflow-x: auto; }
+}
 
 /* ---- Friday Dispatch banner (pinned to the viewport bottom) ---- */
 /* Rides along as the reader scrolls the Tape until they close it. Navy band with
