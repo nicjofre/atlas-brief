@@ -63,7 +63,7 @@ import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from './Footer'
 import DispatchBanner from './DispatchBanner'
-import TapeTabs from './TapeTabs'
+import CenterPackage from './CenterPackage'
 import TopStories from './TopStories'
 import FlagTicker from './FlagTicker'
 import { getArticles } from '@/lib/db/articles'
@@ -84,6 +84,10 @@ export default async function HomePage() {
   const [lead, ...afterLead] = articles
   const stack = afterLead.slice(0, 4)
   const rest = afterLead.slice(4)
+  // One feature plus five cards per stream, drawn from what the package above
+  // hasn't already used, so nothing headlines twice on one page.
+  const tapeCards = rest.filter(a => a.kind !== 'post').slice(0, 6)
+  const dispatchCards = rest.filter(a => a.kind === 'post').slice(0, 6)
 
   // Trending: rank the articles we already have by reader counts. Anything the
   // ranking names that isn't in the published set (unpublished, deleted) simply
@@ -116,11 +120,10 @@ export default async function HomePage() {
 
       {lead && <TopStories lead={lead} stack={stack} mostRead={trending} />}
 
-      <section className="tape-feed">
-        <div className="wrap">
-          <TapeTabs articles={rest} />
-        </div>
-      </section>
+      {/* The centre package, arranged the way a broadsheet arranges a page: a
+          row of Tape cards, two features — the deal on the left, the dispatch
+          on the right — and a row of Dispatch cards beneath them. */}
+      <CenterPackage tape={tapeCards} dispatch={dispatchCards} />
 
       <DispatchBanner />
       <Footer />

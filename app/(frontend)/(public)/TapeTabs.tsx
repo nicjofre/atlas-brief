@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import Link from 'next/link'
 import type { ArticleCard } from '@/lib/db/articles'
 import { formatDateLong, placeLine, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
+import { calmHeadline } from '@/lib/db/headline-case'
 
 // The tape feed with a Tape/Dispatch filter above it.
 //
@@ -68,8 +69,10 @@ export default function TapeTabs({ articles }: { articles: ArticleCard[] }) {
         {shown.map(a => {
           const p = a.listing?.property ?? null
           const isPost = isPostEntry(a)
-          // Strip the *italic* markers — homepage tape headlines render plain.
-          const headlinePlain = (a.headline ?? '').replace(/\*/g, '')
+          // Strip the *italic* markers — homepage tape headlines render plain —
+          // and calm the all-caps ones, so a feed of both reads as one voice
+          // rather than some entries shouting.
+          const headlinePlain = calmHeadline((a.headline ?? '').replace(/\*/g, ''))
           return (
             <article key={a.id} className="tape-entry">
               <div className="te-body">

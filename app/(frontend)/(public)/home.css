@@ -1687,3 +1687,129 @@ body.has-dispatch-banner { padding-bottom: 96px; }
 .footer-social { display: flex; gap: 14px; margin-top: 16px; }
 .footer-social a { color: var(--muted); display: inline-flex; transition: color 0.15s; }
 .footer-social a:hover { color: var(--brand-red); }
+
+/* ---- Centre package -----------------------------------------------------
+   A broadsheet arrangement: a row of Tape cards, two features beneath them —
+   the deal on the left, the dispatch on the right — and a row of Dispatch
+   cards under those. Streams are colour-coded by kicker and rule; the cards
+   stay white, since the page already carries a navy masthead. */
+.cp { padding: clamp(26px, 3vw, 44px) 0; border-top: 1px solid var(--rule); }
+.cp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(14px, 1.6vw, 20px);
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--brand-red);
+}
+.cp-band-dispatch .cp-head { border-bottom-color: var(--brand-blue); }
+.cp-head h2 {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+}
+.cp-head a {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cp-head a:hover { color: var(--brand-red); }
+.cp-band-dispatch .cp-head a:hover { color: var(--brand-blue); }
+
+/* Five across, and they stay five: a row of four with one orphan underneath
+   reads as a mistake. */
+.cp-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 24px);
+}
+/* Not a 50/50 split: a front page gives the lead deal the bigger half and runs
+   the dispatch beside it narrower, which is what stops the row reading as a
+   template with two slots. */
+.cp-features {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(24px, 3vw, 48px);
+  margin: clamp(24px, 3vw, 40px) 0;
+  padding: clamp(24px, 3vw, 40px) 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.cp-features > * + * { border-left: 1px solid var(--rule); padding-left: clamp(24px, 3vw, 48px); }
+
+.cp-card { min-width: 0; }
+.cp-thumb { display: block; margin-bottom: 10px; }
+.cp-thumb img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  background: var(--rule-soft);
+  transition: opacity .15s;
+}
+.cp-thumb:hover img { opacity: .92; }
+.cp-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.cp-kicker { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.cp-kicker-tape { color: var(--brand-red); }
+.cp-kicker-dispatch { color: var(--brand-blue); }
+.cp-hed {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.cp-sm .cp-hed { font-size: 15.5px; }
+/* The two features aren't the same size either — the left one leads. */
+.cp-lg .cp-hed { font-size: clamp(20px, 1.9vw, 26px); line-height: 1.12; }
+.cp-features > .cp-card:first-child .cp-hed { font-size: clamp(24px, 2.6vw, 36px); line-height: 1.06; }
+.cp-features > .cp-card:first-child .cp-dek { font-size: 17px; }
+/* The narrower one takes a taller crop, so the pair doesn't read as one photo
+   printed at two widths. */
+.cp-features > .cp-card:last-child .cp-thumb img { aspect-ratio: 4 / 3; }
+.cp-hed a { color: var(--ink); }
+.cp-hed a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.cp-dek { margin: 8px 0 0; font-family: var(--serif); font-size: 16px; line-height: 1.45; color: var(--ink-soft); }
+.cp-place { margin: 6px 0 0; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.cp-sm .cp-place { font-size: 10.5px; }
+.cp-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+@media (max-width: 1000px) {
+  .cp-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cp-row .cp-card:nth-child(n+4) { display: none; }
+}
+@media (max-width: 760px) {
+  .cp-features { grid-template-columns: 1fr; }
+  .cp-features > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 24px; }
+  .cp-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cp-row .cp-card:nth-child(n+3) { display: none; }
+}
