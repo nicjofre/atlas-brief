@@ -1,17 +1,11 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
-import { getArticles, type ArticleCard } from '@/lib/db/articles'
+import { getArticles } from '@/lib/db/articles'
 import SectionFeed from './SectionFeed'
 import TopStories from '../../../TopStories'
-import {
-  HeadlineText,
-  formatDateLong,
-  sectionLabel,
-  statusKicker,
-} from '@/lib/db/article-render'
+import { sectionLabel } from '@/lib/db/article-render'
 import '../../feed.css'
 import './section.css'
 
@@ -25,8 +19,11 @@ const SECTION_REGISTRY: Record<string, {
   heroImage: string
 }> = {
   'broker-activity': {
-    name: 'Broker',
-    emName: 'Activity',
+    // The masthead carries the stream's name, not the slug's. "Broker Activity"
+    // is still the section label on article pages and in the CMS — renaming
+    // that reaches the editor and the kickers, so it's a separate job.
+    name: 'The',
+    emName: 'Tape',
     eyebrow: 'Atlas Brief',
     deck:
       "A running listings board for LA multifamily: what's for sale, what just sold, and what an operator thinks of the number.",
@@ -100,7 +97,16 @@ export default async function SectionPage(
       >
         <div className="cat-masthead-inner">
           <div>
-            <div className="cat-eyebrow">{section.eyebrow}</div>
+            {/* The wordmark above the title, where the tracked "ATLAS BRIEF"
+                eyebrow used to sit. Words only — the roundel came out on
+                2026-09-21: at wordmark size it read as a badge stuck on the
+                front rather than part of the line. It's still one <AtlasMark />
+                away if that changes.
+                `eyebrow` stays on the registry entry: the (hidden) photo
+                caption still reads it, and it's the string to fall back to. */}
+            <div className="cat-mark">
+              <span className="cat-wordmark">Atlas <em>Brief</em></span>
+            </div>
             <h1>
               {section.name} <em>{section.emName}</em>
             </h1>
@@ -132,7 +138,7 @@ export default async function SectionPage(
       <section
         className="archive-feed"
         style={{
-          padding: 'clamp(56px, 7vw, 96px) 0',
+          padding: 'clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px)',
           borderTop: '1px solid var(--ink)',
           borderBottom: '1px solid var(--ink)',
         }}
@@ -141,8 +147,8 @@ export default async function SectionPage(
           {/* No head here any more: the tabs below name the list and carry the
               counts, and "Every entry, newest first" stopped being true the
               moment a status filter was applied. */}
-          {/* Tabs + the scrolling pane. Client-side because the filter is a
-              reader control, and the rows are on the page either way. */}
+          {/* Tabs + the card grid. Client-side because the filter and the
+              Load more are both reader controls. */}
           <SectionFeed rows={rest} sectionLabel={sectionLabel(slug)} />
         </div>
       </section>

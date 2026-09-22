@@ -38,7 +38,7 @@
   margin: 0 0 28px;
   color: var(--brand-navy);
 }
-/* "Broker" navy, "Activity" red — the same lockup as Atlas/Brief and
+/* "The" navy, "Tape" red — the same lockup as Atlas/Brief and
    Atlas/Home Builders. */
 .cat-masthead h1 em {
   font-style: italic;
@@ -96,10 +96,20 @@
 /* Entry list scrolls in place — the same pane as the homepage's .tt-scroll,
    down to the blue thumb that goes red on hover. Scoped to this page: feed.css
    styles .archive-list for the Tape index too, which isn't a scrolling pane. */
-/* ---- Status tabs ---------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   PARKED — the All / Sold / For Sale tabs (2026-09-21). Pulled because the
+   split was 83 sold to 3 for sale: two of the three tabs led to almost
+   nothing. Status still leads each card's kicker and still carries a badge,
+   which was the part doing the work.
+
+   Paste back (with the tab markup in SectionFeed.tsx) if the mix ever evens
+   out. Inner comment delimiters are written (* *) so this block closes where
+   it should. Delete only after Lucas confirms.
+
+(* ---- Status tabs ---------------------------------------------------------
    The homepage's Tape/Dispatch tabs, rebuilt here under their own class names:
    home.css only loads on the homepage, and its generic names have leaked
-   between routes before. */
+   between routes before. *)
 .sec-tabs {
   display: flex;
   justify-content: center;
@@ -139,6 +149,9 @@
   padding: 2px 7px;
 }
 .sec-tab.is-active .sec-count { color: #FFFFFF; background: var(--brand-blue); }
+
+   --------------------------------------------------------------------------- */
+
 .sec-empty {
   font-family: var(--mono);
   font-size: 12px;
@@ -149,9 +162,19 @@
   padding: 40px 0;
 }
 
-/* The pane fades out at its foot, as the homepage's list does, so the cut-off
+/* ---------------------------------------------------------------------------
+   PARKED — the scrolling pane and the list-row feed (2026-09-21). The feed is
+   a card grid now: the front page is cards, so a section page of rows read as
+   a different site, and the fixed-height pane hid the run's length rather than
+   handling it (a Load more does that job now).
+
+   Kept rather than deleted so the rows are one paste away. Inner comment
+   delimiters are written (* *) so this block closes where it should. Delete
+   only after Lucas confirms.
+
+(* The pane fades out at its foot, as the homepage's list does, so the cut-off
    row reads as "there's more" rather than as the end. The inset on the right
-   clears the scrollbar so the fade doesn't wash over it. */
+   clears the scrollbar so the fade doesn't wash over it. *)
 .arc-scroll-wrap { position: relative; }
 .arc-scroll-wrap::after {
   content: "";
@@ -166,8 +189,8 @@
 .archive-feed .archive-list {
   max-height: clamp(520px, 74vh, 940px);
   overflow-y: auto;
-  /* Chaining stays on: hitting the end carries you down the page rather than
-     parking you in the pane. */
+  (* Chaining stays on: hitting the end carries you down the page rather than
+     parking you in the pane. *)
   padding-right: 18px;
   scrollbar-color: var(--brand-blue) var(--rule-soft);
 }
@@ -175,7 +198,7 @@
   outline: 2px solid var(--brand-blue);
   outline-offset: 4px;
 }
-/* WebKit needs its own rules; Firefox uses scrollbar-color above. */
+(* WebKit needs its own rules; Firefox uses scrollbar-color above. *)
 .archive-feed .archive-list::-webkit-scrollbar { width: 10px; }
 .archive-feed .archive-list::-webkit-scrollbar-track {
   background: var(--rule-soft);
@@ -188,11 +211,11 @@
 }
 .archive-feed .archive-list::-webkit-scrollbar-thumb:hover { background: var(--brand-red); }
 
-/* ---- Feed rows in the front-page language -------------------------------
+(* ---- Feed rows in the front-page language -------------------------------
    Scoped to .archive-feed on purpose: feed.css styles .arc-row for the Tape
    index too, and that page hasn't been touched pending David's call on it.
    Everything here mirrors top-stories.css — sans kicker in red, serif headline
-   that underlines on hover, thumbnail right, hairline between entries. */
+   that underlines on hover, thumbnail right, hairline between entries. *)
 .archive-feed .arc-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 200px;
@@ -204,8 +227,8 @@
   color: var(--ink);
 }
 .archive-feed .arc-row:first-child { border-top: 0; padding-top: 0; }
-/* No background wash on hover — the headline underlines instead, as on the
-   front page. */
+(* No background wash on hover — the headline underlines instead, as on the
+   front page. *)
 .archive-feed .arc-row:hover { background: transparent; }
 .archive-feed .arc-text { min-width: 0; }
 
@@ -270,6 +293,236 @@
   .archive-feed .arc-thumb img { width: 104px; height: 78px; }
   .archive-feed .arc-title { font-size: 18px !important; }
   .archive-feed .arc-deck { display: none; }
+}
+
+   --------------------------------------------------------------------------- */
+
+/* ---- The feed, as cards -------------------------------------------------
+   Same card as the homepage's centre package (.cp-card), under its own names:
+   home.css only loads on the homepage, and generic class names have leaked
+   between routes here before. Four across — the package above runs two
+   columns, so four keeps the page from reading as one width repeated. */
+.tpc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 34px) clamp(16px, 1.8vw, 26px);
+  /* The arriving half of a page turn: a shade slower than the leaving half,
+     so the new set settles in rather than snapping. */
+  transition: opacity .34s ease, transform .34s ease;
+}
+/* The leaving half. SectionFeed holds this for FADE_MS, swaps the cards while
+   nothing is visible, then drops the class — so the reader never watches a
+   grid change under them. Keep the duration and FADE_MS in step. */
+.tpc-grid.is-fading {
+  opacity: 0;
+  transform: translateY(8px);
+  transition-duration: .2s;
+  /* Nothing in a grid that's on its way out should be clickable. */
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* turn() skips the fade entirely under this setting; belt and braces in case
+     the preference flips mid-turn. */
+  .tpc-grid { transition: none; }
+  .tpc-grid.is-fading { opacity: 1; transform: none; }
+}
+.tpc-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.tpc-thumb { display: block; width: 100%; margin-bottom: 10px; }
+.tpc-thumb img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  background: var(--rule-soft);
+  transition: opacity .15s;
+}
+.tpc-thumb:hover img { opacity: .92; }
+
+/* Stand-in for an entry with no photo on file. Carries the address rather than
+   sitting there as a grey rectangle, so the card still says which building it
+   is and the row stays even. */
+.tpc-plate {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 12px;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+}
+.tpc-plate span {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.86);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tpc-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tpc-kicker {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+.tpc-hed {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.tpc-hed a { color: var(--ink); }
+.tpc-hed a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.tpc-hed a:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.tpc-place {
+  margin: 6px 0 0;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.tpc-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+/* ---- Page indicator + pager ---------------------------------------------
+   The bar above the grid sits where the status tabs used to — the gap that
+   made the section look like it was missing something. It held a date range
+   briefly; the backfill's publish dates made that read as noise, so it's just
+   where-you-are now. Not a control, so it reads as type rather than a button. */
+.tpc-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 clamp(18px, 2.2vw, 28px);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink);
+}
+.tpc-pageno {
+  font-family: var(--mono);
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  white-space: nowrap;
+}
+
+/* Paging, not Load more: a list that only grows has no span to state, and the
+   dateline above needs the page to be a fixed thing. */
+.tpc-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 28px);
+  margin-top: clamp(28px, 3.4vw, 48px);
+  padding-top: clamp(18px, 2.2vw, 28px);
+  border-top: 1px solid var(--rule);
+}
+.tpc-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--brand-navy);
+  border-radius: 2px;
+  /* The chevron is a text glyph, so it needs a size that isn't the label size
+     it inherited — and a nudge up, since ‹ › sit low in the line box. */
+  font-family: var(--sans);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--brand-navy);
+  cursor: pointer;
+  transition: background-color .15s, color .15s, border-color .15s, opacity .15s;
+}
+.tpc-page-btn span { display: block; margin-top: -3px; }
+.tpc-page-btn:hover:not(:disabled) { background: var(--brand-navy); color: #FFFFFF; }
+.tpc-page-btn:disabled {
+  opacity: .3;
+  cursor: default;
+  border-color: var(--rule);
+  color: var(--muted);
+}
+.tpc-page-btn:focus-visible,
+.tpc-dot:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+
+/* Dots rather than numbers: four-odd pages is a count you read at a glance,
+   and numbered pagination on a running feed implies an index that matters. */
+.tpc-dots { display: flex; align-items: center; gap: 9px; }
+.tpc-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid var(--brand-navy);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: background-color .15s, transform .15s;
+}
+.tpc-dot:hover:not(:disabled) { background: var(--brand-blue); border-color: var(--brand-blue); }
+/* Disabled only for the ~200ms of a turn, so it shouldn't flash grey — just
+   stop taking clicks. */
+.tpc-dot:disabled { cursor: default; }
+.tpc-dot.is-active {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  transform: scale(1.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpc-dot { transition: none; }
+  .tpc-dot.is-active { transform: none; }
+}
+
+@media (max-width: 1100px) {
+  .tpc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .tpc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) {
+  .tpc-grid { grid-template-columns: 1fr; }
+  .tpc-hed { font-size: 18px; }
+  /* Nine dots at 9px across a phone is a row of targets nobody can hit.
+     Newer / Older still turn the pages. */
+  .tpc-dots { display: none; }
+  .tpc-pager { justify-content: space-between; }
 }
 
 /* ---- Masthead: the homepage flag, with the section's own photo -----------
@@ -361,13 +614,54 @@
 }
 
 .cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 10px; }
+/* The wordmark, sitting where the eyebrow did. Deliberately a copy of
+   .nav-logo's type rather than a shared class: that one lives in atlas-v2.css
+   keyed to the nav band, and this band has its own spacing. The `gap` and the
+   .atlas-mark rule are still here for the roundel, which came out but is one
+   <AtlasMark /> away if it goes back. */
+.cat-masthead .cat-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.cat-masthead .cat-mark .atlas-mark { display: block; flex: none; }
+/* "Atlas" white roman, "Brief" red italic — the wordmark per the identity
+   sheet, at the nav's size. */
+.cat-masthead .cat-wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #FFFFFF;
+}
+.cat-masthead .cat-wordmark em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
 .cat-masthead h1 {
   color: #FFFFFF;
   font-size: clamp(28px, 3.4vw, 50px);
   line-height: 0.95;
   margin: 0 0 10px;
 }
-.cat-masthead h1 em { color: var(--brand-red); }
+/* PARKED (2026-09-21): the italic half was red on the navy band —
+   `.cat-masthead h1 em { color: var(--brand-red); }`. The whole lockup is
+   white over a red rule now. Delete this note only after Lucas confirms. */
+.cat-masthead h1 em { color: #FFFFFF; }
+/* The rule runs under the whole name, so it belongs on the h1 — but a block
+   h1 would stretch it the full width of the band. inline-block shrinks it to
+   the words; the parent's text-align: center still centres it. A border
+   rather than text-decoration because the rule has to clear the p's
+   descender, and an underline thick enough to read would strike through it. */
+.cat-masthead h1 {
+  display: inline-block;
+  padding-bottom: 0.05em;
+  border-bottom: 0.07em solid var(--brand-red);
+}
 .cat-masthead .cat-dek {
   color: rgba(255,255,255,0.82);
   max-width: 44ch;
