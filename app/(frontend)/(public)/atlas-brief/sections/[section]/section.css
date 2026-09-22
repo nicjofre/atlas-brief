@@ -365,13 +365,19 @@
 }
 .cat-hero-img { display: none; }
 .cat-masthead::after { display: none; }
+/* `margin-left: 0` used to be in this rule, left over from the version where
+   the type sat off to one side. It overrode the `margin: 0 auto` set on
+   .cat-masthead-inner further up, so past --maxw (1360px) the capped box
+   hugged the left of the band and every line in it sat left of centre. The
+   child keeps it — a grid item's left margin is its own business. */
 .cat-masthead-inner,
 .cat-masthead-inner > div:first-child {
-  margin-left: 0;
   text-align: center;
   position: relative;
   z-index: 2;
 }
+.cat-masthead-inner > div:first-child { margin-left: 0; }
+.cat-masthead-inner { margin-left: auto; margin-right: auto; }
 /* One line: the name and its italic half sit together rather than stacking. */
 .cat-masthead h1 { text-wrap: balance; }
 .cat-masthead .cat-meta { justify-content: center; }

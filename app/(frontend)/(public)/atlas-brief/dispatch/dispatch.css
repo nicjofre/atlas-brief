@@ -91,7 +91,7 @@
 
 .dp-dek {
   margin: 0 auto 14px;
-  max-width: 48ch;
+  max-width: 44ch;   /* same measure as the Tape's .cat-dek */
   font-family: var(--serif);
   font-weight: 300;
   font-size: clamp(14px, 1.15vw, 16px);
