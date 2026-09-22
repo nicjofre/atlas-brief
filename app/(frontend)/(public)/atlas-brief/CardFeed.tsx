@@ -6,9 +6,14 @@ import type { ArticleCard } from '@/lib/db/articles'
 import { cardMeta, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
 import { calmHeadline } from '@/lib/db/headline-case'
 
-// The section's running feed: every entry as a card grid, in the same language
-// as the homepage's centre package. Cards rather than rows because the front
-// page is cards — a section page of list rows read as a different site.
+// The paged card feed, shared by The Tape and Dispatch. Every entry as a card
+// grid in the same language as the homepage's centre package — cards rather
+// than rows because the front page is cards, and a stream page of list rows
+// read as a different site.
+//
+// One component for both streams on purpose: they differ in accent colour and
+// in whether a card carries listing chrome, which is two props, not two files.
+// Styles live in ../cards.css, imported by each page.
 //
 // Two things the rows were doing that cards have to do differently:
 //   - the old pane held the whole run in a fixed-height window, which hid the
@@ -16,11 +21,11 @@ import { calmHeadline } from '@/lib/db/headline-case'
 //   - a row tolerated a missing photo; a card leaves a hole. Entries without a
 //     hero get a tinted plate carrying the address, so the grid stays even.
 //
-// The All / Sold / For Sale tabs came out on 2026-09-21: the split was 83/3, so
-// two of the three tabs were a tab to nothing much. Status still leads every
-// card's kicker and still carries a badge, which is the part that was doing the
-// work. The markup and its styles are parked (see section.css) if the mix ever
-// evens out enough to be worth filtering.
+// The Tape's All / Sold / For Sale tabs came out on 2026-09-21: the split was
+// 83/3, so two of the three tabs were a tab to nothing much. Status still leads
+// every card's kicker and still carries a badge, which is the part that was
+// doing the work. The markup and its styles are parked (see section.css) if the
+// mix ever evens out enough to be worth filtering.
 //
 // Load more became paging on 2026-09-21. A date range above the grid went with
 // it and came straight back out: the backfill stamped 48 of the 93 entries with
@@ -40,18 +45,24 @@ function apDate(s: string | null | undefined): string {
   return `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
 }
 
-// Status leads — this is a listings board, so "SOLD" is the first thing an
-// operator scans for — then the neighbourhood.
-function cardKicker(a: ArticleCard, fallback: string): string {
+// The Tape is a listings board, so "SOLD" leads and the neighbourhood follows.
+// A dispatch has no listing behind it — its own category is the whole kicker.
+function cardKicker(a: ArticleCard, stream: Stream, fallback: string): string {
+  if (stream === 'dispatch') return a.cat_label ?? fallback
   const status = statusKicker(a.listing?.status)
   const p = a.listing?.property
   const place = p?.neighborhood ?? p?.city ?? a.cat_label ?? fallback
   return [status, place].filter(Boolean).join(' · ')
 }
 
-function FeedCard({ a, fallback }: { a: ArticleCard; fallback: string }) {
+export type Stream = 'tape' | 'dispatch'
+
+function FeedCard({ a, stream, fallback }: { a: ArticleCard; stream: Stream; fallback: string }) {
   const p = a.listing?.property ?? null
-  const meta = cardMeta(p)
+  // Listing chrome — the place line, the status badge — only means anything on
+  // a brief. A dispatch gets its deck in that slot instead.
+  const isTape = stream === 'tape'
+  const meta = isTape ? cardMeta(p) : (a.deck ?? a.excerpt ?? '')
   return (
     <article className="tpc-card">
       <Link href={`/atlas-brief/${a.slug}`} className="tpc-thumb" tabIndex={-1} aria-hidden="true">
@@ -62,13 +73,13 @@ function FeedCard({ a, fallback }: { a: ArticleCard; fallback: string }) {
           // No photo on file. A plate with the address keeps the row even and
           // still says which building it is, which a grey box wouldn't.
           <span className="tpc-plate">
-            <span>{p?.street_address ?? a.cat_label ?? fallback}</span>
+            <span>{(isTape ? p?.street_address : null) ?? a.cat_label ?? fallback}</span>
           </span>
         )}
       </Link>
 
       <div className="tpc-meta">
-        <span className="tpc-kicker">{cardKicker(a, fallback)}</span>
+        <span className="tpc-kicker">{cardKicker(a, stream, fallback)}</span>
         <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
       </div>
 
@@ -76,9 +87,9 @@ function FeedCard({ a, fallback }: { a: ArticleCard; fallback: string }) {
         <Link href={`/atlas-brief/${a.slug}`}>{calmHeadline(a.headline)}</Link>
       </h3>
 
-      {meta && <p className="tpc-place">{meta}</p>}
+      {meta && <p className={isTape ? 'tpc-place' : 'tpc-dek'}>{meta}</p>}
 
-      {a.listing?.status && (
+      {isTape && a.listing?.status && (
         <span className={`badge badge-${statusBadgeKey(a.listing.status)} tpc-badge`}>
           {statusKicker(a.listing.status)}
         </span>
@@ -87,12 +98,15 @@ function FeedCard({ a, fallback }: { a: ArticleCard; fallback: string }) {
   )
 }
 
-export default function SectionFeed({
+export default function CardFeed({
   rows,
-  sectionLabel,
+  stream,
+  fallbackLabel,
 }: {
   rows: ArticleCard[]
-  sectionLabel: string
+  stream: Stream
+  // Kicker text for an entry that carries no category of its own.
+  fallbackLabel: string
 }) {
   const [page, setPage] = useState(0)
   // True while the outgoing page is fading. The swap happens at the far end of
@@ -151,8 +165,9 @@ export default function SectionFeed({
     gridRef.current?.querySelector<HTMLElement>('.tpc-hed a')?.focus({ preventScroll: true })
   }, [current])
 
+  // `.tpc-dispatch` on the wrapper is what swaps red for blue; see cards.css.
   return (
-    <>
+    <div className={stream === 'dispatch' ? 'tpc-dispatch' : undefined}>
       {shown.length === 0 ? (
         <p className="sec-empty">Nothing here yet.</p>
       ) : (
@@ -169,7 +184,9 @@ export default function SectionFeed({
           )}
 
           <div className={`tpc-grid${fading ? ' is-fading' : ''}`} ref={gridRef}>
-            {shown.map(a => <FeedCard key={a.id} a={a} fallback={sectionLabel} />)}
+            {shown.map(a => (
+              <FeedCard key={a.id} a={a} stream={stream} fallback={fallbackLabel} />
+            ))}
           </div>
 
           {pageCount > 1 && (
@@ -215,6 +232,6 @@ export default function SectionFeed({
           )}
         </>
       )}
-    </>
+    </div>
   )
 }

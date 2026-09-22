@@ -1,48 +1,106 @@
-/* PLACEHOLDER styling for the Dispatch stream page. Deliberately close to the
-   Broker Activity section page so the two read as siblings — blue where that
-   one is red, since blue is the Dispatch stream's colour on the front page.
+/* Dispatch stream page. Deliberately the Broker Activity / Tape section page
+   with the accents moved to blue — the card grid and pager are literally the
+   same stylesheet (../cards.css), and the masthead below is that one's rules
+   under .dp- names. The two streams should read as siblings.
+
+   Why copied rather than shared: .cat-masthead lives in the section route's
+   stylesheet, keyed to a registry that page owns. Sharing it would mean
+   hoisting both. Worth doing if a third stream ever lands; not for two.
+
    Scoped under .dp- so nothing here can reach another route. */
 
+/* ---- Masthead -----------------------------------------------------------
+   Navy band, LA skyline full-bleed under a navy wash, everything centred.
+   The photo is a background on the band rather than an <img> in the markup:
+   that markup sits inside .dp-masthead-inner, which is capped at --maxw with
+   page padding, so however it's positioned it stops short of the band's edges.
+
+   OPEN: this is the Tape's photo at a different crop (center 38% rather than
+   52%), because it's the only cleared image we have — Carol M. Highsmith,
+   Library of Congress, public domain. Dispatch wants its own. */
 .dp-masthead {
   position: relative;
+  overflow: hidden;
   background: var(--brand-navy);
   border-bottom: 3px solid var(--brand-blue);
-  overflow: hidden;
+}
+.dp-masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to bottom, rgba(6,24,50,0.68) 0%, rgba(6,24,50,0.82) 100%),
+    var(--dp-hero);
+  background-size: cover, cover;
+  background-position: center, center 38%;
+  background-repeat: no-repeat, no-repeat;
 }
 .dp-masthead-inner {
+  position: relative;
+  z-index: 1;
   max-width: var(--maxw);
   margin: 0 auto;
   padding: clamp(20px, 2.2vw, 32px) var(--pad-x);
   text-align: center;
 }
-.dp-eyebrow {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.72);
-  margin-bottom: 10px;
+
+/* The wordmark above the title, where a tracked eyebrow used to sit. A copy of
+   .nav-logo's type rather than a shared class: that one lives in atlas-v2.css
+   keyed to the nav band, and this band has its own spacing. */
+.dp-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
 }
+.dp-wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #FFFFFF;
+}
+.dp-wordmark em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
+
+/* Both halves white, with the rule under the whole name — the Tape's
+   treatment in blue. inline-block so the rule hugs the word instead of
+   stretching the width of the band; the parent's text-align still centres it.
+   A border rather than text-decoration because the rule has to clear the p's
+   descender, and an underline thick enough to read would strike through it. */
 .dp-masthead h1 {
+  display: inline-block;
   margin: 0 0 10px;
+  padding-bottom: 0.05em;
+  border-bottom: 0.07em solid var(--brand-blue);
   font-family: var(--serif);
   font-weight: 500;
   font-size: clamp(28px, 3.4vw, 50px);
   line-height: 0.95;
   letter-spacing: -0.03em;
   color: #FFFFFF;
+  text-wrap: balance;
 }
-.dp-masthead h1 em { font-style: italic; color: var(--brand-blue); }
+.dp-masthead h1 em { font-style: italic; color: #FFFFFF; }
+
 .dp-dek {
   margin: 0 auto 14px;
   max-width: 48ch;
   font-family: var(--serif);
+  font-weight: 300;
   font-size: clamp(14px, 1.15vw, 16px);
   line-height: 1.5;
   color: rgba(255,255,255,0.82);
 }
 .dp-meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
   padding-top: 12px;
@@ -53,6 +111,21 @@
   text-transform: uppercase;
   color: rgba(255,255,255,0.7);
 }
+
+/* ---- Feed band ----------------------------------------------------------
+   The grid and pager themselves come from ../cards.css. This is just the band
+   they sit in — the Tape's, rules top and bottom. */
+.dp-feed {
+  padding: clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   PARKED — the placeholder's list-row feed (2026-09-21). Replaced by the
+   shared card grid so Dispatch and The Tape read as one publication. Kept
+   rather than deleted; inner comment delimiters are written (* *) so this
+   block closes where it should. Delete only after Lucas confirms.
 
 .dp-feed { padding: clamp(28px, 3.4vw, 48px) 0; }
 .dp-list { display: flex; flex-direction: column; }
@@ -118,3 +191,4 @@
   .dp-thumb img { width: 104px; height: 78px; }
   .dp-deck { display: none; }
 }
+   --------------------------------------------------------------------------- */

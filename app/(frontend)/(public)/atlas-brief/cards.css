@@ -1,0 +1,268 @@
+/* ---------------------------------------------------------------------------
+   The card grid and its pager — shared by The Tape (/atlas-brief/sections/…)
+   and Dispatch (/atlas-brief/dispatch).
+
+   Deliberately one stylesheet imported by both routes rather than two copies
+   under different prefixes. Duplicated class names across route stylesheets is
+   exactly how .cap, .project and .asb leaked between pages here; one file that
+   both pages import can't drift.
+
+   Red is the default because the Tape is the red stream. `.tpc-dispatch` on
+   the grid and the pager swaps the accents to blue.
+   --------------------------------------------------------------------------- */
+
+/* ---- The feed, as cards -------------------------------------------------
+   Same card as the homepage's centre package (.cp-card), under its own names:
+   home.css only loads on the homepage, and generic class names have leaked
+   between routes here before. Four across — the package above runs two
+   columns, so four keeps the page from reading as one width repeated. */
+.tpc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 34px) clamp(16px, 1.8vw, 26px);
+  /* The arriving half of a page turn: a shade slower than the leaving half,
+     so the new set settles in rather than snapping. */
+  transition: opacity .34s ease, transform .34s ease;
+}
+/* The leaving half. CardFeed holds this for FADE_MS, swaps the cards while
+   nothing is visible, then drops the class — so the reader never watches a
+   grid change under them. Keep the duration and FADE_MS in step. */
+.tpc-grid.is-fading {
+  opacity: 0;
+  transform: translateY(8px);
+  transition-duration: .2s;
+  /* Nothing in a grid that's on its way out should be clickable. */
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* turn() skips the fade entirely under this setting; belt and braces in case
+     the preference flips mid-turn. */
+  .tpc-grid { transition: none; }
+  .tpc-grid.is-fading { opacity: 1; transform: none; }
+}
+.tpc-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.tpc-thumb { display: block; width: 100%; margin-bottom: 10px; }
+.tpc-thumb img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  background: var(--rule-soft);
+  transition: opacity .15s;
+}
+.tpc-thumb:hover img { opacity: .92; }
+
+/* Stand-in for an entry with no photo on file. Carries the address rather than
+   sitting there as a grey rectangle, so the card still says which building it
+   is and the row stays even. */
+.tpc-plate {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 12px;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+}
+.tpc-plate span {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.86);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tpc-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tpc-kicker {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+.tpc-hed {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.tpc-hed a { color: var(--ink); }
+.tpc-hed a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.tpc-hed a:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.tpc-place {
+  margin: 6px 0 0;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+/* A dispatch has no address or unit count to put under the headline, so the
+   deck goes there instead — serif, since it's prose rather than data. Clamped
+   so a long one can't push its card taller than the rest of the row. */
+.tpc-dek {
+  margin: 7px 0 0;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tpc-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+/* ---- Page indicator + pager ---------------------------------------------
+   The bar above the grid sits where the status tabs used to — the gap that
+   made the section look like it was missing something. It held a date range
+   briefly; the backfill's publish dates made that read as noise, so it's just
+   where-you-are now. Not a control, so it reads as type rather than a button. */
+.tpc-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 clamp(18px, 2.2vw, 28px);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink);
+}
+.tpc-pageno {
+  font-family: var(--mono);
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  white-space: nowrap;
+}
+
+/* Paging, not Load more: a list that only grows has no span to state, and the
+   dateline above needs the page to be a fixed thing. */
+.tpc-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 28px);
+  margin-top: clamp(28px, 3.4vw, 48px);
+  padding-top: clamp(18px, 2.2vw, 28px);
+  border-top: 1px solid var(--rule);
+}
+.tpc-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--brand-navy);
+  border-radius: 2px;
+  /* The chevron is a text glyph, so it needs a size that isn't the label size
+     it inherited — and a nudge up, since ‹ › sit low in the line box. */
+  font-family: var(--sans);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--brand-navy);
+  cursor: pointer;
+  transition: background-color .15s, color .15s, border-color .15s, opacity .15s;
+}
+.tpc-page-btn span { display: block; margin-top: -3px; }
+.tpc-page-btn:hover:not(:disabled) { background: var(--brand-navy); color: #FFFFFF; }
+.tpc-page-btn:disabled {
+  opacity: .3;
+  cursor: default;
+  border-color: var(--rule);
+  color: var(--muted);
+}
+.tpc-page-btn:focus-visible,
+.tpc-dot:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+
+/* Dots rather than numbers: four-odd pages is a count you read at a glance,
+   and numbered pagination on a running feed implies an index that matters. */
+.tpc-dots { display: flex; align-items: center; gap: 9px; }
+.tpc-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid var(--brand-navy);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: background-color .15s, transform .15s;
+}
+.tpc-dot:hover:not(:disabled) { background: var(--brand-blue); border-color: var(--brand-blue); }
+/* Disabled only for the ~200ms of a turn, so it shouldn't flash grey — just
+   stop taking clicks. */
+.tpc-dot:disabled { cursor: default; }
+.tpc-dot.is-active {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  transform: scale(1.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpc-dot { transition: none; }
+  .tpc-dot.is-active { transform: none; }
+}
+
+@media (max-width: 1100px) {
+  .tpc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .tpc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) {
+  .tpc-grid { grid-template-columns: 1fr; }
+  .tpc-hed { font-size: 18px; }
+  /* Nine dots at 9px across a phone is a row of targets nobody can hit.
+     Newer / Older still turn the pages. */
+  .tpc-dots { display: none; }
+  .tpc-pager { justify-content: space-between; }
+}
+
+/* ---- Dispatch: blue where the Tape is red --------------------------------
+   Only the accents move. The card, the grid and the pager are the same
+   objects — the two streams should read as siblings, not as two designs. */
+.tpc-dispatch .tpc-kicker { color: var(--brand-blue); }
+.tpc-dispatch .tpc-plate { border-bottom-color: var(--brand-blue); }
+.tpc-dispatch .tpc-dot.is-active {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+}
+.tpc-dispatch .tpc-dot:hover:not(:disabled) {
+  background: var(--brand-navy);
+  border-color: var(--brand-navy);
+}

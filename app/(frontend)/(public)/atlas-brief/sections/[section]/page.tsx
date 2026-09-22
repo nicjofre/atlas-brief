@@ -3,10 +3,11 @@ import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
 import { getArticles } from '@/lib/db/articles'
-import SectionFeed from './SectionFeed'
+import CardFeed from '../../CardFeed'
 import TopStories from '../../../TopStories'
 import { sectionLabel } from '@/lib/db/article-render'
 import '../../feed.css'
+import '../../cards.css'
 import './section.css'
 
 // For now the only section we know about is broker-activity. When new sections
@@ -147,9 +148,9 @@ export default async function SectionPage(
           {/* No head here any more: the tabs below name the list and carry the
               counts, and "Every entry, newest first" stopped being true the
               moment a status filter was applied. */}
-          {/* Tabs + the card grid. Client-side because the filter and the
-              Load more are both reader controls. */}
-          <SectionFeed rows={rest} sectionLabel={sectionLabel(slug)} />
+          {/* Client-side because paging is a reader control; the first page
+              is server-rendered either way. */}
+          <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} />
         </div>
       </section>
 
