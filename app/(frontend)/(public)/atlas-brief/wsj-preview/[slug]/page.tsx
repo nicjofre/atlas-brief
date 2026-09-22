@@ -157,7 +157,9 @@ function postToArticle(post: Post): Article {
   const hero = asMedia(post.heroImage)
   return {
     section: post.kicker || 'Dispatch',
-    sectionHref: '/atlas-brief',
+    // ATLAS BRIEF (2026-09-22): was '/atlas-brief', which 308s to the
+    // homepage now. A dispatch's section link belongs on the Dispatch archive.
+    sectionHref: '/atlas-brief/dispatch',
     title: calmHeadline(post.title),
     deck: post.deck ?? null,
     author: post.author || 'David Safai',

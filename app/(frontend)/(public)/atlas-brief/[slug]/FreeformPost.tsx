@@ -56,7 +56,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
         <JsonLd
           data={breadcrumbGraph([
             { name: 'Atlas Brief', path: '/' },
-            { name: 'The Tape', path: '/atlas-brief' },
+            { name: 'The Tape', path: '/atlas-brief/sections/broker-activity' },
           ])}
         />
       )}

@@ -12,7 +12,12 @@ import './section.css'
 
 // For now the only section we know about is broker-activity. When new sections
 // land, add them to this registry (and to the sectionLabel map in article-render).
-const SECTION_REGISTRY: Record<string, {
+//
+// Exported because app/sitemap.ts needs to know which section pages actually
+// exist. It used to derive them from every section_slug in the feed, which
+// advertised /atlas-brief/sections/the-tape — a 404, because bridged Payload
+// posts are stamped with that slug and no page answers to it.
+export const SECTION_REGISTRY: Record<string, {
   name: string
   emName: string
   eyebrow: string
