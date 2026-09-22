@@ -249,9 +249,14 @@ body {
 }
 .nav-tertiary:hover { color: #FFFFFF; }
 
-/* Secondary: Tax Appeals — outlined accent pill (was a filled tab; softened so
-   the primary button leads). Self-contained now that it lives in .nav-right. */
+/* Secondary: the Subscribe button — outlined pill in the nav's right-hand
+   group. It was Tax Appeals until that project went on hold. As a <button> it
+   needs the type reset a <Link> didn't. */
 .nav-highlight {
+  cursor: pointer;
+  border-color: rgba(255,255,255,0.42);
+  -webkit-appearance: none;
+  appearance: none;
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;

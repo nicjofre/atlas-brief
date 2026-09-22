@@ -41,7 +41,15 @@ export default function SiteNav() {
           <div className="nav-right">
             {/* Tertiary → secondary → primary, ascending in prominence toward the edge. */}
             <Link href="/contact" className="nav-tertiary">Work with Atlas</Link>
-            <Link href="/tax-appeals" className="nav-highlight">Tax Appeals<span className="nav-highlight-tag">New</span></Link>
+            {/* Tax Appeals is on hold, so the slot goes to the thing we always
+                want asked for. /tax-appeals still exists, just unlinked. */}
+            <button
+              type="button"
+              className="nav-highlight"
+              onClick={() => window.dispatchEvent(new CustomEvent('atlas:open-subscribe'))}
+            >
+              Subscribe
+            </button>
             <button
               className={`nav-burger${menuOpen ? ' open' : ''}`}
               aria-label="Menu"

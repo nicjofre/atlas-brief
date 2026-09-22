@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import SiteNav from './SiteNav'
+import ArticleSubscribeModal from './ArticleSubscribeModal'
 import LinkedInInsight from './LinkedInInsight'
 import GoogleTag from './GoogleTag'
 import MetaPixel from './MetaPixel'
@@ -62,6 +63,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <JsonLd data={siteGraph()} />
 
       <SiteNav />
+
+      {/* The signup pop-up, for the nav's Subscribe button. enabled={false}
+          keeps its scroll trigger off — pages that want the automatic pop-up
+          mount their own copy with it on. */}
+      <ArticleSubscribeModal enabled={false} />
 
       <div id="atlas-ticker" />
 
