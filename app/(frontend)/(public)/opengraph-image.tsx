@@ -52,28 +52,16 @@ export default async function Image() {
           fontFamily: 'Newsreader',
         }}
       >
-        {/* The roundel. Navy disc on navy ground — the ring is what separates
-            them, the same reason AtlasMark carries one in the nav. */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 104,
-            height: 104,
-            borderRadius: 104,
-            background: NAVY,
-            border: '4px solid rgba(255,255,255,0.45)',
-          }}
-        >
-          <div style={{ display: 'flex', fontSize: 58, lineHeight: 1, color: '#FFFFFF' }}>A</div>
-          <div style={{ display: 'flex', width: 56, height: 8, marginTop: 6, background: RED }} />
-        </div>
+        {/* The roundel came out on 2026-09-22, the same call as the About
+            masthead: at wordmark scale the mark reads as a badge stuck on the
+            front rather than part of the lockup. If it goes back, it was a
+            104px disc in NAVY with a 4px rgba(255,255,255,0.45) ring, a 58px
+            white "A" and a 56x8 red bar under it, 34px above the wordmark —
+            built from divs because Satori's <svg> support isn't dependable. */}
 
         {/* The wordmark. Two spans rather than one string: "Brief" is a
             different colour and a different face. */}
-        <div style={{ display: 'flex', alignItems: 'baseline', marginTop: 34 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
           <div style={{ display: 'flex', fontSize: 132, lineHeight: 1, color: '#FFFFFF' }}>
             Atlas
           </div>
