@@ -213,3 +213,98 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
 .c-hero .c-kicker { margin-bottom: clamp(14px, 1.8vw, 24px); }
 .c-hero h1 { font-size: clamp(38px, 5vw, 76px); margin: 0 auto; max-width: none; }
 .c-hero p.hero-arms { font-size: clamp(11px, 1vw, 13px); }
+
+/* ---------------------------------------------------------------------------
+   Header rebuilt to match About and the stream flags, 2026-09-22.
+
+   It was About's old header element for element: a red "CONTACT" chip on the
+   left, a mono standfirst pushed right, a big centred "Atlas", and the arms
+   line with its red bar under it. Five things, one of which was information.
+
+   What survives is a headline and a line of place-and-role underneath it —
+   the flag shape the Tape and Dispatch now open with.
+
+   Previous values, to put back:
+     .c-hero        padding: clamp(22px, 2.6vw, 38px) 0 clamp(18px, 2.2vw, 30px)
+     .c-hero h1     font-size: clamp(38px, 5vw, 76px)
+     .c-hero .c-kicker  margin-bottom: clamp(14px, 1.8vw, 24px)
+     .c-hero p.hero-arms  font-size: clamp(11px, 1vw, 13px)
+   --------------------------------------------------------------------------- */
+
+/* The kicker row holds the red chip and the standfirst side by side. The
+   standfirst is the only part worth keeping, so the row becomes its carrier
+   and moves below the title — DOM order puts it above, which is why this is
+   `order` rather than markup. */
+.c-hero .wrap {
+  display: flex;
+  flex-direction: column;
+}
+.c-hero h1 { order: 1; }
+.c-hero .c-kicker { order: 2; }
+
+/* HIDDEN — the red "CONTACT" chip. The nav marks the page and the URL says
+   it, exactly as on About. Restore by deleting this rule. */
+.c-hero .k { display: none; }
+
+/* HIDDEN — the arms line and its red bar. "Real Estate · Construction ·
+   Acquisitions" and the standfirst's "Operator · Developer · GC" are the same
+   claim twice, and the standfirst also carries the place. .hero-arms is shared
+   with About, so this is scoped to .c-hero. Restore by deleting this rule. */
+.c-hero .hero-arms { display: none; }
+
+.c-hero .c-kicker {
+  /* The row exists only to hold the standfirst now: no gap to distribute, and
+     the margin moves above it since it sits under the title. */
+  justify-content: center;
+  gap: 0;
+  margin: clamp(8px, 1vw, 12px) 0 0;
+}
+/* Centred under the headline rather than pushed to the right margin, and left
+   as it is on a phone — the right-aligned version only made sense opposite the
+   chip it no longer sits beside. */
+.c-hero .c-standfirst {
+  margin: 0 auto;
+  max-width: none;
+  text-align: center;
+}
+
+/* Sized to the stream flags: a page heading, not the paper's name. */
+.c-hero h1 { font-size: clamp(26px, 3.2vw, 46px); line-height: 0.96; }
+.c-hero { padding: clamp(14px, 1.6vw, 22px) 0 clamp(10px, 1.1vw, 14px); }
+
+/* ---------------------------------------------------------------------------
+   Inquiries column, shrunk 2026-09-22 — a trial, following the header.
+
+   Three headings at 26-38px with 56px of band padding gave each of the three
+   inquiry types the weight of a section front. They're a directory of who to
+   write to, so they want to read as one block a visitor can scan, not as three
+   chapters.
+
+   The `!important`s are not preference: RenderBlocks writes `margin-top:36px`
+   inline on every h2 after the first, and an inline style can't be beaten any
+   other way from a stylesheet.
+
+   Previous values, to put back:
+     .c-form                          padding: 56px var(--pad-x)
+     .c-form h2                       font-size: clamp(26px, 2.8vw, 38px)
+     .c-form h2:not(:first-of-type)   margin-top: clamp(22px, 2.6vw, 34px)
+     .c-form .k                       margin-bottom: clamp(16px, 2vw, 24px)
+     .c-form p                        font-size: 16px; line-height: 1.6
+   --------------------------------------------------------------------------- */
+
+.c-form { padding: clamp(24px, 3vw, 38px) var(--pad-x); }
+.c-form .k { margin-bottom: clamp(10px, 1.4vw, 16px); }
+/* Down to the size of a headline in the feed rather than a section front. */
+.c-form h2 {
+  font-size: clamp(18px, 1.8vw, 24px) !important;
+  line-height: 1.2 !important;
+  margin: 0 0 8px !important;
+}
+.c-form h2:not(:first-of-type) { margin-top: clamp(16px, 1.9vw, 24px) !important; }
+.c-form p {
+  font-size: 15px;
+  line-height: 1.55;
+  /* Narrower with the smaller type, so the measure stays in the 60-70ch band
+     rather than stretching as the column keeps its width. */
+  max-width: 62ch;
+}
