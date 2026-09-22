@@ -7,6 +7,7 @@
 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'   // ATLAS BRIEF ADDITION
 import type { ReactNode } from 'react'
 import { getArticleBySlug, getArticles, type ArticleCard } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
@@ -210,7 +211,14 @@ async function briefToArticle(slug: string): Promise<Article | null> {
 
 export default async function WsjPreviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const post = await getPostBySlug(slug)
+  // ATLAS BRIEF ADDITION (2026-09-22): draft awareness. Nic's original called
+  // getPostBySlug(slug) with no flag, which was right while this route was a
+  // preview nobody edited through. The canonical /atlas-brief/[slug] renders
+  // this template for dispatches now, and that route is what the CMS opens for
+  // Live Preview — without the flag David would see the last published version
+  // while editing, or a 404 on a post that has never been published.
+  const { isEnabled: draft } = await draftMode()
+  const post = await getPostBySlug(slug, draft)
   const a = post ? postToArticle(post) : await briefToArticle(slug)
   if (!a) notFound()
 
@@ -316,7 +324,7 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
             )}
             <section className="wsj-signup">
               <h2>The Friday Dispatch</h2>
-              <p>One note a week from David on what traded, what's listed, and what the numbers say. Free.</p>
+              <p>One note a week from David on what traded, what&rsquo;s listed, and what the numbers say. Free.</p>
               <Link href="/#dispatch" className="wsj-signup-btn">Sign up</Link>
             </section>
           </aside>

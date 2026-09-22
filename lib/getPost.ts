@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Post } from '@/payload-types'
@@ -5,7 +6,12 @@ import type { Post } from '@/payload-types'
 // Fetch a published freeform Post by slug via the Payload local API. depth:2 so
 // upload relationships (hero image, block images) come back as populated Media
 // objects. Only published docs are returned — drafts stay in the CMS.
-export async function getPostBySlug(slug: string, draft = false): Promise<Post | null> {
+// Cached per request, for the same reason as getArticleBySlug: the canonical
+// article route delegates to a template that looks the post up again.
+export const getPostBySlug = cache(async function getPostBySlug(
+  slug: string,
+  draft = false
+): Promise<Post | null> {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'posts',
@@ -17,7 +23,7 @@ export async function getPostBySlug(slug: string, draft = false): Promise<Post |
     limit: 1,
   })
   return docs[0] ?? null
-}
+})
 
 // All published posts as lightweight cards for the feed bridge (Phase 2).
 export async function getPublishedPosts(): Promise<Post[]> {
