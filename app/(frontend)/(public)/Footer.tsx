@@ -26,8 +26,8 @@ export default function Footer() {
           <div>
             <h5>Read</h5>
             <ul>
-              <li><Link href="/">The Tape</Link></li>
-              <li><Link href="/atlas-brief/sections/broker-activity">Broker Activity</Link></li>
+              <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
+              <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
               <li><Link href="/about">About</Link></li>
               <li><Link href="/contact">Contact</Link></li>
             </ul>

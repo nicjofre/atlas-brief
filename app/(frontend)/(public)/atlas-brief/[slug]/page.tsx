@@ -205,7 +205,7 @@ export default async function PostPage(
               Atlas <span className="crumb-mark">Brief</span>
             </Link>
             <span className="sep">/</span>
-            <Link href="/atlas-brief">The Tape</Link>
+            <Link href="/atlas-brief/sections/broker-activity">The Tape</Link>
             <span className="sep">/</span>
             <Link href={`/atlas-brief/sections/${article.section_slug}`}>{sectionLabel}</Link>
             <span className="sep">/</span>

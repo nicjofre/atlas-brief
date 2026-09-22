@@ -73,7 +73,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
           <nav className="crumb">
             <Link href="/">Atlas <span className="crumb-mark">Brief</span></Link>
             <span className="sep">/</span>
-            <Link href="/atlas-brief">The Tape</Link>
+            <Link href="/atlas-brief/sections/broker-activity">The Tape</Link>
             <span className="sep">/</span>
             <span>{kicker}</span>
           </nav>

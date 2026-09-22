@@ -1,0 +1,120 @@
+/* PLACEHOLDER styling for the Dispatch stream page. Deliberately close to the
+   Broker Activity section page so the two read as siblings — blue where that
+   one is red, since blue is the Dispatch stream's colour on the front page.
+   Scoped under .dp- so nothing here can reach another route. */
+
+.dp-masthead {
+  position: relative;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-blue);
+  overflow: hidden;
+}
+.dp-masthead-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(20px, 2.2vw, 32px) var(--pad-x);
+  text-align: center;
+}
+.dp-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 10px;
+}
+.dp-masthead h1 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(28px, 3.4vw, 50px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+}
+.dp-masthead h1 em { font-style: italic; color: var(--brand-blue); }
+.dp-dek {
+  margin: 0 auto 14px;
+  max-width: 48ch;
+  font-family: var(--serif);
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.5;
+  color: rgba(255,255,255,0.82);
+}
+.dp-meta {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.22);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+
+.dp-feed { padding: clamp(28px, 3.4vw, 48px) 0; }
+.dp-list { display: flex; flex-direction: column; }
+.dp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: clamp(16px, 2vw, 28px);
+  align-items: start;
+  padding: clamp(16px, 1.8vw, 22px) 0;
+  border-top: 1px solid var(--rule-soft);
+  color: var(--ink);
+}
+.dp-row:first-child { border-top: 0; padding-top: 0; }
+.dp-text { min-width: 0; }
+.dp-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.dp-kicker span {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+}
+.dp-row h2 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.dp-row:hover h2 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.dp-deck {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+.dp-thumb img { width: 200px; height: 134px; object-fit: cover; display: block; transition: opacity .15s; }
+.dp-row:hover .dp-thumb img { opacity: .92; }
+.dp-empty {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+@media (max-width: 820px) {
+  .dp-row { grid-template-columns: minmax(0, 1fr) 104px; gap: 14px; }
+  .dp-thumb img { width: 104px; height: 78px; }
+  .dp-deck { display: none; }
+}

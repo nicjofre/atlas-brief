@@ -94,7 +94,7 @@ export default function CenterPackage({
         <div className="cp-band cp-band-dispatch">
           <div className="cp-head">
             <h2>Dispatch</h2>
-            <Link href="/atlas-brief">All dispatches →</Link>
+            <Link href="/atlas-brief/dispatch">All dispatches →</Link>
           </div>
           <div className="cp-row">
             {dispatchRest.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}

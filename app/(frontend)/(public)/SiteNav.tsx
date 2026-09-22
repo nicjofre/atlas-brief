@@ -30,11 +30,11 @@ export default function SiteNav() {
             <span className="nav-tagline" aria-hidden="true">Los Angeles<br />Real Estate<br />Intelligence</span>
           </div>
           <ul className="nav-links">
-            <li><Link href="/">The Tape</Link></li>
-            {/* The only section with entries today, and where every article's
-                "Back to Board" lands — previously reachable only from inside
-                an article. */}
-            <li><Link href="/atlas-brief/sections/broker-activity">Broker Activity</Link></li>
+            {/* One entry per stream. "The Tape" is the deals page — it used to
+                point at the homepage, which meant the same words led to two
+                different places depending on where you clicked. */}
+            <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
+            <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><Link href="/contact">Contact</Link></li>
           </ul>
@@ -66,7 +66,8 @@ export default function SiteNav() {
           so it's not repeated here. */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <ul>
-          <li><Link href="/" onClick={closeMenu}>The Tape</Link></li>
+          <li><Link href="/atlas-brief/sections/broker-activity" onClick={closeMenu}>The Tape</Link></li>
+          <li><Link href="/atlas-brief/dispatch" onClick={closeMenu}>Dispatch</Link></li>
           <li><Link href="/about" onClick={closeMenu}>About</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Contact</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Work with Atlas</Link></li>
