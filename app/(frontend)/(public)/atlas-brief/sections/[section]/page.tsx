@@ -52,6 +52,20 @@ export async function generateMetadata(
   })
 }
 
+// A paper's flag carries a dateline, not a description of the section. Built
+// per request rather than at module load so it can't freeze at build time —
+// the route renders dynamically (getArticles reads cookies), so this is the
+// date the reader is actually looking at.
+function dateline(): string {
+  return new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 export default async function SectionPage(
   { params }: { params: Promise<{ section: string }> }
 ) {
@@ -60,8 +74,6 @@ export default async function SectionPage(
   if (!section) notFound()
 
   const list = await getArticles({ sectionSlug: slug })
-  const sold = list.filter(a => a.listing?.status === 'sold').length
-  const forSale = list.filter(a => a.listing?.status === 'for_sale').length
 
   // The section opens with the front-page package: newest entry large, the rest
   // of the week stacked beside it, everything older in the feed below. No Most
@@ -111,12 +123,16 @@ export default async function SectionPage(
             <h1>
               {section.name} <em>{section.emName}</em>
             </h1>
-            <p className="cat-dek">{section.deck}</p>
-            <div className="cat-meta">
-              <span>{sold} Sold</span>
-              <span>{forSale} For Sale</span>
-              <span>Updated Weekly</span>
-            </div>
+            {/* The deck and the sold/for-sale row came out on 2026-09-22,
+                following Dispatch. Both were explaining the section to someone
+                already in it, which is the thing a paper never does — a flag
+                carries the place and the date, and the entries say the rest.
+                `deck` stays on the registry entry: it's the page's meta
+                description, which still wants a sentence. */}
+            <p className="cat-dateline">
+              <span>Los Angeles</span>
+              <time dateTime={new Date().toISOString().slice(0, 10)}>{dateline()}</time>
+            </p>
           </div>
           <div className="cat-hero-img">
             {/* eslint-disable-next-line @next/next/no-img-element */}

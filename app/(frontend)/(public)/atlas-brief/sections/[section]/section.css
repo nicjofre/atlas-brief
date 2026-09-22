@@ -308,8 +308,15 @@
   position: relative;
   overflow: hidden;
   padding: 0;
-  background: var(--brand-navy);
-  border-bottom: 3px solid var(--brand-red);
+  /* PARKED (2026-09-22): this band was
+       background: var(--brand-navy);
+       border-bottom: 3px solid var(--brand-red);
+     White now, following Dispatch — a paper's masthead is ink on paper, and
+     navy under the navy nav made the top of the page one block of colour. The
+     red moved to the rule under the name, which is where it marks the stream;
+     the band closes on a quiet grey. Delete this note after Lucas confirms. */
+  background: var(--bg);
+  border-bottom: 3px solid var(--rule);
 }
 /* ---------------------------------------------------------------------------
    PARKED — the masthead photo treatment (2026-09-14). The band reads better as
@@ -346,11 +353,23 @@
        transparent calc(var(--flag-stop) + 5px));
    }
    --------------------------------------------------------------------------- */
-/* Photo back on — the LA skyline at dusk, full bleed under a navy wash. It's a
+/* ---------------------------------------------------------------------------
+   PARKED — the skyline photo behind this masthead (2026-09-22). Out because
+   the band read as a stock hero: a wide dusk skyline behind centred serif type
+   is the shape every generated page has. The front page cut the same photo in
+   904ef55 for the same reason — its note calls the photo, the diagonal, the
+   watermark and the slogan "four devices doing the job of one".
+
+   The band is plain navy now, on the front page's proportions. Re-enabling is
+   uncommenting this block; page.tsx still passes --cat-hero and the asset is
+   still in public/images/. Inner comment delimiters are written (* *) so this
+   block closes where it should. Delete only after Lucas confirms.
+
+(* Photo back on — the LA skyline at dusk, full bleed under a navy wash. It's a
    background on the band rather than the <img> in the markup: that markup sits
    inside .cat-masthead-inner, which is capped at --maxw with page padding, so
    however it was positioned it kept stopping short of the band's edges. On the
-   band, inset:0 is the band. */
+   band, inset:0 is the band. *)
 .cat-masthead::before {
   content: "";
   position: absolute;
@@ -363,6 +382,8 @@
   background-position: center, center 52%;
   background-repeat: no-repeat, no-repeat;
 }
+
+   --------------------------------------------------------------------------- */
 .cat-hero-img { display: none; }
 .cat-masthead::after { display: none; }
 /* `margin-left: 0` used to be in this rule, left over from the version where
@@ -387,7 +408,9 @@
   z-index: 1;
   grid-template-columns: 1fr;
   gap: 0;
-  padding: clamp(20px, 2.2vw, 32px) var(--pad-x);
+  /* The front page's masthead arrangement — .flag-inner in home.css — at a
+     tighter measure: a stream page opens the same way, but shorter. */
+  padding: clamp(14px, 1.6vw, 22px) var(--pad-x) clamp(10px, 1.1vw, 14px);
   align-items: center;
 }
 
@@ -402,7 +425,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .cat-masthead .cat-mark .atlas-mark { display: block; flex: none; }
 /* "Atlas" white roman, "Brief" red italic — the wordmark per the identity
@@ -410,10 +433,13 @@
 .cat-masthead .cat-wordmark {
   font-family: var(--serif);
   font-weight: 500;
-  font-size: 20px;
+  /* Was 20px, the nav's size. Stepped down with the title so the two read as
+     a stack rather than competing — the nav carries the lockup at full size
+     two inches above this anyway. */
+  font-size: 15px;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  color: #FFFFFF;
+  color: var(--brand-navy);   /* was #FFFFFF, on the navy band */
 }
 .cat-masthead .cat-wordmark em {
   font-style: italic;
@@ -421,15 +447,20 @@
   margin-left: -0.04em;
 }
 .cat-masthead h1 {
-  color: #FFFFFF;
-  font-size: clamp(28px, 3.4vw, 50px);
-  line-height: 0.95;
+  color: var(--brand-navy);   /* was #FFFFFF, on the navy band */
+  /* Well under the front page's 132px wordmark: this is a stream heading, not
+     the paper's name, and at full display size it was shouting. */
+  font-size: clamp(26px, 3.2vw, 46px);
+  line-height: 0.96;
   margin: 0 0 10px;
 }
 /* PARKED (2026-09-21): the italic half was red on the navy band —
    `.cat-masthead h1 em { color: var(--brand-red); }`. The whole lockup is
    white over a red rule now. Delete this note only after Lucas confirms. */
-.cat-masthead h1 em { color: #FFFFFF; }
+/* Both halves the same ink; the rule under the name carries the red. "The
+   Tape" keeps its italic where Dispatch lost one — two words, like
+   Atlas *Brief*, rather than a single word split down the middle. */
+.cat-masthead h1 em { color: var(--brand-navy); }
 /* The rule runs under the whole name, so it belongs on the h1 — but a block
    h1 would stretch it the full width of the band. inline-block shrinks it to
    the words; the parent's text-align: center still centres it. A border
@@ -440,19 +471,35 @@
   padding-bottom: 0.05em;
   border-bottom: 0.07em solid var(--brand-red);
 }
-.cat-masthead .cat-dek {
-  color: rgba(255,255,255,0.82);
-  max-width: 44ch;
-  /* `auto` on the sides, not 0: this shorthand sits after the centring rule and
-     was resetting it. */
-  margin: 0 auto 14px;
-  font-size: clamp(14px, 1.15vw, 16px);
+/* PARKED (2026-09-22) — the deck and the sold/for-sale row, both cut from the
+   markup. Kept so putting them back is a paste.
+   .cat-masthead .cat-dek  { color: rgba(255,255,255,0.82); max-width: 44ch;
+                             margin: 0 auto 14px;
+                             font-size: clamp(14px, 1.15vw, 16px); }
+   .cat-masthead .cat-meta { color: rgba(255,255,255,0.7);
+                             border-top: 1px solid rgba(255,255,255,0.22);
+                             padding-top: 12px; gap: 22px; } */
+
+/* Place and date, the way a flag carries them. No rule of its own: the band's
+   3px rule separates the flag from the page one line below, and two
+   full-width horizontals that close together was the clutter. */
+.cat-masthead .cat-dateline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding-top: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.cat-masthead .cat-meta {
-  color: rgba(255,255,255,0.7);
-  border-top: 1px solid rgba(255,255,255,0.22);
-  padding-top: 12px;
-  gap: 22px;
+.cat-masthead .cat-dateline span::after {
+  content: "·";
+  margin-left: 10px;
+  color: var(--rule);
 }
 
 @media (max-width: 900px) {
