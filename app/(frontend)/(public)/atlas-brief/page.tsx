@@ -53,7 +53,7 @@ export default async function AtlasBriefIndex() {
           <div className="count">{articles.length} live</div>
           <ul className="cat-list">
             <li><button className="active">All</button></li>
-            <li><Link href="/atlas-brief/sections/broker-activity">Broker Activity</Link></li>
+            <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
           </ul>
           <div className="sort">Sorted: <b>Newest</b></div>
         </div>

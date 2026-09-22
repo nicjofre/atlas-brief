@@ -90,7 +90,7 @@ export default function TapeTabs({ articles }: { articles: ArticleCard[] }) {
                     <span>Atlas Brief</span>
                   ) : (
                     <>
-                      <span>{a.cat_label ?? 'Broker Activity'}</span>
+                      <span>{a.cat_label ?? 'The Tape'}</span>
                       <span className={`badge badge-${statusBadgeKey(a.listing?.status)}`}>
                         {statusKicker(a.listing?.status)}
                       </span>

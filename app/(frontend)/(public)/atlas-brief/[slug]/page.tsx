@@ -23,6 +23,7 @@ import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
+import { sectionLabel } from '@/lib/db/article-render'
 import { getArticleBySlug } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
 // The two treatments this route now renders. They're the same modules the
@@ -151,12 +152,11 @@ export default async function PostPage(
   const listing = article.listing
   const property = listing?.property
 
-  const sectionLabel =
-    article.section_slug === 'broker-activity' ? 'Broker Activity' : article.section_slug
-  // Section name for the structured data. The visible kicker doesn't print it —
-  // the breadcrumb directly above already does — but main's JSON-LD names the
-  // section for search and answer engines.
-  const catLabel = article.cat_label ?? sectionLabel
+  // Section name for the structured data — main's JSON-LD names the section for
+  // search and answer engines. Via sectionLabel() rather than a ternary of its
+  // own: three files each carried a copy of that ternary, so the last rename
+  // had to be made in three places and was missed in two.
+  const catLabel = article.cat_label ?? sectionLabel(article.section_slug)
 
   // Hero photo for og:image and the NewsArticle node — handles local paths,
   // full URLs and Supabase storage paths uniformly.

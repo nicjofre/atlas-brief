@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 // shape drives what the send flow and CRM need.
 
 const SAMPLE: DispatchEmailProps = {
-  kicker: 'Broker Activity · For Sale',
+  kicker: 'The Tape · For Sale',
   dateline: 'Friday, June 21, 2026',
   headline: '5712 Camellia, NoHo: 14 Doors at *$306K a Unit.*',
   deck: 'Soft-story retrofit is done and the rents are a notch under market, which is the whole pitch here. At a 4.86 broker CAP you are paying for the story, not the in-place cash flow. The question is whether the submarket gives you the bump.',

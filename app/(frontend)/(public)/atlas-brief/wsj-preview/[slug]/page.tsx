@@ -11,7 +11,7 @@ import { draftMode } from 'next/headers'   // ATLAS BRIEF ADDITION
 import type { ReactNode } from 'react'
 import { getArticleBySlug, getArticles, type ArticleCard } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
-import { HeadlineText, stripBrokersBlock } from '@/lib/db/article-render'
+import { HeadlineText, stripBrokersBlock, sectionLabel } from '@/lib/db/article-render'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 import { isAllCaps, sentenceCase, calmHeadline } from '@/lib/db/headline-case'
 import { createClient } from '@/lib/supabase/server'
@@ -194,7 +194,10 @@ async function briefToArticle(slug: string): Promise<Article | null> {
   }
 
   return {
-    section: article.section_slug === 'broker-activity' ? 'Broker Activity' : 'The Tape',
+    // ATLAS BRIEF (2026-09-22): was a ternary mapping broker-activity to
+    // "Broker Activity" and everything else to "The Tape". Both arms are the
+    // same stream; sectionLabel() is the one definition now.
+    section: sectionLabel(article.section_slug),
     sectionHref: `/atlas-brief/sections/${article.section_slug}`,
     title: <HeadlineText text={article.headline} />,
     deck: article.deck,

@@ -114,9 +114,11 @@ export function statusKicker(status: string | null | undefined): string {
   return 'Off Market'
 }
 
-// "Broker Activity · For sale" — used by the homepage tape-feed foot line
+// "The Tape · For sale" — written for the homepage tape-feed foot line, which
+// the broadsheet rebuild replaced. Nothing calls it as of 2026-09-22; kept
+// because the dispatch email may want exactly this string.
 export function sectionStatusFoot(catLabel: string | null, status: string | null | undefined): string {
-  const label = catLabel ?? 'Broker Activity'
+  const label = catLabel ?? 'The Tape'
   const verb = status === 'sold' ? 'Trade' : status === 'for_sale' ? 'For sale' : 'Listing'
   return `${label} · ${verb}`
 }
@@ -160,9 +162,12 @@ export function formatDateLong(s: string | null | undefined): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-// Section slug → display label (kept here so feed/section/post pages stay in sync)
+// Section slug → display label (kept here so feed/section/post pages stay in
+// sync). The slug stays `broker-activity` — it's in every published URL — but
+// the stream has been called The Tape everywhere a reader can see since
+// 2026-09-21, and the masthead said so while this still said otherwise.
 const SECTION_LABELS: Record<string, string> = {
-  'broker-activity': 'Broker Activity',
+  'broker-activity': 'The Tape',
 }
 
 export function sectionLabel(slug: string): string {

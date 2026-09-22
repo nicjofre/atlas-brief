@@ -20,9 +20,10 @@ const SECTION_REGISTRY: Record<string, {
   heroImage: string
 }> = {
   'broker-activity': {
-    // The masthead carries the stream's name, not the slug's. "Broker Activity"
-    // is still the section label on article pages and in the CMS — renaming
-    // that reaches the editor and the kickers, so it's a separate job.
+    // The masthead carries the stream's name, not the slug's. The label
+    // followed on 2026-09-22 — sectionLabel() returns "The Tape" now, so the
+    // breadcrumbs, the JSON-LD and the CMS editor agree with this masthead.
+    // The slug itself stays `broker-activity`: it's in every published URL.
     name: 'The',
     emName: 'Tape',
     eyebrow: 'Atlas Brief',
