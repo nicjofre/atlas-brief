@@ -1,3 +1,13 @@
+/* ---------------------------------------------------------------------------
+   BACKUP — the colour declarations this page carried before the brand pass
+   (2026-09-11, from commit 03faafc). Paste back to restore. Delete this block
+   only after Lucas confirms.
+
+   .cat-eyebrow       -> color: var(--accent);
+   .cat-masthead h1   -> no colour (inherited --ink)
+   .cat-masthead h1 em-> color: var(--accent-ink);
+   --------------------------------------------------------------------------- */
+
 .cat-masthead {
   border-bottom: 3px double var(--ink);
   padding: clamp(48px, 6vw, 88px) 0 clamp(40px, 5vw, 64px);
@@ -16,7 +26,7 @@
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--brand-red);
   margin-bottom: 24px;
 }
 .cat-masthead h1 {
@@ -26,10 +36,13 @@
   line-height: 0.92;
   letter-spacing: -0.035em;
   margin: 0 0 28px;
+  color: var(--brand-navy);
 }
+/* "The" navy, "Tape" red — the same lockup as Atlas/Brief and
+   Atlas/Home Builders. */
 .cat-masthead h1 em {
   font-style: italic;
-  color: var(--accent-ink);
+  color: var(--brand-red);
 }
 .cat-dek {
   font-family: var(--serif);
@@ -78,4 +91,423 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
+}
+
+/* Entry list scrolls in place — the same pane as the homepage's .tt-scroll,
+   down to the blue thumb that goes red on hover. Scoped to this page: feed.css
+   styles .archive-list for the Tape index too, which isn't a scrolling pane. */
+/* ---------------------------------------------------------------------------
+   PARKED — the All / Sold / For Sale tabs (2026-09-21). Pulled because the
+   split was 83 sold to 3 for sale: two of the three tabs led to almost
+   nothing. Status still leads each card's kicker and still carries a badge,
+   which was the part doing the work.
+
+   Paste back (with the tab markup in ../../CardFeed.tsx) if the mix ever evens
+   out. Inner comment delimiters are written (* *) so this block closes where
+   it should. Delete only after Lucas confirms.
+
+(* ---- Status tabs ---------------------------------------------------------
+   The homepage's Tape/Dispatch tabs, rebuilt here under their own class names:
+   home.css only loads on the homepage, and its generic names have leaked
+   between routes before. *)
+.sec-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 clamp(20px, 3vw, 34px);
+  border-bottom: 1px solid var(--rule);
+  flex-wrap: wrap;
+}
+.sec-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  margin-bottom: -1px;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.sec-tab:hover { color: var(--ink); }
+.sec-tab.is-active { color: var(--ink); border-bottom-color: var(--brand-red); }
+.sec-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  background: var(--bg-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+}
+.sec-tab.is-active .sec-count { color: #FFFFFF; background: var(--brand-blue); }
+
+   --------------------------------------------------------------------------- */
+
+.sec-empty {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* ---------------------------------------------------------------------------
+   PARKED — the scrolling pane and the list-row feed (2026-09-21). The feed is
+   a card grid now: the front page is cards, so a section page of rows read as
+   a different site, and the fixed-height pane hid the run's length rather than
+   handling it (a Load more does that job now).
+
+   Kept rather than deleted so the rows are one paste away. Inner comment
+   delimiters are written (* *) so this block closes where it should. Delete
+   only after Lucas confirms.
+
+(* The pane fades out at its foot, as the homepage's list does, so the cut-off
+   row reads as "there's more" rather than as the end. The inset on the right
+   clears the scrollbar so the fade doesn't wash over it. *)
+.arc-scroll-wrap { position: relative; }
+.arc-scroll-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 18px;
+  bottom: 0;
+  height: 64px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), var(--bg));
+}
+.archive-feed .archive-list {
+  max-height: clamp(520px, 74vh, 940px);
+  overflow-y: auto;
+  (* Chaining stays on: hitting the end carries you down the page rather than
+     parking you in the pane. *)
+  padding-right: 18px;
+  scrollbar-color: var(--brand-blue) var(--rule-soft);
+}
+.archive-feed .archive-list:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 4px;
+}
+(* WebKit needs its own rules; Firefox uses scrollbar-color above. *)
+.archive-feed .archive-list::-webkit-scrollbar { width: 10px; }
+.archive-feed .archive-list::-webkit-scrollbar-track {
+  background: var(--rule-soft);
+  border-radius: 5px;
+}
+.archive-feed .archive-list::-webkit-scrollbar-thumb {
+  background: var(--brand-blue);
+  border-radius: 5px;
+  border: 2px solid var(--rule-soft);
+}
+.archive-feed .archive-list::-webkit-scrollbar-thumb:hover { background: var(--brand-red); }
+
+(* ---- Feed rows in the front-page language -------------------------------
+   Scoped to .archive-feed on purpose: feed.css styles .arc-row for the Tape
+   index too, and that page hasn't been touched pending David's call on it.
+   Everything here mirrors top-stories.css — sans kicker in red, serif headline
+   that underlines on hover, thumbnail right, hairline between entries. *)
+.archive-feed .arc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: clamp(16px, 2vw, 28px);
+  align-items: start;
+  padding: clamp(16px, 1.8vw, 22px) 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 0;
+  color: var(--ink);
+}
+.archive-feed .arc-row:first-child { border-top: 0; padding-top: 0; }
+(* No background wash on hover — the headline underlines instead, as on the
+   front page. *)
+.archive-feed .arc-row:hover { background: transparent; }
+.archive-feed .arc-text { min-width: 0; }
+
+.archive-feed .arc-kicker {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  padding-top: 0;
+  margin-bottom: 8px;
+}
+.archive-feed .arc-kicker span {
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+.archive-feed .arc-kicker time { color: var(--muted); }
+
+.archive-feed .arc-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.15;
+  letter-spacing: -.015em;
+  color: var(--ink);
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.archive-feed .arc-row:hover .arc-title {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.archive-feed .arc-deck {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 62ch;
+}
+.archive-feed .arc-thumb { display: block; }
+.archive-feed .arc-thumb img {
+  width: 200px;
+  height: 134px;
+  object-fit: cover;
+  display: block;
+  transition: opacity .15s;
+}
+.archive-feed .arc-row:hover .arc-thumb img { opacity: .92; }
+
+@media (max-width: 820px) {
+  .archive-feed .arc-row { grid-template-columns: minmax(0, 1fr) 104px; gap: 14px; }
+  .archive-feed .arc-thumb img { width: 104px; height: 78px; }
+  .archive-feed .arc-title { font-size: 18px !important; }
+  .archive-feed .arc-deck { display: none; }
+}
+
+   --------------------------------------------------------------------------- */
+
+/* ---- Masthead: the homepage flag, with the section's own photo -----------
+   Same recipe as .flag in home.css — navy ground, photo masked off along a
+   105deg cut, a red diagonal on the seam, red rule underneath — so a section
+   opens the way the front page does. Shorter band: a lead photo sits directly
+   beneath it now, and two tall images stacked was too much. */
+.cat-masthead {
+  --flag-cut: 105deg;
+  --flag-stop: 46%;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  /* PARKED (2026-09-22): this band was
+       background: var(--brand-navy);
+       border-bottom: 3px solid var(--brand-red);
+     White now, following Dispatch — a paper's masthead is ink on paper, and
+     navy under the navy nav made the top of the page one block of colour. The
+     red moved to the rule under the name, which is where it marks the stream;
+     the band closes on a quiet grey. Delete this note after Lucas confirms. */
+  background: var(--bg);
+  border-bottom: 3px solid var(--rule);
+}
+/* ---------------------------------------------------------------------------
+   PARKED — the masthead photo treatment (2026-09-14). The band reads better as
+   plain navy for now, so the photo is hidden rather than deleted: the asset
+   stays in public/images/brief/, the markup still renders it, and re-enabling
+   is a matter of deleting `.cat-hero-img{display:none}` below and pasting these
+   rules back. Delete this block only after Lucas confirms.
+
+   .cat-hero-img {
+     position: absolute;
+     inset: 0;
+     margin: 0;
+     -webkit-mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+             mask-image: linear-gradient(var(--flag-cut), #000 0 var(--flag-stop), transparent var(--flag-stop));
+   }
+   .cat-hero-img img {
+     width: 100%;
+     height: 100%;
+     aspect-ratio: auto;
+     object-fit: cover;
+     object-position: 32% 42%;
+     border: 0;
+     display: block;
+   }
+   .cat-img-caption { display: none; }
+   .cat-masthead::after {
+     content: "";
+     position: absolute;
+     inset: 0;
+     pointer-events: none;
+     background: linear-gradient(var(--flag-cut),
+       transparent 0 calc(var(--flag-stop) - 5px),
+       var(--brand-red) calc(var(--flag-stop) - 5px) calc(var(--flag-stop) + 5px),
+       transparent calc(var(--flag-stop) + 5px));
+   }
+   --------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+   PARKED — the skyline photo behind this masthead (2026-09-22). Out because
+   the band read as a stock hero: a wide dusk skyline behind centred serif type
+   is the shape every generated page has. The front page cut the same photo in
+   904ef55 for the same reason — its note calls the photo, the diagonal, the
+   watermark and the slogan "four devices doing the job of one".
+
+   The band is plain navy now, on the front page's proportions. Re-enabling is
+   uncommenting this block; page.tsx still passes --cat-hero and the asset is
+   still in public/images/. Inner comment delimiters are written (* *) so this
+   block closes where it should. Delete only after Lucas confirms.
+
+(* Photo back on — the LA skyline at dusk, full bleed under a navy wash. It's a
+   background on the band rather than the <img> in the markup: that markup sits
+   inside .cat-masthead-inner, which is capped at --maxw with page padding, so
+   however it was positioned it kept stopping short of the band's edges. On the
+   band, inset:0 is the band. *)
+.cat-masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to bottom, rgba(6,24,50,0.68) 0%, rgba(6,24,50,0.82) 100%),
+    var(--cat-hero);
+  background-size: cover, cover;
+  background-position: center, center 52%;
+  background-repeat: no-repeat, no-repeat;
+}
+
+   --------------------------------------------------------------------------- */
+.cat-hero-img { display: none; }
+.cat-masthead::after { display: none; }
+/* `margin-left: 0` used to be in this rule, left over from the version where
+   the type sat off to one side. It overrode the `margin: 0 auto` set on
+   .cat-masthead-inner further up, so past --maxw (1360px) the capped box
+   hugged the left of the band and every line in it sat left of centre. The
+   child keeps it — a grid item's left margin is its own business. */
+.cat-masthead-inner,
+.cat-masthead-inner > div:first-child {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+.cat-masthead-inner > div:first-child { margin-left: 0; }
+.cat-masthead-inner { margin-left: auto; margin-right: auto; }
+/* One line: the name and its italic half sit together rather than stacking. */
+.cat-masthead h1 { text-wrap: balance; }
+.cat-masthead .cat-meta { justify-content: center; }
+
+.cat-masthead-inner {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 1fr;
+  gap: 0;
+  /* The front page's masthead arrangement — .flag-inner in home.css — at a
+     tighter measure: a stream page opens the same way, but shorter. */
+  padding: clamp(14px, 1.6vw, 22px) var(--pad-x) clamp(10px, 1.1vw, 14px);
+  align-items: center;
+}
+
+.cat-masthead .cat-eyebrow { color: rgba(255,255,255,0.72); margin-bottom: 10px; }
+/* The wordmark, sitting where the eyebrow did. Deliberately a copy of
+   .nav-logo's type rather than a shared class: that one lives in atlas-v2.css
+   keyed to the nav band, and this band has its own spacing. The `gap` and the
+   .atlas-mark rule are still here for the roundel, which came out but is one
+   <AtlasMark /> away if it goes back. */
+.cat-masthead .cat-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cat-masthead .cat-mark .atlas-mark { display: block; flex: none; }
+/* "Atlas" white roman, "Brief" red italic — the wordmark per the identity
+   sheet, at the nav's size. */
+.cat-masthead .cat-wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  /* Was 20px, the nav's size. Stepped down with the title so the two read as
+     a stack rather than competing — the nav carries the lockup at full size
+     two inches above this anyway. */
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--brand-navy);   /* was #FFFFFF, on the navy band */
+}
+.cat-masthead .cat-wordmark em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
+.cat-masthead h1 {
+  color: var(--brand-navy);   /* was #FFFFFF, on the navy band */
+  /* Well under the front page's 132px wordmark: this is a stream heading, not
+     the paper's name, and at full display size it was shouting. */
+  font-size: clamp(26px, 3.2vw, 46px);
+  line-height: 0.96;
+  margin: 0 0 10px;
+}
+/* PARKED (2026-09-21): the italic half was red on the navy band —
+   `.cat-masthead h1 em { color: var(--brand-red); }`. The whole lockup is
+   white over a red rule now. Delete this note only after Lucas confirms. */
+/* Both halves the same ink; the rule under the name carries the red. "The
+   Tape" keeps its italic where Dispatch lost one — two words, like
+   Atlas *Brief*, rather than a single word split down the middle. */
+.cat-masthead h1 em { color: var(--brand-navy); }
+/* The rule runs under the whole name, so it belongs on the h1 — but a block
+   h1 would stretch it the full width of the band. inline-block shrinks it to
+   the words; the parent's text-align: center still centres it. A border
+   rather than text-decoration because the rule has to clear the p's
+   descender, and an underline thick enough to read would strike through it. */
+.cat-masthead h1 {
+  display: inline-block;
+  padding-bottom: 0.05em;
+  border-bottom: 0.07em solid var(--brand-red);
+}
+/* PARKED (2026-09-22) — the deck and the sold/for-sale row, both cut from the
+   markup. Kept so putting them back is a paste.
+   .cat-masthead .cat-dek  { color: rgba(255,255,255,0.82); max-width: 44ch;
+                             margin: 0 auto 14px;
+                             font-size: clamp(14px, 1.15vw, 16px); }
+   .cat-masthead .cat-meta { color: rgba(255,255,255,0.7);
+                             border-top: 1px solid rgba(255,255,255,0.22);
+                             padding-top: 12px; gap: 22px; } */
+
+/* Place and date, the way a flag carries them. No rule of its own: the band's
+   3px rule separates the flag from the page one line below, and two
+   full-width horizontals that close together was the clutter. */
+.cat-masthead .cat-dateline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding-top: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cat-masthead .cat-dateline span::after {
+  content: "·";
+  margin-left: 10px;
+  color: var(--rule);
+}
+
+@media (max-width: 900px) {
+  /* The photo used to be knocked back to 28% here, from the version where the
+     type sat directly on it. The wash handles legibility now, so it stays at
+     full strength; only the crop tightens so the towers still read in a
+     narrower band. */
+  .cat-masthead-inner > div:first-child { margin-left: 0; }
+  .cat-hero-img img { object-position: center 46%; }
+  .cat-masthead::after { display: none; }
 }

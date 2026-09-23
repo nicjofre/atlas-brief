@@ -7,6 +7,16 @@ export const runtime = 'nodejs'
 // "Submit a deal for an operator read" capture. The header popup posts here as
 // the anon role. Name, email, and the deal (address / link / description) are
 // required; note is optional. No dedup — the same person may submit many deals.
+//
+// DISABLED 2026-09-09. The CTA was pulled from the header for spam, but hiding
+// the button doesn't stop a bot — this route is public and unauthenticated, and
+// every accepted POST both writes a row and emails David. So it's gated off by
+// default: set DEALS_ENABLED=1 in the environment to turn it back on. Reads are
+// unaffected — /analytics still lists the submissions already collected.
+//
+// Answers 404 rather than 403: a disabled endpoint shouldn't confirm it exists,
+// and bots retire a "not found" faster than a "forbidden".
+const DEALS_ENABLED = process.env.DEALS_ENABLED === '1'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -17,6 +27,12 @@ function cleanText(v: unknown, max: number): string | null {
 }
 
 export async function POST(req: Request) {
+  // Bail before parsing, the DB write, or the notification email — a disabled
+  // endpoint should cost nothing and reach nothing.
+  if (!DEALS_ENABLED) {
+    return NextResponse.json({ error: 'Not found.' }, { status: 404 })
+  }
+
   let email: string
   let name: string | null = null
   let deal: string | null = null

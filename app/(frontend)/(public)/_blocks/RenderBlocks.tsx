@@ -1,6 +1,7 @@
 import React from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Page, Media } from '@/payload-types'
+import AtlasMark from '../AtlasMark'
 
 type Block = NonNullable<Page['layout']>[number]
 
@@ -17,6 +18,23 @@ export default function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
   )
 }
 
+// The house lockup sets "Atlas" in navy and what follows it in red — the nav,
+// the footer, the masthead and the Tape flag all render "Atlas Brief" that way.
+// CMS titles are plain text, so the mark gets applied here rather than asking an
+// editor to type HTML. Any "Atlas <something>" title gets the same treatment.
+function withBriefMark(title?: string | null) {
+  if (!title) return null
+  if (title.startsWith('Atlas ')) {
+    return (
+      <>
+        {'Atlas '}
+        <em>{title.slice('Atlas '.length)}</em>
+      </>
+    )
+  }
+  return title
+}
+
 function BlockItem({ block }: { block: Block }) {
   switch (block.blockType) {
     case 'hero':
@@ -24,9 +42,16 @@ function BlockItem({ block }: { block: Block }) {
         return (
           <header className="c-hero">
             <div className="wrap">
-              {block.eyebrow && <div className="k">{block.eyebrow}</div>}
-              <h1>{block.title}</h1>
-              {block.subtitle && <p>{block.subtitle}</p>}
+              {/* Same opening row as the About header: label left, standfirst
+                  pushed right, title centred beneath them. */}
+              {(block.eyebrow || block.subtitle) && (
+                <div className="c-kicker">
+                  {block.eyebrow && <div className="k">{block.eyebrow}</div>}
+                  {block.subtitle && <p className="c-standfirst">{block.subtitle}</p>}
+                </div>
+              )}
+              <h1>{withBriefMark(block.title)}</h1>
+              <p className="hero-arms">Real Estate · Construction · Acquisitions</p>
             </div>
           </header>
         )
@@ -34,19 +59,47 @@ function BlockItem({ block }: { block: Block }) {
       return (
         <header className="ab-top">
           <div className="wrap">
-            {block.eyebrow && <div className="eyebrow">{block.eyebrow}</div>}
-            <h1>{block.title}</h1>
+            {/* Label left, standfirst pushed to the right edge — the same row
+                shape as an article's kicker (badge left, date right). */}
+            {(block.eyebrow || block.subtitle) && (
+              <div className="ab-kicker">
+                {block.eyebrow && <div className="eyebrow">{block.eyebrow}</div>}
+                {block.subtitle && <p className="ab-standfirst">{block.subtitle}</p>}
+              </div>
+            )}
+            <h1>{withBriefMark(block.title)}</h1>
+            {/* The practice's three sides, per the identity sheet's About comp.
+                Hardcoded rather than a CMS field: adding one to the hero block
+                means a schema change, and this is brand copy, not page copy. */}
+            {block.style === 'about' && (
+              <p className="hero-arms">Real Estate · Construction · Acquisitions</p>
+            )}
           </div>
         </header>
       )
 
     case 'prose': {
       const isTail = block.variant === 'tail'
+      // The tail is the sign-off: the roundel stands to the left of the copy in
+      // place of the rule that used to sit above it.
+      if (isTail) {
+        return (
+          <section className="ab-tail">
+            <div className="wrap">
+              <div className="ab-tail-in">
+                <div className="prose">
+                  {block.content && <RichText data={block.content} />}
+                </div>
+                <AtlasMark size={96} />
+              </div>
+            </div>
+          </section>
+        )
+      }
       return (
-        <section className={isTail ? 'ab-tail' : 'ab-body'}>
+        <section className="ab-body">
           <div className="wrap">
             <div className="prose">
-              {isTail && <hr />}
               {block.content && <RichText data={block.content} />}
             </div>
           </div>

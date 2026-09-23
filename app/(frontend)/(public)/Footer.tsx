@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Disclaimer from './Disclaimer'
+import AtlasMark from './AtlasMark'
 
 // Social links. Paste the real URLs to switch each icon on — an empty string
 // hides that icon (so nothing broken ships before the accounts exist).
@@ -17,14 +18,16 @@ export default function Footer() {
     <footer className="footer">
       <div className="wrap">
         <div className="footer-top">
-          <div>
-            <div className="footer-logo">Atlas<br />Home Builders, Inc.</div>
+          <div className="footer-brand">
+            <AtlasMark size={46} />
+            <div className="footer-logo">Atlas<em>Brief</em></div>
             <p className="footer-tag">An owner-builder journal, published from Los Angeles.</p>
           </div>
           <div>
             <h5>Read</h5>
             <ul>
-              <li><Link href="/">The Tape</Link></li>
+              <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
+              <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
               <li><Link href="/about">About</Link></li>
               <li><Link href="/contact">Contact</Link></li>
             </ul>
@@ -58,12 +61,12 @@ export default function Footer() {
             )}
           </div>
         </div>
-        <div style={{ margin: '20px 0', paddingTop: 20, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
+        <div className="footer-disclaimer">
           <Disclaimer />
         </div>
         <div className="footer-legal">
           <span>© MMXXVI Atlas Brief · A publication of Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>
-          <span style={{ fontSize: '0.85em', opacity: 0.7 }}>atlasbrief.la</span>
+          <span className="footer-domain">atlasbrief.la</span>
         </div>
       </div>
     </footer>

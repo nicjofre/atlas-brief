@@ -30,6 +30,9 @@ const PAGE_TRIGGER = 0.55
 
 type State = 'idle' | 'submitting' | 'sent'
 
+// Module-scoped: whichever instance mounts first owns `atlas:open-subscribe`.
+let openerClaimed = false
+
 export default function ArticleSubscribeModal({
   enabled = true,
   // Which article this fired on, so signups can be credited to the piece.
@@ -127,6 +130,25 @@ export default function ArticleSubscribeModal({
       window.removeEventListener('resize', onScroll)
     }
   }, [enabled])
+
+  // --- Open on demand -----------------------------------------------------
+  // A button anywhere on the page can ask for this modal by dispatching
+  // `atlas:open-subscribe`. Deliberate intent, so it ignores the suppression
+  // that governs the automatic trigger: someone who dismissed the pop-up and
+  // then clicked Subscribe wants the form.
+  useEffect(() => {
+    // Article pages mount their own copy for the scroll trigger and the layout
+    // mounts one for the nav button, so a brief has two on the page. Only the
+    // first to mount answers the event — two would open two overlays.
+    if (openerClaimed) return
+    openerClaimed = true
+    const onAsk = () => setOpen(true)
+    window.addEventListener('atlas:open-subscribe', onAsk)
+    return () => {
+      openerClaimed = false
+      window.removeEventListener('atlas:open-subscribe', onAsk)
+    }
+  }, [])
 
   const close = useCallback((remember: boolean) => {
     if (remember) markModalDismissed()

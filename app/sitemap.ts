@@ -12,13 +12,19 @@ import { SITE_URL } from '@/lib/seo/site'
 //
 // Revalidate hourly: this reads two databases, and crawlers refetch the sitemap
 // far more often than the catalogue changes.
+import { SECTION_REGISTRY } from './(frontend)/(public)/atlas-brief/sections/[section]/page'
+
 export const revalidate = 3600
 
 // Reader-facing routes that aren't articles. The editorial app is excluded
 // here and disallowed in robots.ts.
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] }[] = [
   { path: '/', priority: 1.0, changeFrequency: 'daily' },
-  { path: '/atlas-brief', priority: 0.9, changeFrequency: 'daily' },
+  // /atlas-brief was here at priority 0.9, second only to the homepage. It
+  // 308s to / now: it was a second feed of everything under the site's own
+  // name, so the two competed for it and Google had to pick one. Advertising a
+  // redirect in a sitemap is its own small penalty.
+  // The two stream pages below are the archive; the homepage is the front page.
   { path: '/about', priority: 0.5, changeFrequency: 'yearly' },
   { path: '/contact', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/tax-appeals', priority: 0.7, changeFrequency: 'monthly' },
@@ -48,9 +54,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Section landing pages, derived from the sections briefs actually use, so
   // we never advertise an empty one.
+  // Only sections that have a page. Deriving straight from the feed advertised
+  // /atlas-brief/sections/the-tape, which 404s: postToCard in lib/db/articles
+  // stamps every bridged Payload post with section_slug 'the-tape', and no
+  // route answers to it. A 404 in your own sitemap is spent crawl budget and a
+  // quality signal against the site.
   const sectionSlugs = Array.from(
     new Set(articles.map(a => a.section_slug).filter((s): s is string => !!s))
-  ).sort()
+  )
+    .filter(slug => slug in SECTION_REGISTRY)
+    .sort()
   const sectionEntries: MetadataRoute.Sitemap = sectionSlugs.map(slug => ({
     url: `${SITE_URL}/atlas-brief/sections/${slug}`,
     lastModified: new Date(),

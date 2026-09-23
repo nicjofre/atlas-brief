@@ -1,0 +1,525 @@
+/* The Tape treatment — listing-backed briefs. A sibling of the WSJ dispatch
+   template: the same header shape, byline row and rail, so the two read as one
+   publication. Where it diverges is the deal — the numbers run as a ribbon
+   under the header, before a word of copy, because that's what an operator
+   checks first. Scoped under .tp so nothing here can reach another route. */
+
+.tp {
+  /* The dispatch template's measurements exactly: a 680px column, a 300px rail,
+     56px between them. The page is only as wide as those three, which is where
+     its white margins come from — it reads as a column of newsprint rather than
+     filling the window. */
+  --tp-col: 680px;
+  --tp-text: var(--tp-col);
+  --tp-rail: 300px;
+  --tp-gutter: 56px;
+  max-width: calc(var(--tp-col) + var(--tp-gutter) + var(--tp-rail) + 2 * var(--pad-x));
+  margin: 0 auto;
+  padding: 36px var(--pad-x) clamp(40px, 5vw, 72px);
+  color: var(--ink);
+}
+
+/* ---- Header ---- */
+/* The header runs wider than the body column but not the full page — 880px,
+   as on the dispatch template, so the headline has room without the deck
+   stretching past a readable line. */
+.tp-head { max-width: 880px; border-bottom: 1px solid var(--rule); padding-bottom: 18px; }
+.tp-flag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.tp-flag-deal { display: flex; align-items: center; gap: 12px; }
+.tp-flag a {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+.tp-flag a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.tp-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 2px;
+}
+.tp-badge-sold { background: #B3261E; }
+.tp-badge-forsale { background: #0B5D1E; }
+
+/* The address sits opposite the flag, beside the status. */
+.tp-address {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Headline and deck take the dispatch template's exact settings — same scale,
+   same 14px gap, same grey on the deck — so a reader moving between a brief and
+   a dispatch sees one publication rather than two house styles. */
+.tp-hed {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(34px, 4.6vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  font-variation-settings: "opsz" 72;
+  color: var(--ink);
+  max-width: none;
+  text-wrap: balance;
+}
+.tp-dek {
+  margin: 0 0 22px;
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: clamp(18px, 1.6vw, 21px);
+  line-height: 1.4;
+  color: #555B6E;
+  max-width: 60ch;
+}
+.tp-byline {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+}
+.tp-by { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.tp-by b { font-weight: 700; }
+.tp-follow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-blue);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+.tp-follow:hover { border-color: var(--brand-blue); }
+/* Same controls as the dispatch template: icon and label, 13px sans, muted
+   until hovered. */
+.tp-tools { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+.tp-tools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: color .15s;
+}
+.tp-tools button:hover { color: var(--brand-blue); }
+.tp-tools svg { width: 15px; height: 15px; fill: currentColor; }
+
+/* ---- Deal ribbon ---- */
+.tp-ribbon-wrap { max-width: 880px; margin: clamp(18px, 2.2vw, 28px) 0 clamp(22px, 2.6vw, 34px); }
+.tp-ribbon-head {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  margin: 0 0 10px;
+}
+.tp-ribbon {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  border-top: 3px solid var(--brand-navy);
+  border-bottom: 1px solid var(--rule);
+}
+.tp-ribbon > div { padding: 14px 18px; border-right: 1px solid var(--rule-soft); }
+.tp-ribbon > div:last-child { border-right: 0; }
+.tp-ribbon dt {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tp-ribbon-sub {
+  margin: 4px 0 0;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.tp-ribbon dd {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(19px, 1.9vw, 26px);
+  letter-spacing: -0.015em;
+  color: var(--brand-navy);
+}
+
+/* ---- Body + rail ---- */
+.tp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, var(--tp-col)) var(--tp-rail);
+  column-gap: var(--tp-gutter);
+  padding-top: 22px;
+  align-items: start;
+}
+/* Explicit placement, so the DOM can order for the phone while the desktop
+   keeps the takeaways at the top of the rail: article left spanning both rows,
+   takeaways top-right, the rest of the rail beneath them. */
+.tp-main { min-width: 0; grid-column: 1; grid-row: 1 / span 2; }
+.tp-takeaways { grid-column: 2; grid-row: 1; }
+.tp-rail { grid-column: 2; grid-row: 2; }
+.tp-hero { margin: 0 0 26px; }
+.tp-hero img { width: 100%; height: auto; aspect-ratio: 3/2; object-fit: cover; display: block; }
+.tp-hero figcaption {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  padding-top: 8px;
+}
+.tp-cap { margin-right: 8px; }
+.tp-credit {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.tp-text {
+  max-width: var(--tp-text);
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.62;
+  color: var(--ink-soft);
+}
+.tp-text p { margin: 0 0 1.15em; }
+.tp-text h2 {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.3;
+  color: var(--brand-navy);
+  margin: 1.9em 0 .5em;
+}
+.tp-text h2::before { content: none; }
+.tp-text a { color: var(--brand-navy); border-bottom: 1px solid var(--brand-blue); }
+.tp-text a:hover { border-color: var(--brand-red); }
+.tp-text blockquote {
+  margin: 1.6em 0;
+  padding: 0 0 0 20px;
+  border-left: 3px solid var(--brand-red);
+  font-style: normal;
+}
+.tp-text table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 14px; }
+.tp-text th, .tp-text td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule-soft); }
+
+/* ---- Deal stats: David's full table, between the photo and the copy ---- */
+.tp-stats { max-width: var(--tp-text); margin: 0 0 clamp(24px, 3vw, 34px); }
+.tp-stats h2 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--brand-navy);
+}
+.tp-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.tp-stats-grid .stat {
+  padding: 12px 14px;
+  border-right: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.tp-stats-grid .stat:nth-child(4n) { border-right: 0; }
+.tp-stats-grid .k {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tp-stats-grid .v {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  color: var(--brand-navy);
+}
+.tp-stats-grid .s { font-family: var(--sans); font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ---- Brokers, in the rail ----
+   The article card is built for a 680px column: headshot, details and firm logo
+   in a row. At 300px it has to stack, and everything comes down a size. */
+.tp-brokers { margin-bottom: 28px; }
+.tp-brokers .broker-cards-wrap { padding: 0; border: 0; }
+.tp-brokers .wrap { max-width: none; padding: 0; }
+.tp-brokers .bc-head {
+  display: block;
+  background: none;
+  padding: 0 0 8px;
+  border-bottom: 2px solid var(--brand-navy);
+  border-radius: 0;
+  color: var(--brand-navy);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+.tp-brokers .bc-grid { gap: 14px; }
+.tp-brokers .bc-group { gap: 8px; }
+.tp-brokers .bc-side {
+  color: var(--brand-red);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.tp-brokers .bc-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  background: var(--bg-alt);
+  border: 0;
+  border-left: 3px solid var(--brand-red);
+  border-radius: 0;
+  padding: 12px 14px;
+}
+.tp-brokers .bc-photo { width: 52px; height: 52px; border-radius: 50%; }
+.tp-brokers .bc-photo-empty { font-size: 16px; }
+.tp-brokers .bc-detail { min-width: 0; }
+.tp-brokers .bc-name { font-family: var(--sans); font-weight: 700; font-size: 14px; color: var(--ink); margin: 0 0 1px; }
+.tp-brokers .bc-title, .tp-brokers .bc-firm {
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+.tp-brokers .bc-meta { font-family: var(--sans); font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+.tp-brokers .bc-meta a { color: var(--brand-navy); }
+/* The firm logo doesn't earn 300px of column. */
+.tp-brokers .bc-logo { display: none; }
+
+/* ---- Takeaways, in the rail ---- */
+/* The takeaways sit on a panel — in the rail they're an aside, and a tint is
+   what says so without a border boxing them in. */
+.tp-takeaways {
+  margin-bottom: 28px;
+  background: var(--bg-alt);
+  padding: 18px 18px 6px;
+  border-top: 3px solid var(--brand-red);
+}
+.tp-takeaways h2 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  margin: 0 0 6px;
+}
+.tp-takeaways ol { list-style: none; margin: 0; padding: 0; counter-reset: kt; }
+.tp-takeaways li {
+  counter-increment: kt;
+  position: relative;
+  padding: 10px 0 10px 26px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.tp-takeaways li:last-child { border-bottom: 0; }
+.tp-takeaways li::before { color: var(--brand-red); }
+.tp-takeaways li::before {
+  content: counter(kt, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 11px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand-red);
+}
+.tp-takeaways b { color: var(--ink); font-weight: 700; }
+.tp-takeaways b::after { content: " "; }
+
+/* ---- Sign-off ---- */
+.tp-signoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  max-width: var(--tp-text);
+  margin-top: 2.2em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--rule);
+}
+.tp-writeto { margin: 0 0 6px; font-family: var(--serif); font-size: 17px; }
+.tp-writeto a { color: var(--brand-navy); border-bottom: 1px solid var(--brand-blue); }
+.tp-appeared { margin: 0; font-family: var(--sans); font-size: 13px; font-style: italic; color: var(--muted); }
+
+/* ---- Subscribe triggers, as on the WSJ route ---- */
+.tp-sub-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-red);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s;
+}
+.tp-sub-tool svg { width: 15px; height: 15px; fill: currentColor; }
+.tp-sub-tool:hover { color: #A8201F; }
+.tp-sub-foot {
+  flex: none;
+  padding: 12px 22px;
+  border: 1px solid var(--brand-red);
+  border-radius: 3px;
+  background: var(--brand-red);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.tp-sub-foot:hover { background: #C22C2B; border-color: #C22C2B; }
+
+/* ---- Rail ---- */
+.tp-rail { min-width: 0; }
+.tp-popular h2 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--brand-navy);
+}
+.tp-popular ol { list-style: none; margin: 0; padding: 0; counter-reset: pop; }
+.tp-popular li {
+  counter-increment: pop;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.tp-popular li::before {
+  content: counter(pop);
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: .9;
+  color: var(--brand-blue);
+}
+.tp-popular a {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.tp-popular a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 1000px) {
+  /* One column: placement goes back to DOM order — takeaways, article, rail. */
+  .tp-grid { grid-template-columns: 1fr; }
+  .tp-main, .tp-takeaways, .tp-rail { grid-column: 1; grid-row: auto; }
+  .tp-rail { margin-top: 36px; border-top: 1px solid var(--rule); padding-top: 20px; }
+  .tp-ribbon { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); }
+  .tp-ribbon > div:nth-child(2n) { border-right: 0; }
+  .tp-ribbon > div { border-bottom: 1px solid var(--rule-soft); }
+}
+
+
+@media (max-width: 760px) {
+  .tp-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tp-stats-grid .stat:nth-child(2n) { border-right: 0; }
+}
+
+/* ---- More deals, at the foot of the rail ----
+   Most Popular is headlines; these are deals — photo, where and whether it
+   traded, then the line. */
+.tp-more { margin-top: 28px; }
+.tp-more h2 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-navy);
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--brand-navy);
+}
+.tp-more ul { list-style: none; margin: 0; padding: 0; }
+.tp-more li { border-bottom: 1px solid var(--rule-soft); }
+.tp-more li:last-child { border-bottom: 0; }
+.tp-more a {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+  color: var(--ink);
+}
+.tp-more img { width: 84px; height: 60px; object-fit: cover; display: block; transition: opacity .15s; }
+.tp-more a:hover img { opacity: .92; }
+.tp-more-kicker {
+  display: block;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+  margin-bottom: 3px;
+}
+.tp-more-hed {
+  display: block;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.tp-more a:hover .tp-more-hed { text-decoration: underline; text-underline-offset: 3px; }

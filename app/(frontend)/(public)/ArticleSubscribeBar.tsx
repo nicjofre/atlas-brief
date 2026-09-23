@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { captureSuppressed, markSubscribed, markCaptureDismissed } from '@/lib/subscribe-flag'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
+import './subscribe-bar.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -75,13 +76,11 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
 
   return (
     <div
+      className="subbar"
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         transform: visible ? 'translateY(0)' : 'translateY(-100%)',
         transition: 'transform 0.28s ease',
-        background: '#0A0A0A', color: '#FFF4E3',
-        borderBottom: '1px solid #8B5A2B',
-        boxShadow: '0 1px 12px rgba(0,0,0,0.25)',
       }}
     >
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -101,28 +100,31 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
                 onChange={e => { setEmail(e.target.value); if (status === 'error') setStatus('idle') }}
                 placeholder="you@email.com"
                 aria-label="Email address"
+                className="subbar-input"
                 style={{
-                  padding: '7px 11px', fontSize: 14, minWidth: 200, border: '1px solid #8B5A2B',
-                  background: '#FFFDF7', color: '#0A0A0A', borderRadius: 3, fontFamily: 'ui-monospace, Menlo, monospace',
+                  padding: '7px 11px', fontSize: 14, minWidth: 200,
+                  fontFamily: 'ui-monospace, Menlo, monospace',
                 }}
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
+                className="subbar-submit"
                 style={{
                   padding: '8px 16px', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
-                  background: '#8B5A2B', color: '#FFF4E3', border: 'none', borderRadius: 3, cursor: 'pointer',
-                  fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'nowrap',
+                  cursor: 'pointer', fontFamily: 'ui-monospace, Menlo, monospace',
+                  whiteSpace: 'nowrap', fontWeight: 600,
                 }}
               >
                 {status === 'loading' ? 'Adding…' : 'Subscribe'}
               </button>
             </form>
-            {err && <span style={{ fontSize: 12, color: '#F2B8B5', fontFamily: 'ui-monospace, Menlo, monospace' }}>{err}</span>}
+            {err && <span className="subbar-err" style={{ fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' }}>{err}</span>}
             <button
               onClick={dismiss}
               aria-label="Dismiss"
-              style={{ background: 'none', border: 'none', color: '#C9B79F', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: '0 4px', marginLeft: 'auto' }}
+              className="subbar-dismiss"
+              style={{ background: 'none', border: 'none', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: '0 4px', marginLeft: 'auto' }}
             >
               ×
             </button>

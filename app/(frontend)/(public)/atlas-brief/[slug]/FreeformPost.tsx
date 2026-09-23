@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Post, Media } from '@/payload-types'
 import PostBlocks from '../../_blocks/PostBlocks'
 import { RefreshRouteOnSave } from '../../_blocks/RefreshRouteOnSave'
-import Disclaimer from '../../Disclaimer'
+import Footer from '../../Footer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
 import ArticleSignupBox from '../../ArticleSignupBox'
@@ -56,7 +56,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
         <JsonLd
           data={breadcrumbGraph([
             { name: 'Atlas Brief', path: '/' },
-            { name: 'The Tape', path: '/atlas-brief' },
+            { name: 'The Tape', path: '/atlas-brief/sections/broker-activity' },
           ])}
         />
       )}
@@ -71,14 +71,15 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
       <header className="art-top">
         <div className="wrap">
           <nav className="crumb">
-            <Link href="/">Atlas <span style={{ color: 'var(--accent)' }}>Brief</span></Link>
+            <Link href="/">Atlas <span className="crumb-mark">Brief</span></Link>
             <span className="sep">/</span>
-            <Link href="/atlas-brief">The Tape</Link>
+            <Link href="/atlas-brief/sections/broker-activity">The Tape</Link>
             <span className="sep">/</span>
             <span>{kicker}</span>
           </nav>
           <div className="cat">
             <span>{kicker}</span>
+            {dateStr && <span className="cat-date">{dateStr}</span>}
           </div>
           <h1>{post.title}</h1>
           {post.deck && <p className="deck">{post.deck}</p>}
@@ -114,17 +115,7 @@ export default function FreeformPost({ post, preview = false, showBar = false }:
         </div>
       </section>
 
-      <footer className="site-footer">
-        <div className="wrap">
-          <div>
-            &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
-          </div>
-          <div>{[kicker, dateStr].filter(Boolean).join(' · ')}</div>
-          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
-            <Disclaimer />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

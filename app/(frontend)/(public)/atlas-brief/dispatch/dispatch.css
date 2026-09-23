@@ -1,0 +1,334 @@
+/* Dispatch stream page. Deliberately the Tape section page
+   with the accents moved to blue — the card grid and pager are literally the
+   same stylesheet (../cards.css), and the masthead below is that one's rules
+   under .dp- names. The two streams should read as siblings.
+
+   Why copied rather than shared: .cat-masthead lives in the section route's
+   stylesheet, keyed to a registry that page owns. Sharing it would mean
+   hoisting both. Worth doing if a third stream ever lands; not for two.
+
+   Scoped under .dp- so nothing here can reach another route. */
+
+/* ---- Masthead -----------------------------------------------------------
+   Plain navy, everything centred, on the front page's proportions (.flag /
+   .flag-inner in home.css). The skyline that used to sit behind this is parked
+   below — it read as a stock hero, and it settles the open question about
+   Dispatch needing its own photo: neither page has one now. */
+/* ---------------------------------------------------------------------------
+   PARKED — the navy masthead (2026-09-22). Swapped for a white one: a paper's
+   masthead is ink on paper, and navy-on-navy-nav meant the top of the page was
+   one unbroken block of colour. Every colour in the band had to invert with
+   it, which is why this is the whole block rather than one line.
+
+   Inner comment delimiters are written (* *) so this block closes where it
+   should. Delete only after Lucas confirms.
+
+.dp-masthead {
+  position: relative;
+  overflow: hidden;
+  background: var(--brand-navy);
+  (* Was `3px solid var(--brand-blue)`. White, the way a paper rules its
+     masthead off from the page — the colour was doing stream-coding work that
+     the kickers in the feed already do. *)
+  border-bottom: 3px solid #FFFFFF;
+}
+(* ---------------------------------------------------------------------------
+   PARKED — the skyline behind this masthead (2026-09-22), out with the Tape's
+   for the same reason: a wide dusk photo behind centred serif type is the
+   shape every generated page has. Re-enabling is uncommenting this block;
+   page.tsx still passes --dp-hero. Inner comment delimiters are written (* *)
+   so this block closes where it should. Delete only after Lucas confirms.
+
+.dp-masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to bottom, rgba(6,24,50,0.68) 0%, rgba(6,24,50,0.82) 100%),
+    var(--dp-hero);
+  background-size: cover, cover;
+  background-position: center, center 38%;
+  background-repeat: no-repeat, no-repeat;
+}
+
+   --------------------------------------------------------------------------- *)
+
+.dp-masthead-inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(14px, 1.6vw, 22px) var(--pad-x) clamp(10px, 1.1vw, 14px);
+  text-align: center;
+}
+
+(* The wordmark above the title, where a tracked eyebrow used to sit. A copy of
+   .nav-logo's type rather than a shared class: that one lives in atlas-v2.css
+   keyed to the nav band, and this band has its own spacing. *)
+.dp-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.dp-wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  (* Was 20px, the nav's size. Stepped down with the title so the two read as
+     a stack rather than competing — the nav carries the lockup at full size
+     two inches above this anyway. *)
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #FFFFFF;
+}
+.dp-wordmark em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
+
+(* Both halves white, with the rule under the whole name — the Tape's
+   treatment in blue. inline-block so the rule hugs the word instead of
+   stretching the width of the band; the parent's text-align still centres it.
+   A border rather than text-decoration because the rule has to clear the p's
+   descender, and an underline thick enough to read would strike through it. *)
+.dp-masthead h1 {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding-bottom: 0.05em;
+  (* Was `var(--brand-blue)`. White with the band rule below it. *)
+  border-bottom: 0.07em solid #FFFFFF;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3.2vw, 46px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+  text-wrap: balance;
+}
+.dp-masthead h1 em { font-style: italic; color: #FFFFFF; }
+
+.dp-dek {
+  margin: 0 auto 14px;
+  max-width: 44ch;   (* same measure as the Tape's .cat-dek *)
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.5;
+  color: rgba(255,255,255,0.82);
+}
+.dp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.22);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+
+   --------------------------------------------------------------------------- */
+
+/* ---- Masthead -----------------------------------------------------------
+   White ground, ink type, everything centred — a paper's masthead is printed
+   on the paper, not on a coloured panel. The blue does the same work it did on
+   navy: a hairline under the name and the band rule below it. Arrangement is
+   still the front page's .flag-inner, at a tighter measure. */
+.dp-masthead {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  /* Swapped with the meta hairline below (2026-09-22): the blue was heaviest
+     at the very bottom, so the band ended louder than it opened. The colours
+     traded places; the weights didn't. */
+  border-bottom: 3px solid var(--rule);
+}
+.dp-masthead-inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(14px, 1.6vw, 22px) var(--pad-x) clamp(10px, 1.1vw, 14px);
+  text-align: center;
+}
+
+/* The wordmark above the title. A copy of .nav-logo's type rather than a
+   shared class: that one lives in atlas-v2.css keyed to the navy nav band, and
+   on white "Atlas" has to be ink rather than white. */
+.dp-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.dp-wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  /* Stepped down with the title so the two read as a stack rather than
+     competing — the nav carries the lockup at full size just above. */
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--brand-navy);
+}
+.dp-wordmark em {
+  font-style: italic;
+  color: var(--brand-red);
+  margin-left: -0.04em;
+}
+
+/* Both halves navy, with the rule under the whole name — the Tape's treatment
+   in blue. inline-block so the rule hugs the words instead of stretching the
+   width of the band; the parent's text-align still centres it. A border rather
+   than text-decoration because the rule has to clear the p's descender, and an
+   underline thick enough to read would strike through it. */
+.dp-masthead h1 {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding-bottom: 0.05em;
+  border-bottom: 0.07em solid var(--brand-blue);
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3.2vw, 46px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  color: var(--brand-navy);
+  text-wrap: balance;
+}
+/* PARKED (2026-09-22) — the italic half of the name, from when the title was
+   "Dis<em>patch</em>":  .dp-masthead h1 em { font-style: italic; color: var(--brand-navy); }
+   The <em> is out of the markup; this is kept only so putting it back is one
+   paste. Delete after Lucas confirms. */
+
+/* PARKED (2026-09-22) — .dp-dek, the section description. Cut with the
+   entry-count row; both explained the section to a reader already in it.
+   .dp-dek { margin: 0 auto 14px; max-width: 44ch; font-family: var(--serif);
+             font-weight: 300; font-size: clamp(14px, 1.15vw, 16px);
+             line-height: 1.5; color: var(--ink-soft); }
+   .dp-meta { display: flex; flex-wrap: wrap; justify-content: center;
+              gap: 22px; } */
+
+/* Place and date, the way a flag carries them. No rule of its own: the band's
+   own 3px rule already separates the flag from the page one line below, and
+   two full-width horizontals that close together was the clutter. The blue
+   that was here moved to the rule under the name, where it marks the stream
+   the way the Tape's red does. */
+.dp-dateline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  /* Was padding-top: 12px against a hairline; without the rule the date can
+     sit closer to the name. */
+  padding-top: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* The place sits up against the date with a thin divider, not a bullet — a
+   flag runs them as one line. */
+.dp-dateline span::after {
+  content: "·";
+  margin-left: 10px;
+  color: var(--rule);
+}
+
+/* ---- The package -------------------------------------------------------
+   TopStories ships red kickers (top-stories.css line 18) because the front
+   page and the Tape are the red stream. On this page they're blue, like the
+   card kickers below them. Scoped under .dp-package so the shared component
+   is untouched everywhere else; the extra class also wins on specificity, so
+   stylesheet order doesn't matter. */
+.dp-package .ts-kicker span { color: var(--brand-blue); }
+
+/* ---- Feed band ----------------------------------------------------------
+   The grid and pager themselves come from ../cards.css. This is just the band
+   they sit in — the Tape's, rules top and bottom. */
+.dp-feed {
+  padding: clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   PARKED — the placeholder's list-row feed (2026-09-21). Replaced by the
+   shared card grid so Dispatch and The Tape read as one publication. Kept
+   rather than deleted; inner comment delimiters are written (* *) so this
+   block closes where it should. Delete only after Lucas confirms.
+
+.dp-feed { padding: clamp(28px, 3.4vw, 48px) 0; }
+.dp-list { display: flex; flex-direction: column; }
+.dp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: clamp(16px, 2vw, 28px);
+  align-items: start;
+  padding: clamp(16px, 1.8vw, 22px) 0;
+  border-top: 1px solid var(--rule-soft);
+  color: var(--ink);
+}
+.dp-row:first-child { border-top: 0; padding-top: 0; }
+.dp-text { min-width: 0; }
+.dp-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.dp-kicker span {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+}
+.dp-row h2 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.dp-row:hover h2 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.dp-deck {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+.dp-thumb img { width: 200px; height: 134px; object-fit: cover; display: block; transition: opacity .15s; }
+.dp-row:hover .dp-thumb img { opacity: .92; }
+.dp-empty {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+@media (max-width: 820px) {
+  .dp-row { grid-template-columns: minmax(0, 1fr) 104px; gap: 14px; }
+  .dp-thumb img { width: 104px; height: 78px; }
+  .dp-deck { display: none; }
+}
+   --------------------------------------------------------------------------- */

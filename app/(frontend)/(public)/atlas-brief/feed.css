@@ -684,6 +684,9 @@
       .arc-title { font-size: 19px !important; }
       .arc-deck { font-size: 14.5px; }
     }
+        /* DEAD as of 2026-09-04: no markup references .subscribe-block or .sb-*.
+       Superseded by DispatchForm.tsx and ArticleSubscribeBar.tsx.
+       Left in place pending confirmation from David — delete if still unused. */
     .subscribe-block {
       padding: clamp(64px, 8vw, 112px) 0;
       background: #0E1116;

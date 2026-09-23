@@ -2,32 +2,54 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import SubmitDealModal from './SubmitDealModal'
+import AtlasMark from './AtlasMark'
 
-// The public site header. Client component so the hamburger menu and the deal
-// modal are interactive. Desktop: editorial links centered, CTA cluster right
-// (Work with Atlas / Tax Appeals / Submit a Deal). Mobile: burger + centered
-// logo + Tax Appeals; everything else lives in the hamburger menu.
+// The public site header. Client component so the hamburger menu is interactive.
+// Desktop: editorial links centered, CTA cluster right (Work with Atlas / Tax
+// Appeals). Mobile: burger + centered logo + Tax Appeals; everything else lives
+// in the hamburger menu.
+//
+// The "Submit a Deal" CTA was pulled 2026-09-09 — it was drawing spam. Only the
+// entry point is gone: SubmitDealModal.tsx, POST /api/deals/submit, the
+// deal_submissions table and the notification email are all untouched, so
+// restoring it is re-importing the modal, re-adding the dealOpen state, the
+// button below the Tax Appeals link, and <SubmitDealModal /> before the closing
+// fragment — and set DEALS_ENABLED=1, or the route will 404 the submission.
 export default function SiteNav() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [dealOpen, setDealOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
 
   return (
     <>
       <nav className="nav">
         <div className="nav-inner">
-          <Link href="/" className="nav-logo" onClick={closeMenu}><span className="mark" /> Atlas <em>Brief</em></Link>
+          {/* Lockup = roundel + wordmark + tracked tagline, per the identity sheet.
+              One grid cell so the nav stays a 3-column layout. */}
+          <div className="nav-lockup">
+            <Link href="/" className="nav-logo" onClick={closeMenu}><AtlasMark /><span className="nav-wordmark">Atlas <em>Brief</em></span></Link>
+            <span className="nav-tagline" aria-hidden="true">Los Angeles<br />Real Estate<br />Intelligence</span>
+          </div>
           <ul className="nav-links">
-            <li><Link href="/">The Tape</Link></li>
+            {/* One entry per stream. "The Tape" is the deals page — it used to
+                point at the homepage, which meant the same words led to two
+                different places depending on where you clicked. */}
+            <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
+            <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><Link href="/contact">Contact</Link></li>
           </ul>
           <div className="nav-right">
             {/* Tertiary → secondary → primary, ascending in prominence toward the edge. */}
             <Link href="/contact" className="nav-tertiary">Work with Atlas</Link>
-            <Link href="/tax-appeals" className="nav-highlight">Tax Appeals<span className="nav-highlight-tag">New</span></Link>
-            <button type="button" className="nav-primary" onClick={() => setDealOpen(true)}>Submit a Deal</button>
+            {/* Tax Appeals is on hold, so the slot goes to the thing we always
+                want asked for. /tax-appeals still exists, just unlinked. */}
+            <button
+              type="button"
+              className="nav-highlight"
+              onClick={() => window.dispatchEvent(new CustomEvent('atlas:open-subscribe'))}
+            >
+              Subscribe
+            </button>
             <button
               className={`nav-burger${menuOpen ? ' open' : ''}`}
               aria-label="Menu"
@@ -40,18 +62,18 @@ export default function SiteNav() {
         </div>
       </nav>
 
-      {/* Mobile menu — editorial links. Tax Appeals + Submit a Deal stay pinned
-          to the top bar, so they're not repeated here. */}
+      {/* Mobile menu — editorial links. Tax Appeals stays pinned to the top bar,
+          so it's not repeated here. */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <ul>
-          <li><Link href="/" onClick={closeMenu}>The Tape</Link></li>
+          <li><Link href="/atlas-brief/sections/broker-activity" onClick={closeMenu}>The Tape</Link></li>
+          <li><Link href="/atlas-brief/dispatch" onClick={closeMenu}>Dispatch</Link></li>
           <li><Link href="/about" onClick={closeMenu}>About</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Contact</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Work with Atlas</Link></li>
         </ul>
       </div>
 
-      <SubmitDealModal open={dealOpen} onClose={() => setDealOpen(false)} />
     </>
   )
 }

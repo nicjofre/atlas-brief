@@ -450,7 +450,7 @@ function Tape3Surface({
     <div style={postSurfaceStyle}>
       {/* Eyebrow */}
       <div style={eyebrowStyle}>
-        For Sale / Sold · Entry № — · Broker Activity
+        For Sale / Sold · Entry № — · The Tape
       </div>
       {/* Headline */}
       <h1 style={headlineStyle}>

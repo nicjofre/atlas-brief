@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Tables } from './types'
 import { createClient } from '@/lib/supabase/server'
 import { resolveHeroUrl } from './hero-url'
@@ -19,7 +20,13 @@ export type ArticleWithJoins = Tables<'articles'> & {
   }
 }
 
-export async function getArticleBySlug(slug: string): Promise<ArticleWithJoins | null> {
+// Wrapped in React's `cache` so one request fetches a brief once, however many
+// times it's asked for. The canonical article route now delegates rendering to a
+// template that fetches by slug itself, so without this a single page view would
+// run this query three times: generateMetadata, the route, and the template.
+export const getArticleBySlug = cache(async function getArticleBySlug(
+  slug: string
+): Promise<ArticleWithJoins | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('articles')
@@ -48,7 +55,7 @@ export async function getArticleBySlug(slug: string): Promise<ArticleWithJoins |
     return null
   }
   return data as ArticleWithJoins | null
-}
+})
 
 // Card-shaped projection used by the feed, section, and homepage routes —
 // just the fields needed to render a listing card. The heroUrl field is

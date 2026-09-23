@@ -1,25 +1,48 @@
-import Link from 'next/link'
+// The canonical article route. It no longer renders an article itself — it
+// decides which treatment the slug gets, emits the structured data, and mounts
+// the reader-capture bar.
+//
+//   a brief (a listing-backed Tape entry) -> the Tape treatment
+//   a post  (a freeform Payload dispatch) -> the Journal treatment
+//
+// That split is David's call, confirmed by Lucas on 2026-09-22: briefs and
+// dispatches are different kinds of writing and had been sharing one layout.
+//
+// The old shared template that used to live here — crumb, kicker, byline,
+// Deal Stats, broker cards, takeaways, author block, Back to Board — came out
+// with the split. It isn't parked inline: at ~210 lines of JSX a commented copy
+// would have doubled the file, and this folder's stylesheets already carry
+// snapshots. To read it:
+//     git show 2d26671:'app/(frontend)/(public)/atlas-brief/[slug]/page.tsx'
+//
+// FreeformPost.tsx is still in this folder and is now mounted by nothing. Left
+// deliberately, the same way Comments.tsx was: unmounted, not deleted.
+
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { JsonLd, articleGraph, breadcrumbGraph } from '@/lib/seo/json-ld'
-import { getArticleBySlug, type ArticleWithJoins } from '@/lib/db/articles'
+import { sectionLabel } from '@/lib/db/article-render'
+import { getArticleBySlug } from '@/lib/db/articles'
 import { getPostBySlug } from '@/lib/getPost'
-import FreeformPost from './FreeformPost'
-import { HeadlineText, extractTOCFromHtml, stripBrokersBlock } from '@/lib/db/article-render'
+// The two treatments this route now renders. They're the same modules the
+// /atlas-brief/tape-preview and /atlas-brief/wsj-preview routes serve — imported
+// rather than copied, so the preview URLs keep showing exactly what ships and
+// there's one implementation of each. Their own `metadata` exports (robots:
+// noindex) belong to those routes and don't apply here; this route's
+// generateMetadata is what search engines see.
+import TapeArticle from '../tape-preview/[slug]/page'
+import DispatchArticle from '../wsj-preview/[slug]/page'
 import { resolveHeroUrl } from '@/lib/db/hero-url'
 import { createClient } from '@/lib/supabase/server'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Tables } from '@/lib/db/types'
-import BrokerBlock, { type BrokerCard, type BrokerGroup } from './BrokerBlock'
-import Disclaimer from '../../Disclaimer'
 import ArticleSubscribeBar from '../../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../../ArticleSubscribeModal'
-import ArticleSignupBox from '../../ArticleSignupBox'
+// Still imported although this route no longer renders its own markup:
+// BrokerBlock lives in this folder, the Tape template imports it, and its
+// styles are in here. Dropping this would strip the broker cards on every
+// brief.
 import './post.css'
-
-type Takeaway = { bold: string; text: string }
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -109,57 +132,46 @@ export default async function PostPage(
 
   const article = await getArticleBySlug(slug)
   if (!article) {
-    // Not a brief — try a freeform post before 404ing. In CMS draft mode, show
-    // the in-progress draft (for Live Preview).
+    // Not a brief, so it's a dispatch — a freeform Payload post. Check it
+    // exists before handing off, so a bad slug still 404s here rather than
+    // inside the template. In CMS draft mode this returns the in-progress
+    // draft; DispatchArticle reads draftMode itself and fetches the same way,
+    // and the lookup is React-cached, so this costs one query either way.
     const { isEnabled: draft } = await draftMode()
     const post = await getPostBySlug(slug, draft)
-    if (post) return <FreeformPost post={post} preview={draft} showBar={showBar && !draft} />
-    notFound()
+    if (!post) notFound()
+    // The Journal treatment, per David: dispatches get this, briefs get the
+    // Tape one below. FreeformPost is no longer mounted anywhere — see the
+    // note at the top of this file.
+    return <DispatchArticle params={params} />
   }
 
+  // Everything below feeds the structured data only. The page itself is the
+  // template's; the broker roster, the TOC, the body-stripping and the
+  // takeaways all moved there with it.
   const listing = article.listing
   const property = listing?.property
-  const takeaways = (article.takeaways as Takeaway[] | null) ?? []
 
-  const sectionLabel =
-    article.section_slug === 'broker-activity' ? 'Broker Activity' : article.section_slug
-  // Per-article override for the eyebrow line; falls back to the section name
-  // when an article doesn't override.
-  const catLabel = article.cat_label ?? sectionLabel
+  // Section name for the structured data — main's JSON-LD names the section for
+  // search and answer engines. Via sectionLabel() rather than a ternary of its
+  // own: three files each carried a copy of that ternary, so the last rename
+  // had to be made in three places and was missed in two.
+  const catLabel = article.cat_label ?? sectionLabel(article.section_slug)
 
-  const dateline = [property?.city, property?.state].filter(Boolean).join(', ')
-
-  // Resolve hero photo — handles local paths, full URLs, and Supabase storage
-  // paths uniformly. (supabase client created up top.)
+  // Hero photo for og:image and the NewsArticle node — handles local paths,
+  // full URLs and Supabase storage paths uniformly.
   const heroUrl = resolveHeroUrl(
     supabase,
     article.hero_photo_url ?? listing?.hero_photo_url ?? null
   )
 
-  // Broker roster, live from the listing_brokers join table (no longer baked
-  // into body_html). Grouped + labeled so teams and dual-agency render
-  // faithfully. Falls back to the FK columns for any listing not yet backfilled.
-  const brokerGroups = buildBrokerGroups(listing, supabase)
-
-  // Strip the legacy broker content from the body ONLY when the card has brokers
-  // to show in its place. If the card would be empty (a listing with no broker
-  // records yet), keep the body section so the broker isn't lost — it just shows
-  // in the old form until its data is transferred. Build the TOC from whatever
-  // body we actually render, so it never links a removed section.
-  const cleanBody = brokerGroups.length > 0 ? stripBrokersBlock(article.body_html) : (article.body_html ?? '')
-  const toc = extractTOCFromHtml(cleanBody)
-  // Whether the body has anything worth rendering — visible text, or structural
-  // / media content. Empty briefs skip the body section so it doesn't leave a
-  // big blank gap above the footer.
-  const hasBody =
-    /\S/.test(cleanBody.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ')) ||
-    /<(img|table|figure|blockquote|ul|ol|iframe)\b/i.test(cleanBody)
-
   return (
     <>
       {/* NewsArticle for this brief. `about` carries the street address, which
           is the whole point: it's what lets a search or an LLM resolve "what
-          happened at 630 Masselin" to this page. */}
+          happened at 630 Masselin" to this page. The template below emits no
+          structured data, so it stays here on the canonical route — the
+          preview routes are noindexed and never needed it. */}
       <JsonLd
         data={articleGraph({
           headline: (article.headline ?? '').replace(/\*/g, ''),
@@ -181,305 +193,31 @@ export default async function PostPage(
       <JsonLd
         data={breadcrumbGraph([
           { name: 'Atlas Brief', path: '/' },
-          { name: 'The Tape', path: '/atlas-brief' },
+          // The Tape is the section page. This used to point at /atlas-brief,
+          // which is the orphaned feed index, not the stream's home.
+          { name: 'The Tape', path: '/atlas-brief/sections/broker-activity' },
           { name: catLabel, path: `/atlas-brief/sections/${article.section_slug}` },
         ])}
       />
+
+      {/* The reader-capture bar and the scroll-triggered pop-up. The template
+          mounts its own modal with the trigger OFF (it only answers the nav's
+          Subscribe button), so this instance is what actually fires on scroll.
+          Two mount; each renders null until opened, and the first to mount
+          claims the nav event — so they can't both open. */}
       {showBar && <ArticleSubscribeBar slug={slug} />}
       <ArticleSubscribeModal enabled={showBar} slug={slug} />
-      <header className="art-top">
-        <div className="wrap">
-          <nav className="crumb">
-            <Link href="/">
-              Atlas <span style={{ color: 'var(--accent)' }}>Home Pro</span>
-            </Link>
-            <span className="sep">/</span>
-            <Link href="/atlas-brief">Atlas Brief</Link>
-            <span className="sep">/</span>
-            <Link href={`/atlas-brief/sections/${article.section_slug}`}>{sectionLabel}</Link>
-            <span className="sep">/</span>
-            <span>Entry № {String(article.entry_num).padStart(2, '0')}</span>
-          </nav>
-          <div className="cat">
-            <span className={`badge-${badgeClass(listing?.status)}`}>{badgeLabel(listing?.status)}</span>
-            <span>
-              {catLabel} · Entry № {String(article.entry_num).padStart(2, '0')}
-            </span>
-          </div>
-          <h1>
-            <HeadlineText text={article.headline} />
-          </h1>
-          {article.deck && <p className="deck">{article.deck}</p>}
-          {/* The street address leads the byline. It's the fact a reader
-              arrived looking for, and it's what makes the visible page agree
-              with a <title> that now opens with the address — without which
-              Google will happily rewrite that title back to the headline.
-              Every published brief carries a stored byline_html, so the cell is
-              rendered alongside it: display:contents dissolves the wrapper so
-              David's cells stay direct children of the .byl grid. */}
-          {article.byline_html ? (
-            <div className="byl">
-              {property?.street_address && (
-                <div><b>Property</b>{property.street_address}</div>
-              )}
-              <div
-                style={{ display: 'contents' }}
-                dangerouslySetInnerHTML={{ __html: article.byline_html }}
-              />
-            </div>
-          ) : (
-            <div className="byl">
-              {property?.street_address && (
-                <div><b>Property</b>{property.street_address}</div>
-              )}
-              <div><b>David Safai</b>Editor · Publisher</div>
-              <div><b>Published</b>{formatDate(article.published_at)}</div>
-              {article.status_tag && <div><b>Status</b>{article.status_tag}</div>}
-              {dateline && <div><b>Dateline</b>{dateline}</div>}
-            </div>
-          )}
-          {/* Sits inside the headline block, above the hero photo, so it's on
-              screen without scrolling. Unlike the pop-up it needs no trigger,
-              which is the point: in-app browsers are exactly where a
-              scroll-and-timer modal is least dependable. */}
-          <ArticleSignupBox slug={slug} enabled={showBar} />
-        </div>
-      </header>
 
-      {heroUrl && (
-        <section className="art-lead">
-          <div className="wrap">
-            <figure className="lead-photo">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroUrl}
-                alt={`${property?.street_address ?? 'Listing'} hero photo`}
-                width={1600}
-                height={1067}
-              />
-              {article.hero_caption && (
-                <figcaption className="cap">{renderHeroCaption(article.hero_caption)}</figcaption>
-              )}
-            </figure>
-          </div>
-        </section>
-      )}
-
-      {takeaways.length > 0 && (
-        <section className="key-takeaways">
-          <div className="wrap">
-            <div className="kt-card">
-              <div className="kt-head">
-                {wordForCount(takeaways.length)} takeaways
-                {article.takeaways_subhead && <b>{article.takeaways_subhead}</b>}
-              </div>
-              <ol className="kt-list">
-                {takeaways.map((t, i) => (
-                  <li key={i}>
-                    <b>{t.bold}</b>{t.text}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {article.deal_stats_html && (
-        <section className="deal-stats">
-          <div className="wrap">
-            <div className="stats-head">
-              Deal Stats · {property?.street_address ?? '—'}
-            </div>
-            <div
-              className="stats-grid"
-              dangerouslySetInnerHTML={{ __html: article.deal_stats_html }}
-            />
-          </div>
-        </section>
-      )}
-
-      {hasBody && (
-        <section className="art-body">
-          <div className="wrap">
-            <div className="body-grid">
-              {toc.length > 0 && (
-                <aside>
-                  <div className="k">In this piece</div>
-                  <ol>
-                    {toc.map(item => (
-                      <li key={item.id}>
-                        <a href={`#${item.id}`}>{item.text}</a>
-                      </li>
-                    ))}
-                  </ol>
-                </aside>
-              )}
-
-              <article
-                className="prose"
-                dangerouslySetInnerHTML={{ __html: cleanBody }}
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
-      {brokerGroups.length > 0 && <BrokerBlock groups={brokerGroups} />}
-
-      <section className="author">
-        <div className="wrap">
-          <div className="author-in">
-            <div>
-              <div className="k">Written from the field</div>
-              <h3>David Safai, operator, developer, GC.</h3>
-              <p>
-                Atlas Home Builders, Inc. is a Los Angeles owner-operator and general contractor. If you are
-                a broker with a listing you want an honest read on, send the OM and the T-12 to{' '}
-                <a
-                  href="mailto:David@AtlasBrief.La"
-                  style={{ borderBottom: '1px solid var(--accent)', color: 'var(--ink)' }}
-                >
-                  David@AtlasBrief.La
-                </a>
-                .
-              </p>
-            </div>
-            <div className="btns">
-              <a href="mailto:David@AtlasBrief.La">Send a Listing</a>
-              <Link href={`/atlas-brief/sections/${article.section_slug}`}>Back to Board</Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className="site-footer">
-        <div className="wrap">
-          <div>
-            &copy; 2026 <Link href="/atlas-brief">Atlas Brief</Link> &middot; A publication of Atlas Home Builders, Inc.
-          </div>
-          <div>
-            Entry № {String(article.entry_num).padStart(2, '0')} &middot; {sectionLabel} &middot;{' '}
-            {formatDate(article.published_at)}
-          </div>
-          <div>
-            Los Angeles &middot;{' '}
-            <a href="mailto:David@AtlasBrief.La">David@AtlasBrief.La</a>
-          </div>
-          <div style={{ flexBasis: '100%', paddingTop: 16, marginTop: 4, borderTop: '1px solid var(--rule, rgba(0,0,0,0.08))' }}>
-            <Disclaimer />
-          </div>
-        </div>
-      </footer>
+      {/* The Tape treatment, per David and Lucas: briefs get this, dispatches
+          get the Journal one. It fetches the brief by slug itself; that query
+          is React-cached, so this page view still hits the database once. */}
+      <TapeArticle params={params} />
     </>
   )
 }
 
-function toBrokerCard(
-  b: Tables<'brokers'>,
-  supabase: SupabaseClient<Database>
-): BrokerCard {
-  return {
-    name: b.name,
-    title: b.title,
-    firm: b.firm,
-    phone: b.phone ?? b.cell,
-    email: b.email,
-    dre: b.dre_license,
-    headshotUrl: resolveHeroUrl(supabase, b.headshot_url),
-    logoUrl: resolveHeroUrl(supabase, b.firm_logo_url),
-  }
-}
 
-// Build the labeled broker groups for the article card from the listing's
-// roster. Dual agency (a broker on both sides) collapses into a single
-// "Buyer & Listing Broker" group so the same person isn't shown twice.
-function buildBrokerGroups(
-  listing: ArticleWithJoins['listing'] | null | undefined,
-  supabase: SupabaseClient<Database>
-): BrokerGroup[] {
-  // Prefer the join table; fall back to the FK columns for listings not yet
-  // backfilled (and so new parses that only set the FKs still render).
-  let rows = (listing?.listing_brokers ?? [])
-    .filter(r => r.broker)
-    .map(r => ({ role: r.role, order: r.sort_order, broker: r.broker as Tables<'brokers'> }))
 
-  if (rows.length === 0 && listing) {
-    if (listing.listing_broker) rows.push({ role: 'listing', order: 0, broker: listing.listing_broker })
-    if (listing.buyer_broker) rows.push({ role: 'buyer', order: 0, broker: listing.buyer_broker })
-  }
 
-  // Roles per broker → detect dual agency (both sides).
-  const roleSets = new Map<string, Set<string>>()
-  for (const r of rows) {
-    if (!roleSets.has(r.broker.id)) roleSets.set(r.broker.id, new Set())
-    roleSets.get(r.broker.id)!.add(r.role)
-  }
 
-  const seen = new Set<string>()
-  const dual: typeof rows = []
-  const listingOnly: typeof rows = []
-  const buyerOnly: typeof rows = []
-  for (const r of rows) {
-    const roles = roleSets.get(r.broker.id)!
-    const isDual = roles.has('listing') && roles.has('buyer')
-    if (isDual) {
-      if (seen.has(r.broker.id)) continue // one card for a dual-agency broker
-      seen.add(r.broker.id)
-      dual.push(r)
-    } else if (r.role === 'listing') listingOnly.push(r)
-    else buyerOnly.push(r)
-  }
 
-  const sortAndMap = (list: typeof rows) =>
-    list
-      .sort((a, b) => a.order - b.order)
-      .map(r => toBrokerCard(r.broker, supabase))
-      .filter(b => b.name || b.firm)
-
-  const label = (base: string, n: number) => (n > 1 ? `${base}s` : base)
-
-  const groups: BrokerGroup[] = []
-  if (dual.length) groups.push({ key: 'dual', label: label('Buyer & Listing Broker', dual.length), brokers: sortAndMap(dual) })
-  if (listingOnly.length) groups.push({ key: 'listing', label: label('Listing Broker', listingOnly.length), brokers: sortAndMap(listingOnly) })
-  if (buyerOnly.length) groups.push({ key: 'buyer', label: label('Buyer Broker', buyerOnly.length), brokers: sortAndMap(buyerOnly) })
-  return groups.filter(g => g.brokers.length > 0)
-}
-
-function badgeClass(status: string | null | undefined): string {
-  if (status === 'sold') return 'sold'
-  if (status === 'for_sale') return 'forsale'
-  return 'forsale'
-}
-
-function badgeLabel(status: string | null | undefined): string {
-  if (status === 'sold') return 'Sold'
-  if (status === 'for_sale') return 'For Sale'
-  if (status === 'under_construction') return 'Under Construction'
-  return 'Off Market'
-}
-
-function formatDate(s: string | null | undefined): string {
-  if (!s) return '—'
-  const d = new Date(s)
-  if (isNaN(d.getTime())) return s
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function wordForCount(n: number): string {
-  const words = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']
-  return words[n] ?? String(n)
-}
-
-function renderHeroCaption(caption: string) {
-  // The hero is always the lead figure, so its label is "FIG. 01". The draft AI
-  // frequently emits a placeholder "FIG. 00" (and a few get "FIG. 01"); normalize
-  // any leading figure label so the caption never reads "FIG. 00".
-  const m = caption.match(/^FIG\.?\s*\d+\s*,?\s*(.*)$/i)
-  if (!m) return caption
-  return (
-    <>
-      <b>FIG. 01</b>, {m[1]}
-    </>
-  )
-}
