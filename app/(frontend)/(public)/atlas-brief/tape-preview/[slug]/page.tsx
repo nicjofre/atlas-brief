@@ -239,7 +239,13 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
               </section>
             )}
 
-            <div className="tp-text" dangerouslySetInnerHTML={{ __html: body }} />
+            {/* `art-body` is not styling — it's the hook ArticleSubscribeModal
+                measures to decide when someone has actually read enough to be
+                worth asking. Without it the trigger falls back to whole-page
+                depth, and this page carries so much above and below the prose
+                (flag, deck, byline, toolbar, glance, hero, deal stats, then the
+                rail and the cards) that depth says nothing about reading. */}
+            <div className="tp-text art-body" dangerouslySetInnerHTML={{ __html: body }} />
 
 
             <div className="tp-signoff">

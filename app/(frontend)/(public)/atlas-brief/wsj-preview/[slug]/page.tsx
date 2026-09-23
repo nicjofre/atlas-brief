@@ -288,7 +288,12 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
               </aside>
             )}
 
-            <div className="wsj-text">
+            {/* ATLAS BRIEF (2026-09-23): `art-body` added. Not styling — it's
+                the hook ArticleSubscribeModal measures to know when a reader
+                has got far enough into the prose to be worth asking for an
+                email. One wrapper covers both body shapes, the Lexical blocks
+                and the brief HTML. */}
+            <div className="wsj-text art-body">
               {a.body}
               {/* ADDED BY ATLAS BRIEF (2026-09-16): the sign-off lines run left,
                   the subscribe button sits opposite them. */}
