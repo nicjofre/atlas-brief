@@ -70,10 +70,18 @@ import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
 import './home.css'
 
+// The front page names the publication, not a stream. It used to read "The
+// Tape · Atlas Brief", from when the homepage WAS the Tape — but The Tape got
+// its own page on 2026-09-21 and its masthead rename gave that page the same
+// title, so two pages claimed to be the same thing. Same duplicate signal the
+// /atlas-brief retirement was fixing.
+//
+// The title matches the masthead: Atlas Brief over "A Journal of Los Angeles
+// Real Estate".
 export const metadata: Metadata = pageMetadata({
-  title: 'The Tape · Atlas Brief',
+  title: 'Atlas Brief · A Journal of Los Angeles Real Estate',
   description:
-    "A running log of Los Angeles real estate — what trades, what's listed, what the numbers actually say. By David Safai.",
+    "An owner-builder's journal of Los Angeles real estate. What traded, what's listed, and what the numbers actually say — by David Safai.",
   path: '/',
 })
 
