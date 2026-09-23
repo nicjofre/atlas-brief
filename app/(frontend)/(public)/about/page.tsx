@@ -7,6 +7,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import { RefreshRouteOnSave } from '../_blocks/RefreshRouteOnSave'
 import { getPageBySlug } from '@/lib/getPage'
 import ArticleSubscribeBar from '../ArticleSubscribeBar'
+import ArticleSubscribeModal from '../ArticleSubscribeModal'
 import { createClient } from '@/lib/supabase/server'
 import './about.css'
 
@@ -58,6 +59,10 @@ export default async function AboutPage() {
   return (
     <>
       {!user && <ArticleSubscribeBar />}
+      {/* The pop-up too, as on the front page and articles. Contact is the one
+          reader-facing page without it — interrupting someone mid-enquiry is
+          the definition of intrusive. */}
+      {!user && <ArticleSubscribeModal enabled slug="about" />}
       <RefreshRouteOnSave />
       {/* The masthead runs full width, then the body splits: the three arms of
           the practice on the left, the buildings on the right, the way the

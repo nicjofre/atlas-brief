@@ -68,6 +68,8 @@ import TopStories from './TopStories'
 import FlagTicker from './FlagTicker'
 import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
+import ArticleSubscribeModal from './ArticleSubscribeModal'
+import { createClient } from '@/lib/supabase/server'
 import './home.css'
 
 // The front page names the publication, not a stream. It used to read "The
@@ -86,6 +88,10 @@ export const metadata: Metadata = pageMetadata({
 })
 
 export default async function HomePage() {
+  // One auth check so the pop-up never fires at signed-in staff.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const articles = await getArticles()
   // The five newest make the Top Stories package (one lead, four stacked);
   // everything after runs as the tape.
@@ -134,6 +140,20 @@ export default async function HomePage() {
       <CenterPackage tape={tapeCards} dispatch={dispatchCards} />
 
       <DispatchBanner />
+
+      {/* The signup pop-up, on the front page as well as on articles (agreed
+          with David 2026-09-23 as a stopgap while something better is built).
+          There is no .art-body here, so the trigger falls back to whole-page
+          depth — a weaker signal than "read a piece", but on a card grid
+          scrolling is the only engagement there is to measure.
+
+          Deliberately NOT on Contact, where it would interrupt someone in the
+          middle of writing to David, nor on Survival Guide and RSO Briefing,
+          where it would compete with the form the ad click was bought for.
+
+          Hidden from signed-in staff: David and Lucas are not the audience. */}
+      {!user && <ArticleSubscribeModal enabled slug="home" />}
+
       <Footer />
     </>
   )
