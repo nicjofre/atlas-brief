@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
+import ArticleSubscribeModal from '../../../ArticleSubscribeModal'
+import { createClient } from '@/lib/supabase/server'
 import { getArticles } from '@/lib/db/articles'
 import CardFeed from '../../CardFeed'
 import TopStories from '../../../TopStories'
@@ -78,6 +80,10 @@ export default async function SectionPage(
   const { section: slug } = await params
   const section = SECTION_REGISTRY[slug]
   if (!section) notFound()
+
+  // One auth check so the pop-up never fires at signed-in staff.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const list = await getArticles({ sectionSlug: slug })
 
@@ -175,6 +181,15 @@ export default async function SectionPage(
           <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} />
         </div>
       </section>
+
+      {/* The signup pop-up, as on the front page. A stream archive is a
+          browsing page like the homepage — no .art-body, so the trigger falls
+          back to whole-page depth, and on a card grid that is the only
+          engagement there is to measure. Someone paging through the deals board is
+          plainly interested.
+
+          Behind an auth check: David and Lucas are not the audience. */}
+      {!user && <ArticleSubscribeModal enabled slug="the-tape" />}
 
       <Footer />
     </>

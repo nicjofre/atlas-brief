@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../Footer'
+import ArticleSubscribeModal from '../../ArticleSubscribeModal'
+import { createClient } from '@/lib/supabase/server'
 import { getArticles, type ArticleCard } from '@/lib/db/articles'
 import CardFeed from '../CardFeed'
 import TopStories from '../../TopStories'
@@ -46,6 +48,10 @@ export const metadata: Metadata = pageMetadata({
 })
 
 export default async function DispatchPage() {
+  // One auth check so the pop-up never fires at signed-in staff.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const all = await getArticles()
   const posts: ArticleCard[] = all.filter(a => a.kind === 'post')
 
@@ -119,6 +125,15 @@ export default async function DispatchPage() {
           <CardFeed rows={rest} stream="dispatch" fallbackLabel="Dispatch" />
         </div>
       </section>
+
+      {/* The signup pop-up, as on the front page. A stream archive is a
+          browsing page like the homepage — no .art-body, so the trigger falls
+          back to whole-page depth, and on a card grid that is the only
+          engagement there is to measure. Someone paging through the dispatch archive is
+          plainly interested.
+
+          Behind an auth check: David and Lucas are not the audience. */}
+      {!user && <ArticleSubscribeModal enabled slug="dispatch" />}
 
       <Footer />
     </>
