@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { subscriberAttribution } from '@/lib/analytics/attribution-server'
 import { syncContactToResend, isReservedEmail } from '@/lib/resend'
 
 export const runtime = 'nodejs'
@@ -67,9 +68,15 @@ export async function POST(req: Request) {
   // (23505 — already subscribed) as a silent success: a conflict and a fresh
   // insert both resolve to the same "you're on the list" response, never
   // revealing whether an address is already on the list.
+  // Where the reader came from (first and last outside arrival), read from the
+  // cookies TrackPageView sets — so every form is attributed without sending it.
   const { error } = await supabase
     .from('subscribers')
-    .insert({ email, status: 'subscribed', source, source_slug: sourceSlug, first_name: firstName, last_name: lastName, role })
+    .insert({
+      email, status: 'subscribed', source, source_slug: sourceSlug,
+      first_name: firstName, last_name: lastName, role,
+      ...(await subscriberAttribution()),
+    })
 
   if (error && error.code !== '23505') {
     console.error('[subscribe] insert failed', error)

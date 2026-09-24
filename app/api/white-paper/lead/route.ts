@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { subscriberAttribution } from '@/lib/analytics/attribution-server'
 import { sendGuideEmail, sendLeadNotification, syncContactToResend } from '@/lib/resend'
 
 export const runtime = 'nodejs'
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
   const lastName = name.split(/\s+/).slice(1).join(' ') || null
   const { error: subErr } = await supabase
     .from('subscribers')
-    .insert({ email, status: 'subscribed', source: 'survival_guide', first_name: firstName, last_name: lastName })
+    .insert({ email, status: 'subscribed', source: 'survival_guide', first_name: firstName, last_name: lastName, ...(await subscriberAttribution()) })
   if (subErr && subErr.code !== '23505') {
     console.error('[white-paper] subscribe failed', subErr)
   } else if (!subErr) {

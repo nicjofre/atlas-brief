@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
+import { trackCapture } from '@/lib/analytics/capture'
 import { markSubscribed, modalSuppressed, markModalDismissed } from '@/lib/subscribe-flag'
 import './subscribe-modal.css'
 
@@ -55,6 +56,14 @@ export default function ArticleSubscribeModal({
   const restoreFocusRef = useRef<HTMLElement | null>(null)
   // Guards against re-opening within the same page view after a dismissal.
   const firedRef = useRef(false)
+  // What opened it: the reader reaching the trigger point, or the nav's
+  // Subscribe button. They're different asks — one interrupts, one was
+  // requested — so they're recorded, and credited, separately.
+  const openedByRef = useRef<'scroll' | 'nav'>('scroll')
+  // ?capture=preview is us looking at the design; never count it.
+  const previewRef = useRef(false)
+  // Once subscribed, closing the confirmation isn't a dismissal.
+  const sentRef = useRef(false)
 
   // --- Trigger ------------------------------------------------------------
   useEffect(() => {
@@ -63,6 +72,7 @@ export default function ArticleSubscribeModal({
     const fire = () => {
       if (firedRef.current) return
       firedRef.current = true
+      openedByRef.current = 'scroll'
       setOpen(true)
     }
 
@@ -77,6 +87,7 @@ export default function ArticleSubscribeModal({
 
     // Deferred a tick so the open isn't a synchronous setState in the effect.
     if (mode === 'preview') {
+      previewRef.current = true
       const t = window.setTimeout(fire, 0)
       return () => window.clearTimeout(t)
     }
@@ -142,7 +153,10 @@ export default function ArticleSubscribeModal({
     // first to mount answers the event — two would open two overlays.
     if (openerClaimed) return
     openerClaimed = true
-    const onAsk = () => setOpen(true)
+    const onAsk = () => {
+      openedByRef.current = 'nav'
+      setOpen(true)
+    }
     window.addEventListener('atlas:open-subscribe', onAsk)
     return () => {
       openerClaimed = false
@@ -150,10 +164,21 @@ export default function ArticleSubscribeModal({
     }
   }, [])
 
-  const close = useCallback((remember: boolean) => {
-    if (remember) markModalDismissed()
+  const close = useCallback((how: 'close' | 'skip' | 'backdrop' | 'escape') => {
+    if (!sentRef.current) {
+      markModalDismissed()
+      if (!previewRef.current) {
+        trackCapture({ event: 'dismissed', surface: 'popup', trigger: openedByRef.current, how, slug })
+      }
+    }
     setOpen(false)
-  }, [])
+  }, [slug])
+
+  // One "shown" per opening, whichever way it opened.
+  useEffect(() => {
+    if (!open || previewRef.current) return
+    trackCapture({ event: 'shown', surface: 'popup', trigger: openedByRef.current, slug })
+  }, [open, slug])
 
   // --- Focus, scroll lock, Escape ----------------------------------------
   useEffect(() => {
@@ -170,7 +195,7 @@ export default function ArticleSubscribeModal({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
-        close(true)
+        close('escape')
         return
       }
       if (e.key !== 'Tab') return
@@ -224,6 +249,9 @@ export default function ArticleSubscribeModal({
     }
     setState('submitting')
     setError('')
+    // The nav button's signups get their own source, so they stop being
+    // counted as pop-up conversions.
+    const source = openedByRef.current === 'nav' ? 'nav_subscribe' : 'article_modal'
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
@@ -233,7 +261,7 @@ export default function ArticleSubscribeModal({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           role: role || undefined,
-          source: 'article_modal',
+          source,
           source_slug: slug,
         }),
       })
@@ -243,8 +271,12 @@ export default function ArticleSubscribeModal({
         setState('idle')
         return
       }
-      trackNewsletterSignup('article_modal')
+      trackNewsletterSignup(source)
       markSubscribed()
+      sentRef.current = true
+      if (!previewRef.current) {
+        trackCapture({ event: 'submitted', surface: 'popup', trigger: openedByRef.current, slug })
+      }
       setState('sent')
     } catch {
       setError('Something went wrong. Please try again.')
@@ -260,7 +292,7 @@ export default function ArticleSubscribeModal({
       onMouseDown={e => {
         // mousedown, not click: a click that *starts* inside the panel and ends
         // on the backdrop (a sloppy drag off a field) shouldn't close the modal.
-        if (e.target === e.currentTarget && !busy) close(true)
+        if (e.target === e.currentTarget && !busy) close('backdrop')
       }}
     >
       <div
@@ -270,7 +302,7 @@ export default function ArticleSubscribeModal({
         aria-modal="true"
         aria-labelledby="asm-title"
       >
-        <button type="button" className="asm-x" aria-label="Close" onClick={() => !busy && close(true)}>
+        <button type="button" className="asm-x" aria-label="Close" onClick={() => !busy && close('close')}>
           &times;
         </button>
 
@@ -346,7 +378,7 @@ export default function ArticleSubscribeModal({
               </button>
             </form>
 
-            <button type="button" className="asm-skip" onClick={() => !busy && close(true)}>
+            <button type="button" className="asm-skip" onClick={() => !busy && close('skip')}>
               No thanks, keep reading
             </button>
           </>

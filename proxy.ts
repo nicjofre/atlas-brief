@@ -18,11 +18,12 @@ const PRIVATE_PREFIXES = [
 ]
 
 // Public POST endpoints: `/api/subscribe` (signup), `/api/track/view` (the
-// reader-analytics beacon from the public article page), and
+// reader-analytics beacon from the public article page), `/api/track/capture`
+// (signup pop-up shown/dismissed/submitted), and
 // `/api/webhooks/resend` (Resend posts email events, verified by signature).
 // Every other /api/* route is admin-only and stays gated.
 const PUBLIC_API = new Set([
-  '/api/subscribe', '/api/track/view', '/api/webhooks/resend',
+  '/api/subscribe', '/api/track/view', '/api/track/capture', '/api/webhooks/resend',
   '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead',
   '/api/rso-briefing/lead',
 ])

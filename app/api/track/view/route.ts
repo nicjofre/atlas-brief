@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
-import { cookies, draftMode } from 'next/headers'
+import { cookies } from 'next/headers'
 import { Client } from 'pg'
 import { createClient } from '@/lib/supabase/server'
+import { requestSkipReason, sessionSkipReason, visitorHash } from '@/lib/analytics/beacon-guard'
+import { classifyTouch, sanitizeTouch } from '@/lib/analytics/channel'
 
 export const runtime = 'nodejs'
 
@@ -10,19 +11,10 @@ export const runtime = 'nodejs'
 // layout) POSTs { path, source, referrer } on every public page load and on
 // every client-side navigation. We record one row per view in post_views
 // (anon insert-only), hashing the visitor for unique-ish counts without
-// storing any PII.
-//
-// Four things are deliberately NOT counted, because each one would quietly
-// inflate the numbers with non-visitor traffic:
-//   1. bots, by user-agent
-//   2. anything not served from the production host — localhost and Vercel
-//      preview deploys, matching how the Google/LinkedIn tags are gated
-//   3. logged-in sessions: David and Nic browsing the live public site
-//   4. CMS draft previews
+// storing any PII. Bots, preview deploys, CMS drafts and signed-in admins are
+// dropped first — see lib/analytics/beacon-guard.ts.
 
-const BOT_RE = /bot|crawl|spider|slurp|bing|yandex|baidu|duckduck|preview|fetch|monitor|headless|lighthouse|curl|wget|python-requests|axios|node-fetch/i
 const SOURCES = new Set(['email', 'direct', 'social', 'internal', 'other'])
-const PROD_HOSTS = new Set(['atlasbrief.la', 'www.atlasbrief.la'])
 
 // The internal tools don't render the public layout, so they never beacon in
 // the first place. Reject them explicitly anyway — the log should only ever
@@ -35,8 +27,9 @@ const INTERNAL_RE = /^\/(analytics|listings|development|cms|admin|login|api|next
 const ARTICLE_RE = /^\/atlas-brief\/([^/]+)$/
 
 // Strip query and hash, drop any trailing slash. Without this a single page
-// splits into a row per campaign URL and the counts stop meaning anything —
-// the campaign is already captured in `source`.
+// splits into a row per campaign URL and the counts stop meaning anything.
+// The campaign isn't lost with the query string: the client reads the tags off
+// the URL first and sends them separately as `arrival` (utm_* columns).
 function cleanPath(v: unknown): string | null {
   if (typeof v !== 'string') return null
   let p = v.split('?')[0].split('#')[0].trim()
@@ -100,20 +93,15 @@ async function resolveReader(rid: string, cookieToken: string): Promise<Reader |
 const ok = (skipped?: string) => NextResponse.json(skipped ? { ok: true, skipped } : { ok: true })
 
 export async function POST(req: Request) {
-  // --- 1. bots ---
-  const ua = req.headers.get('user-agent') || ''
-  if (BOT_RE.test(ua)) return ok('bot')
-
-  // --- 2. production host only ---
-  const host = (req.headers.get('x-forwarded-host') || req.headers.get('host') || '')
-    .split(':')[0]
-    .toLowerCase()
-  if (!PROD_HOSTS.has(host)) return ok('non-prod')
+  // --- bots and non-production hosts ---
+  const early = requestSkipReason(req)
+  if (early) return ok(early)
 
   let path: string | null = null
   let source: string | null = null
   let referrer: string | null = null
   let rid = ''
+  let arrival: ReturnType<typeof sanitizeTouch> = null
   try {
     const body = await req.json()
     path = cleanPath(body?.path)
@@ -121,36 +109,32 @@ export async function POST(req: Request) {
     source = SOURCES.has(s) ? s : 'other'
     referrer = typeof body?.referrer === 'string' ? body.referrer.slice(0, 400) || null : null
     rid = typeof body?.rid === 'string' ? body.rid.trim().slice(0, 320) : ''
+    arrival = sanitizeTouch(body?.arrival)
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 })
   }
   if (!path) return NextResponse.json({ ok: false }, { status: 400 })
   if (INTERNAL_RE.test(path)) return ok('internal-page')
 
-  // --- 3. CMS draft preview ---
-  const { isEnabled: isDraft } = await draftMode()
-  if (isDraft) return ok('draft-preview')
+  // --- CMS draft previews and signed-in admins ---
+  const late = await sessionSkipReason()
+  if (late) return ok(late)
 
-  // --- 4. logged-in admins ---
-  // getUser() is a network round trip, so only pay for it when an auth cookie
-  // is actually present. Anonymous readers (nearly all traffic) skip it.
   const cookieStore = await cookies()
-  const hasAuthCookie = cookieStore.getAll().some((c) => /^sb-.*-auth-token/.test(c.name))
   const supabase = await createClient()
-  if (hasAuthCookie) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) return ok('admin')
-  }
 
   const articleMatch = ARTICLE_RE.exec(path)
   const kind = articleMatch ? 'article' : 'page'
   const slug = articleMatch ? articleMatch[1] : null
 
-  // Daily visitor hash from ip + ua — enough to dedupe a reader within a day,
-  // never reversible to the person.
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim()
-  const day = new Date().toISOString().slice(0, 10)
-  const visitorHash = createHash('sha256').update(`${ip}|${ua}|${day}`).digest('hex').slice(0, 32)
+  // Channel and paid flag for an arrival only. Internal page-to-page clicks
+  // have no channel of their own; the visit's first page carries it.
+  let refHost = ''
+  try {
+    refHost = referrer ? new URL(referrer).hostname : ''
+  } catch {}
+  const arrived = source !== 'internal'
+  const cls = arrived ? classifyTouch({ ...arrival, ref: refHost }) : null
 
   // Best-effort article_id (the published article is anon-readable). Only
   // briefs live in `articles` — freeform posts are Payload rows, so a null
@@ -170,8 +154,15 @@ export async function POST(req: Request) {
     article_id: articleId,
     source,
     referrer,
-    visitor_hash: visitorHash,
+    visitor_hash: visitorHash(req),
     subscriber_id: reader?.id ?? null,
+    channel: cls?.channel ?? null,
+    paid: cls?.paid ?? null,
+    utm_source: arrived ? arrival?.us ?? null : null,
+    utm_medium: arrived ? arrival?.um ?? null : null,
+    utm_campaign: arrived ? arrival?.uc ?? null : null,
+    utm_content: arrived ? arrival?.ut ?? null : null,
+    ad_click: arrived ? arrival?.ac ?? null : null,
   })
   if (error) {
     console.error('[track/view] insert failed', error.message)

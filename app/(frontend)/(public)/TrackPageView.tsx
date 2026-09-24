@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
+import { readArrival, rememberArrival } from '@/lib/analytics/attribution-client'
+import type { Touch } from '@/lib/analytics/channel'
 
 // Sitewide reader-analytics beacon. Mounted once in the public layout, so it
 // covers every public page — home, The Tape, articles, the landing pages — not
@@ -91,7 +93,16 @@ const DWELL_MS = 4000
 // dies with the tab. Cleared once a beacon has actually gone out.
 let pendingRid = ''
 
-function send(payload: { path: string; source: string; referrer: string; rid?: string }): void {
+type Payload = {
+  path: string
+  source: string
+  referrer: string
+  rid?: string
+  // Campaign tags and ad click id from the landing URL, first page only.
+  arrival?: Pick<Touch, 'us' | 'um' | 'uc' | 'ut' | 'ac'>
+}
+
+function send(payload: Payload): void {
   const body = JSON.stringify(payload)
   const url = '/api/track/view'
   if (navigator.sendBeacon) {
@@ -146,12 +157,23 @@ export default function TrackPageView() {
       const source = isFirstOfVisit ? classifyArrival() : 'internal'
       const referrer = isFirstOfVisit ? (document.referrer || '').slice(0, 400) : ''
 
+      // Where this visit came from, in full: campaign tags and whether the click
+      // was an ad. Remembered in cookies straight away (not after the dwell), so
+      // a reader who subscribes within four seconds is still attributed. An
+      // 'internal' first page is a full reload from our own site, not an arrival.
+      let arrival: Payload['arrival']
+      if (isFirstOfVisit && source !== 'internal') {
+        const touch = readArrival()
+        rememberArrival(touch)
+        arrival = { us: touch.us, um: touch.um, uc: touch.uc, ut: touch.ut, ac: touch.ac }
+      }
+
       const fire = () => {
         if (reported.current === pathname || document.hidden) return
         reported.current = pathname
         const rid = pendingRid
         pendingRid = ''
-        send({ path: pathname, source, referrer, ...(rid ? { rid } : {}) })
+        send({ path: pathname, source, referrer, ...(rid ? { rid } : {}), ...(arrival ? { arrival } : {}) })
       }
       const timer = window.setTimeout(fire, DWELL_MS)
 

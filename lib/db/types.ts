@@ -1014,40 +1014,103 @@ export type Database = {
         }
         Relationships: []
       }
+      capture_events: {
+        Row: {
+          channel: string | null
+          created_at: string
+          event: string
+          how: string | null
+          id: string
+          paid: boolean | null
+          path: string | null
+          slug: string | null
+          surface: string
+          trigger: string | null
+          visitor_hash: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          event: string
+          how?: string | null
+          id?: string
+          paid?: boolean | null
+          path?: string | null
+          slug?: string | null
+          surface: string
+          trigger?: string | null
+          visitor_hash?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          event?: string
+          how?: string | null
+          id?: string
+          paid?: boolean | null
+          path?: string | null
+          slug?: string | null
+          surface?: string
+          trigger?: string | null
+          visitor_hash?: string | null
+        }
+        Relationships: []
+      }
       post_views: {
         Row: {
+          ad_click: string | null
           article_id: string | null
+          channel: string | null
           id: string
           kind: string
+          paid: boolean | null
           path: string | null
           referrer: string | null
           slug: string | null
           source: string | null
           subscriber_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
           viewed_at: string
           visitor_hash: string | null
         }
         Insert: {
+          ad_click?: string | null
           article_id?: string | null
+          channel?: string | null
           id?: string
           kind?: string
+          paid?: boolean | null
           path?: string | null
           referrer?: string | null
           slug?: string | null
           source?: string | null
           subscriber_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           viewed_at?: string
           visitor_hash?: string | null
         }
         Update: {
+          ad_click?: string | null
           article_id?: string | null
+          channel?: string | null
           id?: string
           kind?: string
+          paid?: boolean | null
           path?: string | null
           referrer?: string | null
           slug?: string | null
           source?: string | null
           subscriber_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           viewed_at?: string
           visitor_hash?: string | null
         }
@@ -1090,9 +1153,15 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          first_channel: string | null
           first_name: string | null
+          first_paid: boolean | null
+          first_touch: Json | null
           id: string
+          last_channel: string | null
           last_name: string | null
+          last_paid: boolean | null
+          last_touch: Json | null
           resend_contact_id: string | null
           role: string | null
           source: string | null
@@ -1105,9 +1174,15 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          first_channel?: string | null
           first_name?: string | null
+          first_paid?: boolean | null
+          first_touch?: Json | null
           id?: string
+          last_channel?: string | null
           last_name?: string | null
+          last_paid?: boolean | null
+          last_touch?: Json | null
           resend_contact_id?: string | null
           role?: string | null
           source?: string | null
@@ -1120,9 +1195,15 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          first_channel?: string | null
           first_name?: string | null
+          first_paid?: boolean | null
+          first_touch?: Json | null
           id?: string
+          last_channel?: string | null
           last_name?: string | null
+          last_paid?: boolean | null
+          last_touch?: Json | null
           resend_contact_id?: string | null
           role?: string | null
           source?: string | null
