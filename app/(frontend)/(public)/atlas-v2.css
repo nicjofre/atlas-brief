@@ -190,6 +190,10 @@ body {
   margin-left: -0.04em;
 }
 
+/* On the homepage the masthead carries the name. Hidden, not removed, so the
+   empty cell keeps the nav links centred in the 3-column grid. */
+.nav--home .nav-lockup { visibility: hidden; }
+
 /* Hairline rule + tracked tagline, the lockup from the profile banner. */
 .nav-lockup {
   display: flex;
