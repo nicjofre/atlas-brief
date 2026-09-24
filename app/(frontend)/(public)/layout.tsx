@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 // stylesheet link here. (Migrate to next/font later if FOUT becomes a problem.)
 const GOOGLE_FONTS_URL =
   'https://fonts.googleapis.com/css2?' +
-  'family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500' +
+  'family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700' +
   '&family=Inter+Tight:wght@300;400;500;600;700' +
   '&family=JetBrains+Mono:wght@400;500;600' +
   '&display=swap'
