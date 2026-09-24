@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import AtlasMark from './AtlasMark'
 
@@ -19,14 +18,10 @@ import AtlasMark from './AtlasMark'
 export default function SiteNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
-  // The homepage masthead is the wordmark, set large. A second lockup in the
-  // bar right above it read as the name twice ("Brief" doubled), so the bar
-  // drops its own there. Every other page has no masthead and keeps it.
-  const isHome = usePathname() === '/'
 
   return (
     <>
-      <nav className={`nav${isHome ? ' nav--home' : ''}`}>
+      <nav className="nav">
         <div className="nav-inner">
           {/* Lockup = roundel + wordmark + tracked tagline, per the identity sheet.
               One grid cell so the nav stays a 3-column layout. */}
