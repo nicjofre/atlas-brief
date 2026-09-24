@@ -143,7 +143,18 @@ export default async function PostPage(
     // The Journal treatment, per David: dispatches get this, briefs get the
     // Tape one below. FreeformPost is no longer mounted anywhere — see the
     // note at the top of this file.
-    return <DispatchArticle params={params} />
+    //
+    // The reader capture is mounted here, exactly as it is for briefs below.
+    // The template's own modal is enabled={false} (it only answers its
+    // Subscribe buttons), so from the Sep 23 redesign until this was added,
+    // dispatches had no pop-up and no bar at all.
+    return (
+      <>
+        {showBar && <ArticleSubscribeBar slug={slug} />}
+        <ArticleSubscribeModal enabled={showBar} slug={slug} />
+        <DispatchArticle params={params} />
+      </>
+    )
   }
 
   // Everything below feeds the structured data only. The page itself is the
