@@ -65,7 +65,6 @@ import Footer from './Footer'
 import DispatchBanner from './DispatchBanner'
 import CenterPackage from './CenterPackage'
 import TopStories from './TopStories'
-import FlagTicker from './FlagTicker'
 import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
 import ArticleSubscribeModal from './ArticleSubscribeModal'
@@ -120,17 +119,14 @@ export default async function HomePage() {
           mission statement that used to follow were cut so the stories start
           one scroll sooner. */}
       {/* The masthead is the wordmark, as a paper's is: the name large and
-          centred on the navy, a rule under it, and the dateline beneath. What
-          was here — a skyline photo, a red diagonal, a ghosted A watermark and
+          centred on the navy, and nothing else. The dateline under it and the
+          tagline ticker below were cut 2026-09-23. What was here before — a skyline photo, a red diagonal, a ghosted A watermark and
           a slogan — was four devices doing the job of one. */}
       <header className="flag">
         <div className="flag-inner">
           <h1 className="flag-wordmark">Atlas <em>Brief</em></h1>
-          <p className="flag-dateline">A Journal of Los Angeles Real Estate</p>
         </div>
       </header>
-
-      <FlagTicker />
 
       {lead && <TopStories lead={lead} stack={stack} mostRead={trending} />}
 
