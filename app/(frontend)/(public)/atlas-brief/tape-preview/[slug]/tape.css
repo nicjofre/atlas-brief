@@ -292,6 +292,10 @@
   margin-bottom: 12px;
 }
 .tp-brokers .bc-grid { gap: 14px; }
+/* post.css splits listing and buyer brokers side by side from 760px up — sized
+   for the article column. In a 300px rail that left each card ~150px, wrapping
+   names and phone numbers and clipping emails, so here they always stack. */
+.tp-brokers .bc-grid.cols-2 { grid-template-columns: minmax(0, 1fr); }
 .tp-brokers .bc-group { gap: 8px; }
 .tp-brokers .bc-side {
   color: var(--brand-red);
@@ -325,7 +329,7 @@
   margin: 0 0 4px;
 }
 .tp-brokers .bc-meta { font-family: var(--sans); font-size: 11.5px; line-height: 1.5; color: var(--muted); }
-.tp-brokers .bc-meta a { color: var(--brand-navy); }
+.tp-brokers .bc-meta a { color: var(--brand-navy); overflow-wrap: anywhere; }
 /* The firm logo doesn't earn 300px of column. */
 .tp-brokers .bc-logo { display: none; }
 
