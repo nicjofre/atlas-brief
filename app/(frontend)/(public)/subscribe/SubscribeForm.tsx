@@ -128,7 +128,7 @@ export default function SubscribeForm() {
       {error && <p className="sp-err" role="alert">{error}</p>}
 
       <button type="submit" className="sp-submit" disabled={busy}>
-        {busy ? 'Subscribing…' : 'Subscribe — it’s free'}
+        {busy ? 'Subscribing…' : 'Subscribe'}
       </button>
     </form>
   )

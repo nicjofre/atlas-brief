@@ -13,18 +13,15 @@
 @media (min-width: 920px) {
   .sp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); }
 }
+/* One column (phones, narrow tablets): the sample issue leads, so the first
+   thing on screen is what the email actually looks like. The markup keeps the
+   pitch first, which is the order screen readers and search still get. */
+@media (max-width: 919px) {
+  .sp-sample { order: -1; }
+}
 
 /* ---- The pitch ---- */
 .sp-pitch { max-width: 620px; }
-.sp-kicker {
-  margin: 0 0 16px;
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--brand-red);
-}
 .sp-hed {
   margin: 0 0 18px;
   font-family: var(--serif);
@@ -68,21 +65,25 @@
 }
 .sp-field input::placeholder { color: var(--muted-2); }
 .sp-field input:focus,
-.sp-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(46, 91, 232, 0.15); }
+.sp-field select:focus { outline: none; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(56, 127, 244, 0.15); }
 .sp-err { margin: 0; font-family: var(--sans); font-size: 14px; color: var(--danger); }
+/* The site's button rule, as the pop-up's Subscribe sets it: brand blue at
+   rest, red on hover. */
 .sp-submit {
   margin-top: 4px;
-  padding: 15px 22px;
+  padding: 14px;
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.06em;
   color: #FFFFFF;
-  background: var(--brand-navy);
+  background: var(--brand-blue);
+  border: 1px solid var(--brand-blue);
   border-radius: 3px;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
-.sp-submit:hover { background: var(--ink-soft); }
-.sp-submit:disabled { opacity: 0.7; cursor: default; }
+.sp-submit:hover:not(:disabled) { background: var(--brand-red); border-color: var(--brand-red); }
+.sp-submit:disabled { opacity: 0.6; cursor: default; }
 
 .sp-done {
   padding: 22px 24px;
@@ -94,8 +95,19 @@
 
 /* ---- Who it's from ---- */
 .sp-cred { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--rule); }
-.sp-cred-name { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 20px; color: var(--brand-navy); }
-.sp-cred-line { margin: 2px 0 10px; font-family: var(--sans); font-size: 15px; color: var(--muted); }
+/* Name and title set as the Contact page's card (.c-side) sets them. */
+.sp-cred-name {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.1;
+  color: var(--brand-navy);
+}
+.sp-cred-name a { color: inherit; }
+.sp-cred-name a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.sp-cred-line { margin: 0 0 14px; font-family: var(--sans); font-style: italic; font-size: 13px; color: var(--muted); }
 .sp-cred-link { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--accent-ink); }
 .sp-cred-link:hover { text-decoration: underline; }
 

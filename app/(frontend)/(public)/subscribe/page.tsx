@@ -17,8 +17,9 @@ import './subscribe.css'
 //     deck, photo. It isn't the rendered email: that template is still on the
 //     old palette, and an embedded copy would clash with the page around it.
 //     Labelled a sample, because it's what an issue carries, not a specific send.
-//   - The proof is David's own standing, the line the share card carries. No
-//     subscriber count and no testimonial until there's a real one to use.
+//   - The proof is David's own standing, set as the Contact page's card sets
+//     him: italic name, "Operator · Developer · GC" beneath. No subscriber
+//     count and no testimonial until there's a real one to use.
 //   - No pop-up or subscribe bar here: the page itself is the signup.
 
 export const dynamic = 'force-dynamic'
@@ -66,21 +67,21 @@ export default async function SubscribePage() {
       <main className="sp">
         <div className="wrap sp-grid">
           <section className="sp-pitch">
-            <p className="sp-kicker">The Friday Dispatch</p>
             <h1 className="sp-hed">
-              What traded in Los Angeles this week, and what it really sold for.
+              A journal of Los Angeles real estate, in your inbox.
             </h1>
             <p className="sp-dek">
-              David Safai builds and owns multifamily in Los Angeles. Every Friday he
-              sends what traded that week, what it really sold for, and what the
-              numbers say the market is doing. One email a week. Free.
+              Atlas Brief covers Los Angeles real estate from the owner&rsquo;s side of
+              the table: the deals that traded and what they really sold for, the
+              listings worth a second look, and what the numbers say about the market,
+              development and policy. One email a week. Free.
             </p>
 
             <SubscribeForm />
 
             <div className="sp-cred">
-              <p className="sp-cred-name">David Safai</p>
-              <p className="sp-cred-line">Owner-builder, 30 years in LA</p>
+              <p className="sp-cred-name"><Link href="/contact">David Safai</Link></p>
+              <p className="sp-cred-line">Operator &middot; Developer &middot; GC</p>
               <Link href="/about" className="sp-cred-link">About Atlas Brief &rarr;</Link>
             </div>
           </section>
