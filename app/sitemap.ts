@@ -27,6 +27,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   // The two stream pages below are the archive; the homepage is the front page.
   { path: '/about', priority: 0.5, changeFrequency: 'yearly' },
   { path: '/contact', priority: 0.4, changeFrequency: 'yearly' },
+  { path: '/subscribe', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/tax-appeals', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/survival-guide', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/rso-briefing', priority: 0.6, changeFrequency: 'monthly' },
