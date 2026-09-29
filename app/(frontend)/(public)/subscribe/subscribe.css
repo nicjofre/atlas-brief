@@ -106,6 +106,16 @@
 
 /* ---- Who it's from ---- */
 .sp-cred { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--rule); }
+/* Small caps label, set as the sample issue's "The Friday Dispatch" line. */
+.sp-cred-label {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 /* Name and title set as the Contact page's card (.c-side) sets them. */
 .sp-cred-name {
   margin: 0 0 6px;

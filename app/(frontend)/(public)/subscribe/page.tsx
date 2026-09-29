@@ -85,6 +85,7 @@ export default async function SubscribePage() {
             <SubscribeForm />
 
             <div className="sp-cred">
+              <p className="sp-cred-label">Written by</p>
               <p className="sp-cred-name"><Link href="/contact">David Safai</Link></p>
               <p className="sp-cred-line">Operator &middot; Developer &middot; GC</p>
               <Link href="/about" className="sp-cred-link">About Atlas Brief &rarr;</Link>
