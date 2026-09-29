@@ -124,11 +124,21 @@ function lowerHeading(n: LexNode): LexNode {
 }
 
 type Layout = NonNullable<Post['layout']>
+// ATLAS BRIEF (2026-09-28): paragraph merging is off. Once dispatches went
+// live on this template it ran David's separate paragraphs together with a
+// bare space, so each paragraph now stays where he put it. Only the all-caps
+// subhead fix still applies. To turn merging back on, set this to true.
+const MERGE_SHORT_PARAGRAPHS = false
+
 function mergeLayout(layout: Post['layout']): Post['layout'] {
   if (!layout) return layout
   return layout.map(b => {
     if (b.blockType !== 'richText' || !b.content?.root) return b
-    const root = mergeShortParagraphs(b.content.root as unknown as LexNode) as unknown as typeof b.content.root
+    const lex = b.content.root as unknown as LexNode
+    const root = (MERGE_SHORT_PARAGRAPHS
+      ? mergeShortParagraphs(lex)
+      : { ...lex, children: (lex.children ?? []).map(n => (n.type === 'heading' ? lowerHeading(n) : n)) }
+    ) as unknown as typeof b.content.root
     return { ...b, content: { ...b.content, root } }
   }) as Layout
 }
