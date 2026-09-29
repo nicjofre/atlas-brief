@@ -10,8 +10,19 @@
   gap: clamp(40px, 5vw, 72px);
   align-items: start;
 }
+/* BACKUP (2026-09-29) — sample column and card sizes before the sample was
+   widened to fill the dead space beside the pitch. Restore by swapping back:
+     @media (min-width: 920px) {
+       .sp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); }
+     }
+     .sp-deal { grid-template-columns: minmax(0, 1fr) 96px; gap: 16px; padding: 16px 0; }
+     .sp-deal-img img { width: 96px; height: 72px; }
+     .sp-deal-hed { font-size: 19px; }
+     .sp-deal-dek { font-size: 14px; } */
+/* The pitch stops at 620px, so the sample takes everything past that rather
+   than leaving a white strip between the two columns. */
 @media (min-width: 920px) {
-  .sp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); }
+  .sp-grid { grid-template-columns: minmax(0, 620px) minmax(440px, 1fr); }
 }
 /* One column (phones, narrow tablets): the sample issue leads, so the first
    thing on screen is what the email actually looks like. The markup keeps the
@@ -143,15 +154,15 @@
 /* Each story as the homepage's stacked card (.ts-item): text left, photo right. */
 .sp-deal {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 20px;
   align-items: start;
-  padding: 16px 0;
+  padding: 20px 0;
   border-bottom: 1px solid var(--rule-soft);
 }
 .sp-deal-text { min-width: 0; }
 .sp-deal-img { display: block; }
-.sp-deal-img img { width: 96px; height: 72px; object-fit: cover; display: block; }
+.sp-deal-img img { width: 132px; height: 99px; object-fit: cover; display: block; }
 .sp-deal-img:hover img { opacity: 0.92; }
 @media (max-width: 400px) {
   .sp-deal { grid-template-columns: minmax(0, 1fr) 72px; gap: 12px; }
@@ -171,9 +182,9 @@
   display: block;
   font-family: var(--serif);
   font-weight: 600;
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.25;
   color: var(--brand-navy);
 }
 .sp-deal-hed:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.sp-deal-dek { margin: 6px 0 0; font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--muted); }
+.sp-deal-dek { margin: 6px 0 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--muted); }
