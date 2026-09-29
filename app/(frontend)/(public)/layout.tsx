@@ -19,12 +19,17 @@ const OG_DESCRIPTION =
 export const metadata: Metadata = {
   title: 'Atlas Brief',
   description: 'An owner-builder journal of Los Angeles real estate, development, and policy.',
+  // The roundel (AtlasMark), rendered from the brand font — app/favicon.ico
+  // carries 16/32/48 for anything that asks for /favicon.ico directly. The old
+  // favicon.svg (brown "A" on paper) came out 2026-09-28: SVG icons can't load
+  // Newsreader, so a vector copy would draw the A in whatever serif the browser has.
+  // ?v=2 is a cache-bust: phones and link-preview crawlers key the icon by URL
+  // and would otherwise keep the old A. Bump it next time the mark changes.
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-32.png?v=2', sizes: '32x32', type: 'image/png' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png?v=2',
   },
   openGraph: {
     type: 'website',
