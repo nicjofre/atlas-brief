@@ -69,7 +69,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       <SiteNav />
 
-      {/* The signup pop-up, for the nav's Subscribe button. enabled={false}
+      {/* The signup pop-up, for the Subscribe buttons inside articles (the
+          nav's own button links to /subscribe since 2026-09-29). enabled={false}
           keeps its scroll trigger off — pages that want the automatic pop-up
           mount their own copy with it on. */}
       <ArticleSubscribeModal enabled={false} />

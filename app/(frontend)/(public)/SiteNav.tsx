@@ -43,13 +43,12 @@ export default function SiteNav() {
             <Link href="/contact" className="nav-tertiary">Work with Atlas</Link>
             {/* Tax Appeals is on hold, so the slot goes to the thing we always
                 want asked for. /tax-appeals still exists, just unlinked. */}
-            <button
-              type="button"
-              className="nav-highlight"
-              onClick={() => window.dispatchEvent(new CustomEvent('atlas:open-subscribe'))}
-            >
+            {/* Goes to /subscribe (2026-09-29). It used to fire
+                `atlas:open-subscribe` for the pop-up; the in-article Subscribe
+                buttons still do, so the layout's pop-up stays mounted. */}
+            <Link href="/subscribe" className="nav-highlight">
               Subscribe
-            </button>
+            </Link>
             <button
               className={`nav-burger${menuOpen ? ' open' : ''}`}
               aria-label="Menu"
