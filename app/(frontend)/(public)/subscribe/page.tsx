@@ -24,10 +24,15 @@ import './subscribe.css'
 
 export const dynamic = 'force-dynamic'
 
+// BACKUP (2026-09-29) — the title and description before they were matched to
+// the page's headline. Restore by swapping these back in:
+//   title: 'Subscribe to the Friday Dispatch · Atlas Brief',
+//   description:
+//     'Every Friday: what traded in Los Angeles multifamily that week, what it really sold for, and what the numbers say the market is doing. Free, from David Safai.',
 export const metadata: Metadata = pageMetadata({
-  title: 'Subscribe to the Friday Dispatch · Atlas Brief',
+  title: 'Subscribe · Atlas Brief',
   description:
-    'Every Friday: what traded in Los Angeles multifamily that week, what it really sold for, and what the numbers say the market is doing. Free, from David Safai.',
+    'A journal of Los Angeles real estate, in your inbox: what traded, what it really sold for, and what the numbers say. Free.',
   path: '/subscribe',
 })
 
