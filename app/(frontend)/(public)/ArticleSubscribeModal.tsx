@@ -13,7 +13,6 @@ import './subscribe-modal.css'
 // insert-only (no UPDATE policy), so a two-step flow can't top up a row after
 // the fact. Same constraint the homepage form works around.
 
-const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // The trigger measures progress through the BODY, not the page. These pieces
@@ -45,9 +44,6 @@ export default function ArticleSubscribeModal({
   const [open, setOpen] = useState(false)
   const [state, setState] = useState<State>('idle')
   const [email, setEmail] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [role, setRole] = useState('')
   const [error, setError] = useState('')
 
   const panelRef = useRef<HTMLDivElement>(null)
@@ -243,10 +239,6 @@ export default function ArticleSubscribeModal({
       setError('Please enter a valid email address.')
       return
     }
-    if (!firstName.trim() || !lastName.trim()) {
-      setError('Please enter your first and last name.')
-      return
-    }
     setState('submitting')
     setError('')
     // The nav button's signups get their own source, so they stop being
@@ -258,9 +250,6 @@ export default function ArticleSubscribeModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: email.trim(),
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          role: role || undefined,
           source,
           source_slug: slug,
         }),
@@ -338,38 +327,11 @@ export default function ArticleSubscribeModal({
                 />
               </label>
 
-              <div className="asm-row">
-                <label className="asm-field">
-                  <span>First name</span>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={e => { setFirstName(e.target.value); if (error) setError('') }}
-                    placeholder="Jane"
-                    autoComplete="given-name"
-                    maxLength={80}
-                  />
-                </label>
-                <label className="asm-field">
-                  <span>Last name</span>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={e => { setLastName(e.target.value); if (error) setError('') }}
-                    placeholder="Smith"
-                    autoComplete="family-name"
-                    maxLength={80}
-                  />
-                </label>
-              </div>
-
-              <label className="asm-field">
-                <span>You are a&hellip; (optional)</span>
-                <select value={role} onChange={e => setRole(e.target.value)}>
-                  <option value="">Prefer not to say</option>
-                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </label>
+              {/* ATLAS BRIEF (2026-09-28): email is the only thing the pop-up asks
+                  for now. First and last name came out at David's request, and
+                  the optional "You are a…" role picker with them, to keep the
+                  form light. The API treats all three as optional, and the
+                  Friday greeting falls back to "there" when there's no name. */}
 
               {error && <p className="asm-err" role="alert">{error}</p>}
 
