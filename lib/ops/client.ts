@@ -7,6 +7,9 @@ import { createClient } from '@supabase/supabase-js'
 // rows (always filtered by the slug below).
 export const ATLAS_CLIENT_SLUG = 'atlas-brief'
 
+// Invoices are printed from the FDB dashboard; links from here go there.
+export const FDB_DASHBOARD_URL = 'https://forward-deployed-brothers.vercel.app'
+
 export function opsClient() {
   return createClient(
     process.env.OPS_SUPABASE_URL!,

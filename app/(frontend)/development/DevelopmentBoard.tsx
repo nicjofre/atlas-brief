@@ -2,8 +2,9 @@
 
 import { useMemo, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import type { OpsTask, OpsPerson } from '@/lib/ops/dev'
-import { addDevTask, editDevTask, deleteDevTask, moveDevTask } from './ops-actions'
+import type { OpsTask, OpsPerson, OpsInvoice } from '@/lib/ops/dev'
+import { FDB_DASHBOARD_URL } from '@/lib/ops/client'
+import { addDevTask, editDevTask, deleteDevTask, moveDevTask, createDevInvoice } from './ops-actions'
 
 // Client-facing board for Atlas Brief, formatted to match the Forward Deployed
 // Brothers dashboard: task cards, drag-to-nest, "Completed by <name>" stamps.
@@ -32,8 +33,17 @@ type Block =
   | { kind: 'task'; task: OpsTask; sort: number }
   | { kind: 'group'; parent: OpsTask; kids: OpsTask[]; sort: number }
 
-export default function DevelopmentBoard({ tasks, people, hourlyRate }: { tasks: OpsTask[]; people: OpsPerson[]; hourlyRate: number }) {
+const invoiceNumber = (n: number) => `FDB-${String(n).padStart(4, '0')}`
+const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const invoiceUrl = (id: string) => `${FDB_DASHBOARD_URL}/invoices/${id}`
+
+export default function DevelopmentBoard({ tasks, people, hourlyRate, isTeam = false, invoices = [] }: {
+  tasks: OpsTask[]; people: OpsPerson[]; hourlyRate: number
+  // The FDB team gets the invoice button; David doesn't.
+  isTeam?: boolean; invoices?: OpsInvoice[]
+}) {
   const router = useRouter()
+  const [invoiceMsg, setInvoiceMsg] = useState<{ error?: string; id?: string } | null>(null)
   const [tab, setTab] = useState<Tab>('backlog')
   const [busy, setBusy] = useState(false)
   const [dragId, setDragId] = useState<string | null>(null)
@@ -70,6 +80,20 @@ export default function DevelopmentBoard({ tasks, people, hourlyRate }: { tasks:
   const totalMin = (t: OpsTask) => t.minutes + (kidsOf.get(t.id) ?? []).reduce((s, x) => s + x.minutes, 0)
   const counts = (s: Tab) => tasks.filter((t) => t.status === s && !tasks.some((p) => p.id === t.parent_id && p.status === s)).length
   const toBillMin = tasks.filter((t) => t.status === 'to_bill').reduce((s, t) => s + t.minutes, 0)
+
+  // Bills everything on the Completed tab. Says what that is first, and flags
+  // anything with no time on it, since that goes out at nothing.
+  const toBill = tasks.filter((t) => t.status === 'to_bill')
+  const invoiceAll = () => run(async () => {
+    const untimed = toBill.filter((t) => t.minutes === 0).length
+    const total = money(Math.round((toBillMin / 60) * hourlyRate * 100) / 100)
+    const warn = untimed
+      ? `\n\n${untimed} of them ${untimed === 1 ? 'has' : 'have'} no time logged and will be billed at nothing.`
+      : ''
+    if (!confirm(`Invoice ${toBill.length} ${toBill.length === 1 ? 'task' : 'tasks'}, ${fmt(toBillMin)} for ${total}?\n\nThey'll all move to Billed.${warn}`)) return
+    const res = await createDevInvoice()
+    setInvoiceMsg(res.error ? { error: res.error } : { id: res.id! })
+  })
 
   const signatureFor = (t: OpsTask) => {
     if (t.status === 'backlog' || !t.completed_by) return null
@@ -120,6 +144,37 @@ export default function DevelopmentBoard({ tasks, people, hourlyRate }: { tasks:
           </button>
         ))}
       </div>
+
+      {isTeam && tab === 'to_bill' && toBill.length > 0 && (
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={invoiceAll} disabled={busy}
+            style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+            Create invoice
+          </button>
+          <span style={{ fontSize: 12, color: C.muted2 }}>Team only. David doesn&rsquo;t see this.</span>
+        </div>
+      )}
+      {invoiceMsg && (
+        <div style={{ marginTop: 10, fontSize: 13, color: invoiceMsg.error ? '#b57611' : C.ink }}>
+          {invoiceMsg.error ?? (
+            <>Invoice created and everything moved to Billed.{' '}
+              <a href={invoiceUrl(invoiceMsg.id!)} target="_blank" rel="noreferrer" style={{ color: C.accent, fontWeight: 600 }}>Open it to print →</a></>
+          )}
+        </div>
+      )}
+      {isTeam && tab === 'billed' && invoices.length > 0 && (
+        <div style={{ marginTop: 14, background: C.panel, borderRadius: 10, padding: '12px 15px' }}>
+          <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 6 }}>Invoices</div>
+          {invoices.map((inv) => (
+            <a key={inv.id} href={invoiceUrl(inv.id)} target="_blank" rel="noreferrer"
+              style={{ display: 'flex', gap: 14, alignItems: 'baseline', padding: '6px 0', fontSize: 14, color: C.ink, textDecoration: 'none' }}>
+              <span style={{ fontWeight: 600 }}>{invoiceNumber(inv.number)}</span>
+              <span style={{ color: C.muted }}>{shortDate(inv.issued_at)} · {fmt(inv.total_minutes)}</span>
+              <span style={{ marginLeft: 'auto', fontFamily: 'monospace' }}>{money(inv.total_amount)}</span>
+            </a>
+          ))}
+        </div>
+      )}
 
       {editable && <div style={{ marginTop: 14 }}><AddRow onAdd={(title, detail) => run(() => addDevTask(title, detail))} busy={busy} /></div>}
 
