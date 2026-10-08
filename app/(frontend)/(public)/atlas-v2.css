@@ -662,10 +662,11 @@ body {
 .footer-social a { color: rgba(255,255,255,0.55); }
 .footer-social a:hover { color: var(--brand-red); }
 
+/* No rule of its own (cut 2026-10-07): .footer-top's bottom rule sits just
+   above, and the two read as a double line. */
 .footer-disclaimer {
-  margin: 20px 0;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,0.12);
+  margin: 0 0 20px;
+  padding-top: 32px;
 }
 /* Default is the light treatment — the disclaimer also runs in .site-footer on
    article pages, which sits on --bg-alt. The navy footer overrides below. */
