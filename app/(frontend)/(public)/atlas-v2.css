@@ -663,7 +663,7 @@ body {
 
 /* No rules between the footer blocks (cut 2026-10-07); spacing separates them. */
 .footer-disclaimer {
-  margin: 0;
+  margin: 0 0 28px;
   padding-top: 0;
 }
 /* Default is the light treatment — the disclaimer also runs in .site-footer on
