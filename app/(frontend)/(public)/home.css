@@ -1641,7 +1641,7 @@ body.has-dispatch-banner { padding-bottom: 96px; }
    the deal on the left, the dispatch on the right — and a row of Dispatch
    cards under those. Streams are colour-coded by kicker and rule; the cards
    stay white, since the page already carries a navy masthead. */
-.cp { padding: clamp(26px, 3vw, 44px) 0; border-top: 1px solid var(--rule); }
+.cp { padding: clamp(26px, 3vw, 44px) 0; }
 .cp-head {
   display: flex;
   align-items: baseline;
