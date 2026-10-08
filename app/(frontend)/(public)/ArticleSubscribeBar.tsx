@@ -103,7 +103,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
                 className="subbar-input"
                 style={{
                   padding: '7px 11px', fontSize: 14, minWidth: 200,
-                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                 }}
               />
               <button
@@ -112,14 +112,14 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
                 className="subbar-submit"
                 style={{
                   padding: '8px 16px', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
-                  cursor: 'pointer', fontFamily: 'ui-monospace, Menlo, monospace',
+                  cursor: 'pointer', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                   whiteSpace: 'nowrap', fontWeight: 600,
                 }}
               >
                 {status === 'loading' ? 'Adding…' : 'Subscribe'}
               </button>
             </form>
-            {err && <span className="subbar-err" style={{ fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' }}>{err}</span>}
+            {err && <span className="subbar-err" style={{ fontSize: 12, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{err}</span>}
             <button
               onClick={dismiss}
               aria-label="Dismiss"

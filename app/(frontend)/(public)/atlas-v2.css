@@ -3,7 +3,7 @@
    ============================================================ */
 
 /* ---- Fonts ---- */
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* System fonts only (Times + Helvetica) since 2026-10-07 — nothing to load. */
 
 /* ---- Tokens ---- */
 :root {
@@ -44,8 +44,11 @@
 
   /* Plain Times since 2026-10-07 (was Newsreader). */
   --serif:  'Times New Roman', Times, serif;
-  --sans:   'Inter Tight', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-  --mono:   'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Helvetica since 2026-10-07 (was Inter Tight). --mono, which sets the small
+     spaced caps (datelines, credits, kickers), was JetBrains Mono and now
+     shares it, the way a paper sets its datelines. */
+  --sans:   'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --mono:   'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   --maxw: 1360px;
   --pad-x: clamp(20px, 4vw, 56px);

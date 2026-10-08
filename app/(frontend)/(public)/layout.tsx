@@ -45,22 +45,12 @@ export const metadata: Metadata = {
   },
 }
 
-// David's atlas-v2.css uses `@import url('https://fonts.googleapis.com/...')` at the top to
-// load Inter Tight / JetBrains Mono (the serif is plain Times, which needs no load). Next.js's CSS bundler strips that @import
-// from imported stylesheets, so the page falls back to Times. We re-add the same fonts as a
-// stylesheet link here. (Migrate to next/font later if FOUT becomes a problem.)
-const GOOGLE_FONTS_URL =
-  'https://fonts.googleapis.com/css2?' +
-  'family=Inter+Tight:wght@300;400;500;600;700' +
-  '&family=JetBrains+Mono:wght@400;500;600' +
-  '&display=swap'
+// No web fonts since 2026-10-07: the site is set in Times and Helvetica, which
+// every device already has, so there is nothing to load.
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
 
       {/* Publisher / author / site identity, once per page. Article pages add
           their own NewsArticle node that points back at these by @id. */}
