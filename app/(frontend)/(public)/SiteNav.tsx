@@ -32,7 +32,7 @@ export default function SiteNav() {
         <header className="mast">
           <div className="mast-inner">
             <h1 className="mast-wordmark"><Link href="/">Atlas <em>Brief</em></Link></h1>
-            <p className="mast-tag">A Journal of Los Angeles Real Estate &middot; David Safai, General Contractor</p>
+            <p className="mast-tag">A Journal of Los Angeles Real Estate &middot; David Safai, Owner/Operator/Builder</p>
           </div>
           <nav className="mast-nav" aria-label="Sections">
             <button
