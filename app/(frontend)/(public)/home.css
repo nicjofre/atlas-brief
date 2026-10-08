@@ -841,39 +841,82 @@
    the ghosted A and the slogan are gone — four devices doing one job, and the
    slogan read as marketing rather than a publication's name. The 145-line
    original is snapshotted at the top of this file. */
-.flag {
+/* ---- Front-page flag (rendered by SiteNav on "/") ----
+   Name centred and large, tagline under it in italic, then the sections in a
+   ruled row: the Washington Post's arrangement, in our navy and red. */
+.mast {
+  position: relative;
   background: var(--brand-navy);
-  border-bottom: 3px solid var(--brand-red);
-}
-.flag-inner {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(24px, 3vw, 44px) var(--pad-x) clamp(14px, 1.7vw, 22px);
-  text-align: center;
-}
-.flag-wordmark {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: clamp(44px, 9vw, 132px);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
   color: #FFFFFF;
 }
-.flag-wordmark em { font-style: italic; color: var(--brand-red); }
-/* Dateline under the name, on a hairline — where a paper puts city and date. */
-.flag-dateline {
-  /* Tight to the wordmark: its 0.92 line-height already leaves room under the
-     descenders, so the old 20px read as a gap rather than a gutter. */
-  margin: clamp(2px, 0.4vw, 6px) auto 0;
-  padding-top: clamp(8px, 0.9vw, 11px);
-  max-width: 34ch;
-  border-top: 1px solid rgba(255,255,255,0.28);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.72);
+.mast-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  /* The name starts below the corner Subscribe button, as the Post's does. */
+  padding: 54px var(--pad-x) 0;
+  text-align: center;
+}
+.mast-wordmark {
+  margin: 0;
+  /* The name stays in Times even if --serif changes: it's the logo. */
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(36px, 4.8vw, 64px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+.mast-wordmark a { color: #FFFFFF; text-decoration: none; }
+.mast-wordmark em { font-style: normal; color: var(--brand-red); }
+.mast-tag {
+  margin: clamp(4px, 0.6vw, 8px) 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(12px, 1vw, 14px);
+  color: rgba(255,255,255,0.62);
+}
+.mast-nav {
+  max-width: var(--maxw);
+  margin: clamp(12px, 1.4vw, 18px) auto 0;
+  padding: 0 var(--pad-x);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.mast-links {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(20px, 3.4vw, 52px);
+}
+.mast-links a {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mast-links a:hover { color: var(--brand-red); }
+.mast-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.3); }
+.mast-work a { font-weight: 500; color: rgba(255,255,255,0.72); }
+.mast-subscribe { position: absolute; top: clamp(18px, 2vw, 28px); right: var(--pad-x); }
+.mast-burger { display: none; }
+.mast-nav { padding-bottom: clamp(12px, 1.4vw, 16px); }
+
+@media (max-width: 900px) {
+  .mast-nav { justify-content: space-between; padding-bottom: 10px; }
+  .mast-links { display: none; }
+  /* The old bar pins its burger absolutely; this one sits in the row. */
+  .mast .mast-burger { display: block; position: relative; left: auto; top: auto; transform: none; margin-left: -6px; }
+  .mast-inner { padding-top: 28px; } /* Subscribe moves down to the burger row here */
+  .mast-nav { margin-top: 10px; min-height: 36px; }
+  /* On a phone the corner button would sit on the name; it drops to the
+     burger's row, opposite it. */
+  .mast-subscribe { top: auto; bottom: 10px; }
 }
 
 /* ---- Friday Dispatch banner (pinned to the viewport bottom) ---- */
@@ -1641,7 +1684,9 @@ body.has-dispatch-banner { padding-bottom: 96px; }
    the deal on the left, the dispatch on the right — and a row of Dispatch
    cards under those. Streams are colour-coded by kicker and rule; the cards
    stay white, since the page already carries a navy masthead. */
-.cp { padding: clamp(26px, 3vw, 44px) 0; }
+.cp { padding: 0; }
+/* With the feature pair gone the two rows stack directly; this is the gap it used to make. */
+.cp-band + .cp-band { margin-top: clamp(40px, 4.5vw, 60px); }
 .cp-head {
   display: flex;
   align-items: baseline;

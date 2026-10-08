@@ -803,3 +803,34 @@
   line-height: 1.5;
   color: var(--ink-soft);
 }
+
+/* 2026-10-07: the horizontal red rules come off About (Nic, after Jeremy's
+   review called the page templated): over each arm's heading, under "Two
+   buildings…", around the portfolio band, and over the sign-off. Overrides
+   rather than edits so the rules above still document what was there. */
+.ab-body .prose h2,
+.ab-tail { border-top: 0; }
+.ab-portfolio { border-top: 0; border-bottom: 0; }
+.ab-portfolio .section-head,
+.ab-split .ab-portfolio .section-head { border-bottom: 0; }
+/* With the P-01 code gone the card head is just the name over its category. */
+.project .p-head,
+.ab-split .project .p-head { display: block; }
+.project .p-head .cat { display: block; margin-top: 4px; }
+
+/* The left column is now a wrapper (sign-off, then the arms), so the column
+   rule keys off it rather than off two sibling sections. */
+.ab-split > .ab-col + section {
+  border-left: 1px solid var(--rule);
+  padding-left: clamp(22px, 2.6vw, 48px);
+}
+.ab-col > section { padding: 0; border: 0; background: none; }
+/* The sign-off at the top of the left column: flush left, set as the column's
+   opening paragraph, with room before the first arm. */
+.ab-split .ab-tail { max-width: none; margin: 0 0 clamp(28px, 3vw, 44px); }
+.ab-split .ab-tail .prose { text-align: left; max-width: none; margin: 0; }
+@media (max-width: 900px) {
+  .ab-split > .ab-col + section { border-left: 0; padding-left: 0; }
+}
+/* No rule under the header's lede (2026-10-07). */
+.ab-lead { border-bottom: 0; }

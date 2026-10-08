@@ -121,7 +121,8 @@ function BlockItem({ block }: { block: Block }) {
                 return (
                   <article className="project" key={item.id || idx}>
                     <header className="p-head">
-                      {item.code && <span className="n">{item.code}</span>}
+                      {/* item.code ("P-01") is no longer shown (2026-10-07): it read
+                          as a template's numbering. The CMS field stays. */}
                       <h3>{item.name}</h3>
                       {item.category && <span className="cat">{item.category}</span>}
                     </header>

@@ -78,7 +78,7 @@ function textOf(html: string): string {
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&#x27;|&apos;/g, "'")
+    .replace(/&#x27;|&#39;|&apos;/g, "'")
     .replace(/&quot;/g, '"')
     .trim()
 }
@@ -111,7 +111,7 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
   const minutes = Math.max(1, Math.round(countHtmlWords(body) / 230))
 
   // The glance: David's figures where he's written them, the listing record
-  // where he hasn't. Six cells at most — past that it stops being a glance.
+  // where he hasn't.
   const sold = listing?.status === 'sold'
   const fallback: Cell[] = []
   const add = (k: string, v: string | null | undefined) => { if (v) fallback.push({ k, v }) }
@@ -124,8 +124,18 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
   }
   add('Year built', p?.year_built != null ? String(p.year_built) : null)
 
+  // Since 2026-10-07 the glance is the ONLY place the figures appear: the
+  // separate Deal Stats table under the photo repeated six of them a scroll
+  // later (flagged in Jeremy's design review). So the glance takes every
+  // figure David wrote, in rows of four once there are more than five, and
+  // the buyer and seller (names, not figures) move to a line beneath it.
   const authored = parseDealStats(article.deal_stats_html)
-  const ribbon = (authored.length > 0 ? authored : fallback).slice(0, 6)
+  const isParty = (c: Cell) => /^(buyer|seller)s?$/i.test(c.k.trim())
+  const parties = authored.filter(isParty)
+  const figures = authored.filter(c => !isParty(c))
+  // No cap: most briefs carry 10-12 figures, and with the table gone a cap
+  // would drop real data (year built, ULA tax, hold period).
+  const ribbon = figures.length > 0 ? figures : fallback
 
   type Takeaway = { bold: string; text: string }
   const takeaways = (article.takeaways as Takeaway[] | null) ?? []
@@ -180,7 +190,7 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
         {ribbon.length > 0 && (
           <section className="tp-ribbon-wrap">
             <h2 className="tp-ribbon-head">At a glance</h2>
-            <div className="tp-ribbon">
+            <div className={`tp-ribbon${ribbon.length > 5 ? ' tp-ribbon-rows' : ''}`}>
               {ribbon.map(f => (
                 <div key={f.k}>
                   <dt>{f.k}</dt>
@@ -189,6 +199,15 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
                 </div>
               ))}
             </div>
+            {parties.length > 0 && (
+              <p className="tp-parties">
+                {parties.map(c => (
+                  <span key={c.k}>
+                    <b>{c.k}:</b> {c.v}{c.s ? ` (${c.s})` : ''}
+                  </span>
+                ))}
+              </p>
+            )}
           </section>
         )}
 
@@ -225,25 +244,11 @@ export default async function TapePreviewPage({ params }: { params: Promise<{ sl
               </figure>
             )}
 
-            {/* The full table, under the photo. The glance up top shows the
-                first six of the same figures; this is all of them, in David's
-                own markup. Deliberately both — the glance is for someone
-                scanning, this is for someone reading. */}
-            {article.deal_stats_html && (
-              <section className="tp-stats">
-                <h2>Deal stats</h2>
-                <div
-                  className="tp-stats-grid"
-                  dangerouslySetInnerHTML={{ __html: article.deal_stats_html }}
-                />
-              </section>
-            )}
-
             {/* `art-body` is not styling — it's the hook ArticleSubscribeModal
                 measures to decide when someone has actually read enough to be
                 worth asking. Without it the trigger falls back to whole-page
                 depth, and this page carries so much above and below the prose
-                (flag, deck, byline, toolbar, glance, hero, deal stats, then the
+                (flag, deck, byline, toolbar, glance, hero, then the
                 rail and the cards) that depth says nothing about reading. */}
             <div className="tp-text art-body" dangerouslySetInnerHTML={{ __html: body }} />
 

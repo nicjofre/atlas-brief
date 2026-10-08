@@ -113,23 +113,9 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Masthead cut to the banner from the identity sheet: LA photo, red
-          diagonal, navy panel. Only the positioning line lives on it now — the
-          lockup is already in the nav, and the topics strip, editor line and
-          mission statement that used to follow were cut so the stories start
-          one scroll sooner. */}
-      {/* The masthead is the wordmark, as a paper's is: the name large and
-          centred on the navy, a rule under it, and the dateline beneath. What
-          was here — a skyline photo, a red diagonal, a ghosted A watermark and
-          a slogan — was four devices doing the job of one. The scrolling
-          tagline ticker that sat under it was cut 2026-10-07. */}
-      <header className="flag">
-        <div className="flag-inner">
-          <h1 className="flag-wordmark">Atlas <em>Brief</em></h1>
-          <p className="flag-dateline">A Journal of Los Angeles Real Estate</p>
-        </div>
-      </header>
-
+      {/* The masthead lives in SiteNav on the front page since 2026-10-07: one
+          WaPo-style flag (name, tagline, section row) instead of the compact
+          bar plus a second, larger copy of the name under it. */}
       {lead && <TopStories lead={lead} stack={stack} mostRead={trending} />}
 
       {/* The centre package, arranged the way a broadsheet arranges a page: a

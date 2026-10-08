@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import AtlasMark from './AtlasMark'
 
 // The public site header. Client component so the hamburger menu is interactive.
@@ -18,9 +19,44 @@ import AtlasMark from './AtlasMark'
 export default function SiteNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
+  const isHome = usePathname() === '/'
 
   return (
     <>
+      {isHome ? (
+        // The front page gets a paper's flag, modelled on the Washington Post's
+        // (2026-10-07): the name once, large and centred, the tagline under it,
+        // and the sections in a ruled row beneath. It replaces both the compact
+        // bar and the separate masthead the homepage used to stack under it.
+        // Not sticky — a flag this tall would eat the screen.
+        <header className="mast">
+          <div className="mast-inner">
+            <h1 className="mast-wordmark"><Link href="/">Atlas <em>Brief</em></Link></h1>
+            <p className="mast-tag">A Journal of Los Angeles Real Estate &middot; David Safai, General Contractor</p>
+          </div>
+          <nav className="mast-nav" aria-label="Sections">
+            <button
+              className={`nav-burger mast-burger${menuOpen ? ' open' : ''}`}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(o => !o)}
+            >
+              <span /><span /><span />
+            </button>
+            <ul className="mast-links">
+              <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
+              <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
+              <li><Link href="/about">About</Link></li>
+              <li><Link href="/contact">Contact</Link></li>
+              <li className="mast-sep" aria-hidden="true" />
+              <li className="mast-work"><Link href="/contact">Work with Atlas</Link></li>
+            </ul>
+          </nav>
+          {/* Top corner, where the Post keeps its account buttons, so the
+              section row and its rule run the full width under the name. */}
+          <Link href="/subscribe" className="nav-highlight mast-subscribe">Subscribe</Link>
+        </header>
+      ) : (
       <nav className="nav">
         <div className="nav-inner">
           {/* Lockup = roundel + wordmark + tracked tagline, per the identity sheet.
@@ -60,6 +96,7 @@ export default function SiteNav() {
           </div>
         </div>
       </nav>
+      )}
 
       {/* Mobile menu — editorial links. Tax Appeals stays pinned to the top bar,
           so it's not repeated here. */}

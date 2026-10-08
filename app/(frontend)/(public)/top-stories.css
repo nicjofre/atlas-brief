@@ -1,7 +1,7 @@
 /* Top Stories — the front-page package. Three columns divided by hairlines,
    the way a broadsheet front page is ruled: lead | stack | most read. */
 /* No rule under the package (cut 2026-10-07): The Tape's red head rule does the dividing. */
-.top-stories { padding: clamp(28px, 3.4vw, 48px) 0 clamp(28px, 3.5vw, 48px); }
+.top-stories { padding: clamp(36px, 4.4vw, 64px) 0 clamp(28px, 3.5vw, 48px); }
 .ts-grid {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 4fr) minmax(0, 3fr);

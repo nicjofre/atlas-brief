@@ -78,12 +78,19 @@ export default async function AboutPage() {
           </div>
         </section>
       )}
+      {/* David's sign-off opens the left column (2026-10-07) instead of closing
+          the page under both columns: it's why the Brief exists, so it leads
+          the arms rather than trailing the buildings. */}
       {middle.length > 0 && (
         <div className="ab-split">
-          <RenderBlocks blocks={middle} />
+          <div className="ab-col">
+            <RenderBlocks blocks={tail} />
+            <RenderBlocks blocks={middle.filter(b => b.blockType !== 'projects')} />
+          </div>
+          <RenderBlocks blocks={middle.filter(b => b.blockType === 'projects')} />
         </div>
       )}
-      <RenderBlocks blocks={tail} />
+      {middle.length === 0 && <RenderBlocks blocks={tail} />}
       <Footer />
     </>
   )

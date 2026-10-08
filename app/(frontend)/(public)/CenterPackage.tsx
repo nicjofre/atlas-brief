@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { ArticleCard } from '@/lib/db/articles'
 import { calmHeadline } from '@/lib/db/headline-case'
-import { placeLine, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
+import { statusBadgeKey, statusKicker } from '@/lib/db/article-render'
 
 // The centre package, built the way a broadsheet arranges a page: a row of Tape
 // cards across the top, two features beneath them — the deal on the left, the
@@ -26,7 +26,6 @@ function kickerFor(a: ArticleCard): string {
 }
 
 function Card({ a, size }: { a: ArticleCard; size: 'sm' | 'lg' }) {
-  const p = a.listing?.property ?? null
   const stream = isPost(a) ? 'dispatch' : 'tape'
   return (
     <article className={`cp-card cp-${size}`}>
@@ -50,7 +49,8 @@ function Card({ a, size }: { a: ArticleCard; size: 'sm' | 'lg' }) {
         <Link href={`/atlas-brief/${a.slug}`}>{calmHeadline(a.headline)}</Link>
       </h3>
       {size === 'lg' && (a.deck || a.excerpt) && <p className="cp-dek">{a.deck ?? a.excerpt}</p>}
-      {!isPost(a) && p && <p className="cp-place">{placeLine(p)}</p>}
+      {/* The address line (street · city · year built) came off the homepage
+          cards 2026-10-07; the brief page itself still leads with it. */}
       {!isPost(a) && a.listing?.status && (
         <span className={`badge badge-${statusBadgeKey(a.listing.status)} cp-badge`}>
           {statusKicker(a.listing.status)}
@@ -67,10 +67,11 @@ export default function CenterPackage({
   tape: ArticleCard[]
   dispatch: ArticleCard[]
 }) {
-  // One feature per stream, five cards per row.
-  const [tapeLead, ...tapeRest] = tape
-  const [dispatchLead, ...dispatchRest] = dispatch
-  if (!tapeLead || !dispatchLead) return null
+  // Each stream is its heading and a row of five. The feature pair that sat
+  // between the two rows (newest deal + newest dispatch, picked by date, not by
+  // anyone) came out 2026-10-07: it had no heading of its own, so the Dispatch
+  // feature read as part of The Tape.
+  if (!tape.length && !dispatch.length) return null
 
   return (
     <section className="cp">
@@ -81,14 +82,8 @@ export default function CenterPackage({
             <Link href="/atlas-brief/sections/broker-activity">All the tape →</Link>
           </div>
           <div className="cp-row">
-            {tapeRest.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
+            {tape.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
           </div>
-        </div>
-
-        {/* The two features: the deal and the dispatch, side by side. */}
-        <div className="cp-features">
-          <Card a={tapeLead} size="lg" />
-          <Card a={dispatchLead} size="lg" />
         </div>
 
         <div className="cp-band cp-band-dispatch">
@@ -97,7 +92,7 @@ export default function CenterPackage({
             <Link href="/atlas-brief/dispatch">All dispatches →</Link>
           </div>
           <div className="cp-row">
-            {dispatchRest.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
+            {dispatch.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
           </div>
         </div>
       </div>
