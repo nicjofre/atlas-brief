@@ -9,9 +9,6 @@ import AtlasMark from './AtlasMark'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/david-safai-b7622113b/'
 const X_URL = '' // Atlas Brief handle — paste to enable once the account is live
 
-// Contractor license. Swap to the real number once issued, e.g. 'License #1234567'.
-const LICENSE = 'License forthcoming'
-
 export default function Footer() {
   const hasSocial = LINKEDIN_URL || X_URL
   return (
@@ -22,6 +19,10 @@ export default function Footer() {
             <AtlasMark size={46} />
             <div className="footer-logo">Atlas<em>Brief</em></div>
             <p className="footer-tag">An owner-builder journal, published from Los Angeles.</p>
+            {/* The copyright line used to run as its own legal strip under the
+                disclaimer, with the publisher and contractor-licence notes; cut
+                2026-10-07 as bloat, keeping just the mark here. */}
+            <p className="footer-copy">&copy; {new Date().getFullYear()} Atlas Brief</p>
           </div>
           <div>
             <h5>Read</h5>
@@ -63,10 +64,6 @@ export default function Footer() {
         </div>
         <div className="footer-disclaimer">
           <Disclaimer />
-        </div>
-        <div className="footer-legal">
-          <span>© MMXXVI Atlas Brief · A publication of Atlas Home Builders, Inc. · CA Class B General Contractor · {LICENSE}</span>
-          <span className="footer-domain">atlasbrief.la</span>
         </div>
       </div>
     </footer>

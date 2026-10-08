@@ -663,7 +663,7 @@ body {
 
 /* No rules between the footer blocks (cut 2026-10-07); spacing separates them. */
 .footer-disclaimer {
-  margin: 0 0 20px;
+  margin: 0;
   padding-top: 0;
 }
 /* Default is the light treatment — the disclaimer also runs in .site-footer on
@@ -679,18 +679,7 @@ body {
 .footer .disclaimer { color: rgba(255,255,255,0.46); }
 .footer .disclaimer b { color: rgba(255,255,255,0.72); }
 
-.footer-legal {
-  padding-top: 28px;
-  display: flex;
-  justify-content: space-between;
-  gap: 32px;
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.50);
-  text-transform: uppercase;
-}
-.footer-domain { font-size: 0.85em; opacity: 0.7; }
+.footer-copy { margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.46); }
 @media (max-width: 1024px) {
   .footer-top { grid-template-columns: 1fr 1fr; gap: 36px; }
   .footer-brand { grid-column: 1 / -1; }
@@ -698,7 +687,6 @@ body {
 @media (max-width: 640px) {
   .footer { margin-top: 80px; padding-top: 40px; }
   .footer-top { grid-template-columns: 1fr; gap: 32px; padding-bottom: 36px; }
-  .footer-legal { flex-direction: column; gap: 10px; padding-top: 20px; }
 }
 
 /* ============================================================
