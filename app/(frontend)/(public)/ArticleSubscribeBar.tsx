@@ -85,12 +85,12 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
     >
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         {status === 'done' ? (
-          <span style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 15 }}>
+          <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 15 }}>
             You&rsquo;re on the list. Talk Friday.
           </span>
         ) : (
           <>
-            <span style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 15, lineHeight: 1.2, flex: '1 1 220px' }}>
+            <span style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 15, lineHeight: 1.2, flex: '1 1 220px' }}>
               Get the Friday Dispatch — one operator&rsquo;s read on LA multifamily, weekly.
             </span>
             <form onSubmit={submit} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '0 1 auto' }}>

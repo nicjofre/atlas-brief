@@ -3,7 +3,7 @@
    ============================================================ */
 
 /* ---- Fonts ---- */
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600;1,6..72,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ---- Tokens ---- */
 :root {
@@ -42,7 +42,8 @@
   --brand-blue: #387FF4;  /* display headlines, primary CTA */
   --sand:      #F4F6FA;   /* retire the peach; keep the name so nothing breaks */
 
-  --serif:  'Newsreader', 'Times New Roman', Georgia, serif;
+  /* Plain Times since 2026-10-07 (was Newsreader). */
+  --serif:  'Times New Roman', Times, serif;
   --sans:   'Inter Tight', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   --mono:   'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
