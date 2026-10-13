@@ -1,0 +1,68 @@
+/* ---- David's Diary essay layout (2026-10-12) ------------------------------
+   One centred column at a book page's measure. Quiet type, generous leading,
+   a drop cap to open, light subheads, a handwritten flag and signature. */
+.essay { max-width: 680px; margin: 0 auto; padding: clamp(40px, 6vw, 80px) 20px 0; }
+
+.essay-head { text-align: center; margin-bottom: clamp(28px, 4vw, 44px); }
+.essay-flag { display: inline-block; margin-bottom: 14px; font-size: 26px; font-weight: 600; color: var(--brand-red); transform: rotate(-2deg); }
+.essay-hed { margin: 0 0 16px; font-family: var(--sans); font-size: clamp(32px, 4.4vw, 48px); font-weight: 700; line-height: 1.1; letter-spacing: -.015em; color: var(--ink); }
+.essay-dek { margin: 0 auto 18px; max-width: 34em; font-family: var(--sans); font-size: 19px; line-height: 1.5; color: var(--muted); }
+.essay-meta { margin: 0; font-family: var(--sans); font-size: 13px; color: var(--muted); }
+
+.essay-hero { margin: 0 0 clamp(28px, 4vw, 44px); }
+.essay-hero img { display: block; width: 100%; height: auto; }
+.essay-hero figcaption { margin-top: 8px; font-family: var(--sans); font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.essay-hero figcaption span { opacity: .8; }
+
+/* Body: larger, airier than the news template. */
+.essay .essay-text { max-width: none; }
+.essay .essay-text p,
+.essay .essay-text .post-prose p { font-size: 20px; line-height: 1.7; margin: 0 0 1.25em; }
+/* Drop cap on the opening paragraph. */
+.essay .essay-text > :first-child p:first-of-type::first-letter,
+.essay .essay-text > p:first-of-type::first-letter {
+  float: left; margin: .06em .1em 0 0; font-size: 3.4em; line-height: .82; font-weight: 700; color: var(--brand-navy);
+}
+/* Quieter subheads: smaller, regular weight, a little space, no shouting. */
+.essay .essay-text h2,
+.essay .essay-text .post-prose h2,
+.essay .essay-text h3,
+.essay .essay-text .post-prose h3 { margin: 2em 0 .6em; font-size: 20px; font-weight: 600; letter-spacing: 0; color: var(--brand-navy); }
+
+/* The close: signed like a letter, right-aligned. No rules, no button. */
+.essay .essay-text { border-bottom: 0; padding-bottom: 0; }
+.essay-close { margin-top: 8px; text-align: right; }
+.essay-sig { margin: 0; font-size: 34px; font-weight: 600; line-height: 1.1; color: var(--brand-navy); transform: rotate(-2deg); transform-origin: right; }
+.essay-email { display: inline-block; margin-top: 4px; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.essay-email:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* More of his own entries, not deals. */
+.essay-more { margin: clamp(40px, 5vw, 60px) 0 0; padding: 22px 26px; background: #FAF7F1; }
+.essay-more h2 { margin: 0 0 6px; font-size: 26px; font-weight: 600; color: var(--brand-navy); }
+.essay-more ul { list-style: none; margin: 0; padding: 0; }
+.essay-more li { padding: 12px 0; border-top: 1px solid var(--rule); }
+.essay-more li:first-child { border-top: 0; }
+.essay-more a { font-family: var(--sans); font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--ink); }
+.essay-more a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.essay-more time { margin-left: 8px; white-space: nowrap; font-family: var(--sans); font-size: 12px; color: var(--muted); }
+
+/* "More from the diary" back at the end; the essay is one centred column. */
+.essay { max-width: none; padding-left: 20px; padding-right: 20px; }
+.essay-top, .essay-main, .essay-more { max-width: 680px; margin-left: auto; margin-right: auto; }
+
+/* One line partway through the essay, Atlantic-style: a hand-lettered lead-in
+   and a linked title, between hairlines. */
+.essay-aside {
+  margin: 1.6em 0 1.8em;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 1.4;
+}
+.essay-aside span { font-size: 24px; font-weight: 600; color: var(--brand-red); }
+.essay-aside a { font-weight: 700; color: var(--ink); }
+.essay-aside a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.essay .essay-text .essay-aside a { color: var(--ink); text-decoration: none; }
+.essay .essay-text .essay-aside a:hover { text-decoration: underline; text-underline-offset: 3px; }

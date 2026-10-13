@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { captureSuppressed, markSubscribed, markCaptureDismissed } from '@/lib/subscribe-flag'
+import { hand } from './hand-font'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 import './subscribe-bar.css'
 
@@ -85,20 +86,21 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
     >
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         {status === 'done' ? (
-          <span style={{ fontFamily: "var(--serif)", fontSize: 15 }}>
+          <span style={{ fontFamily: hand.style.fontFamily, fontSize: 22, fontWeight: 600 }}>
             You&rsquo;re on the list. Talk Friday.
           </span>
         ) : (
           <>
-            <span style={{ fontFamily: "var(--serif)", fontSize: 15, lineHeight: 1.2, flex: '1 1 220px' }}>
-              Get the Friday Dispatch — one operator&rsquo;s read on LA multifamily, weekly.
+            {/* 2026-10-12: David's voice and hand, to match the pop-up. */}
+            <span style={{ fontFamily: hand.style.fontFamily, fontSize: 22, fontWeight: 600, lineHeight: 1.1, flex: '1 1 220px' }}>
+              What traded in LA every Friday, from me.
             </span>
             <form onSubmit={submit} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '0 1 auto' }}>
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); if (status === 'error') setStatus('idle') }}
-                placeholder="you@email.com"
+                placeholder="name@domain.com"
                 aria-label="Email address"
                 className="subbar-input"
                 style={{

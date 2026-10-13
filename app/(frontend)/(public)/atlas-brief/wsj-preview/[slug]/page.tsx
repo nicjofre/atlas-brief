@@ -22,6 +22,9 @@ import Footer from '../../../Footer'
 import WsjSubscribe from './WsjSubscribe'
 import ArticleSubscribeModal from '../../../ArticleSubscribeModal'
 import './wsj.css'
+import './essay.css'   // ATLAS BRIEF (2026-10-12): David's Diary essay layout
+import DiaryAside from './DiaryAside'
+import { hand } from '../../../hand-font'
 
 // PREVIEW ONLY — a Wall Street Journal-style treatment of a single article, so
 // the look can be judged on real content before it replaces the shared
@@ -244,6 +247,88 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
   const { caption, credit } = splitCaption(a.heroCaption)
   const minutes = Math.max(1, Math.round(a.words / 230))
   const date = apDate(a.publishedAt)
+
+  // ATLAS BRIEF (2026-10-12): David's posts render as essays, not news. One
+  // centred column at a book page's width, no rail or toolbar, the Diary's
+  // handwritten name in place of the section flag, a signed close, and more of
+  // his own entries to read next instead of deals. Briefs rendered through this
+  // route keep the news layout below.
+  if (post) {
+    const moreDiary = others.filter(c => c.kind === 'post').slice(0, 3)
+    return (
+      <>
+        <ArticleSubscribeModal enabled={false} slug={slug} />
+        <article className="essay">
+          {/* Row 1: the opening, centred. */}
+          <div className="essay-top">
+          <header className="essay-head">
+            <Link href="/atlas-brief/dispatch" className="essay-flag" style={{ fontFamily: hand.style.fontFamily }}>
+              David&rsquo;s Diary
+            </Link>
+            <h1 className="essay-hed">{a.title}</h1>
+            {a.deck && <p className="essay-dek">{a.deck}</p>}
+            <p className="essay-meta">
+              {date && <time dateTime={a.publishedAt ?? undefined}>{date}</time>}
+              <span aria-hidden="true"> · </span>
+              {minutes} min read
+            </p>
+          </header>
+
+          {a.heroUrl && (
+            <figure className="essay-hero">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={a.heroUrl} alt={a.heroAlt} width={1600} height={1067} />
+              {(caption || credit) && (
+                <figcaption>
+                  {caption}{caption && credit ? ' ' : ''}{credit && <span>Photo: {credit}</span>}
+                </figcaption>
+              )}
+            </figure>
+          )}
+
+          </div>
+
+          {/* Row 2: the essay, with his other entries in the right margin,
+              sticky while you read (they drop below the essay on narrow
+              screens, where there's no margin). */}
+          <div className="essay-main">
+          <div className="essay-text wsj-text art-body">
+            {a.body}
+          </div>
+
+          {moreDiary[0] && (
+            <DiaryAside>
+              <span style={{ fontFamily: hand.style.fontFamily }}>Also in the diary:</span>{' '}
+              <Link href={`/atlas-brief/${moreDiary[0].slug}`}>{calmHeadline(moreDiary[0].headline)}</Link>
+            </DiaryAside>
+          )}
+
+          {/* Signed like a letter: "-David" in his hand, his email under it. */}
+          <footer className="essay-close">
+            <p className="essay-sig" style={{ fontFamily: hand.style.fontFamily }}>-David</p>
+            <a href="mailto:david@atlasbrief.la" className="essay-email">david@atlasbrief.la</a>
+          </footer>
+          </div>
+
+          {moreDiary.length > 0 && (
+            <aside className="essay-more">
+              <h2 style={{ fontFamily: hand.style.fontFamily }}>More from the diary</h2>
+              <ul>
+                {moreDiary.map(c => (
+                  <li key={c.id}>
+                    <Link href={`/atlas-brief/${c.slug}`}>{calmHeadline(c.headline)}</Link>
+                    <time>{apDate(c.published_at)}</time>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
+
+        </article>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
