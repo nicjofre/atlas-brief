@@ -18,7 +18,7 @@ function apDate(s: string | null | undefined): string {
 }
 const href = (a: ArticleCard) => `/atlas-brief/${a.slug}`
 const place = (a: ArticleCard) =>
-  a.kind === 'post' ? "David's Diary" : a.listing?.property?.neighborhood ?? a.listing?.property?.city ?? 'The Tape'
+  a.kind === 'post' ? "Owner's Notes" : a.listing?.property?.neighborhood ?? a.listing?.property?.city ?? 'The Tape'
 // The kicker's first item: a deal's place in red text, or, for David's posts,
 // a small blue ribbon tag so his entries stand out in the news by date.
 function Tag({ a }: { a: ArticleCard }) {
@@ -157,7 +157,7 @@ export default function FrontTop({
                 ))}
               </ul>
             )}
-            <Link href={diaryHref} className="ft-all">More from the diary</Link>
+            <Link href={diaryHref} className="ft-all">More owner's notes</Link>
           </aside>
         )}
       </div>

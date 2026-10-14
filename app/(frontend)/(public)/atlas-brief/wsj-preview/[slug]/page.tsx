@@ -263,7 +263,7 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
           <div className="essay-top">
           <header className="essay-head">
             <Link href="/atlas-brief/dispatch" className="essay-flag" style={{ fontFamily: hand.style.fontFamily }}>
-              David&rsquo;s Diary
+              Owner&rsquo;s Notes
             </Link>
             <h1 className="essay-hed">{a.title}</h1>
             {a.deck && <p className="essay-dek">{a.deck}</p>}
@@ -298,7 +298,7 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
 
           {moreDiary[0] && (
             <DiaryAside>
-              <span style={{ fontFamily: hand.style.fontFamily }}>Also in the diary:</span>{' '}
+              <span style={{ fontFamily: hand.style.fontFamily }}>Also in Owner&rsquo;s Notes:</span>{' '}
               <Link href={`/atlas-brief/${moreDiary[0].slug}`}>{calmHeadline(moreDiary[0].headline)}</Link>
             </DiaryAside>
           )}
@@ -312,7 +312,7 @@ export default async function WsjPreviewPage({ params }: { params: Promise<{ slu
 
           {moreDiary.length > 0 && (
             <aside className="essay-more">
-              <h2 style={{ fontFamily: hand.style.fontFamily }}>More from the diary</h2>
+              <h2 style={{ fontFamily: hand.style.fontFamily }}>More owner&rsquo;s notes</h2>
               <ul>
                 {moreDiary.map(c => (
                   <li key={c.id}>

@@ -97,7 +97,6 @@ export default async function HomePage() {
   // David's posts land there by date (marked "David's Dispatches", headline
   // highlighted). The Diary on the right holds his entries that aren't already
   // on the left; the Tape cards under the stack are deals not already shown.
-  { const p = articles.find(a => a.kind === 'post'); if (p) { articles.splice(articles.indexOf(p), 1); articles.unshift(p) } } // TEMP PREVIEW: pretend David just published. Remove before shipping.
   const [lead, ...afterLead] = articles
   const top = [lead, ...afterLead.slice(0, 4)].filter(Boolean)
   const shown = new Set(top.map(a => a.id))
@@ -119,7 +118,7 @@ export default async function HomePage() {
           WaPo-style flag (name, tagline, section row) instead of the compact
           bar plus a second, larger copy of the name under it. */}
       {lead && (
-        <FrontTop deals={top} more={tapeCards} diary={diaryPosts} diaryName="David's Diary" diaryHref="/atlas-brief/dispatch" />
+        <FrontTop deals={top} more={tapeCards} diary={diaryPosts} diaryName="Owner's Notes" diaryHref="/atlas-brief/dispatch" />
       )}
 
 
