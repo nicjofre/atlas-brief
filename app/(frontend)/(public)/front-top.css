@@ -143,7 +143,7 @@
 .ft-earlier li.has-thumb { grid-template-columns: minmax(0, 1fr) 112px; }
 .ft-earlier-img img { width: 112px; height: 84px; }
 /* With bigger thumbnails the stack needs more room: lead and stack closer to even. */
-.ft-news { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); }
+@media (min-width: 641px) { .ft-news { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); } }
 /* Earlier Diary entries: the date trails the headline, small and grey. */
 .ft-earlier a { display: inline; }
 .ft-earlier .ft-earlier-date { display: inline; margin: 0 0 0 4px; white-space: nowrap; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
@@ -194,3 +194,18 @@
 .ft-tape-rule { margin: 0 0 16px; font-weight: 600; }
 .ft-tape-rule a { font-size: 26px; line-height: 1; color: var(--brand-navy); display: inline-block; transform: rotate(-2deg); }
 .ft-tape-rule a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* Phones and tablets: one column, in reading order — Latest, then Owner's
+   Notes, then The Tape (ft-main dissolves so its two parts can be ordered
+   around the column). */
+@media (max-width: 1000px) {
+  .ft-main { display: contents; }
+  .ft-hand-rule:not(.ft-tape-rule), .ft-news { order: 1; }
+  .ft-diary { order: 2; margin-top: 8px; }
+  .ft-tape { order: 3; }
+}
+@media (max-width: 640px) {
+  .ft-lead-hed { font-size: 26px; }
+  .ft-thumb img { width: 104px; height: 78px; }
+  .ft-item { grid-template-columns: minmax(0, 1fr) 104px; }
+}
