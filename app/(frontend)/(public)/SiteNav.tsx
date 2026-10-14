@@ -45,7 +45,7 @@ export default function SiteNav() {
             </button>
             <ul className="mast-links">
               <li><Link href="/atlas-brief/sections/broker-activity">The Tape</Link></li>
-              <li><Link href="/atlas-brief/dispatch">Dispatch</Link></li>
+              <li><Link href="/atlas-brief/dispatch">Owner&rsquo;s Notes</Link></li>
               <li><Link href="/about">About</Link></li>
               <li><Link href="/contact">Contact</Link></li>
               <li className="mast-sep" aria-hidden="true" />
@@ -103,7 +103,7 @@ export default function SiteNav() {
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <ul>
           <li><Link href="/atlas-brief/sections/broker-activity" onClick={closeMenu}>The Tape</Link></li>
-          <li><Link href="/atlas-brief/dispatch" onClick={closeMenu}>Dispatch</Link></li>
+          <li><Link href="/atlas-brief/dispatch" onClick={closeMenu}>{isHome ? <>Owner&rsquo;s Notes</> : 'Dispatch'}</Link></li>
           <li><Link href="/about" onClick={closeMenu}>About</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Contact</Link></li>
           <li><Link href="/contact" onClick={closeMenu}>Work with Atlas</Link></li>

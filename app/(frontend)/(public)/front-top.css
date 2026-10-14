@@ -1,0 +1,196 @@
+/* ---- Front page top: 2/3 latest deals, 1/3 David's Diary (trial 2026-10-12) ---- */
+.ft { padding: clamp(32px, 3.6vw, 52px) 0 clamp(36px, 4.4vw, 60px); }
+.ft-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: clamp(28px, 3.4vw, 52px);
+  align-items: start;
+}
+
+.ft-kicker { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; margin-bottom: 8px; font-family: var(--sans); font-size: 12px; }
+.ft-kicker span { white-space: nowrap; }
+.ft-kicker span { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-red); }
+.ft-kicker time { color: var(--muted); }
+
+.ft-lead-img { display: block; margin-bottom: 14px; }
+.ft-lead-img img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.ft-lead-hed { margin: 0 0 10px; font-family: var(--sans); font-size: clamp(24px, 2.3vw, 32px); font-weight: 700; line-height: 1.1; letter-spacing: -.015em; color: var(--ink); }
+.ft-lead-hed a, .ft-item h3 a { color: inherit; }
+.ft-lead-hed a:hover, .ft-item h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ft-lead-dek { margin: 0; max-width: 62ch; font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink); }
+
+/* Inside the two-thirds: the lead on the left, the next four stacked beside
+   it, so headlines show on first load instead of one photo filling the screen. */
+.ft-news {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 0 clamp(20px, 2.4vw, 36px);
+  align-items: start;
+}
+.ft-quad { border-left: 1px solid var(--rule); padding-left: clamp(20px, 2.4vw, 36px); }
+.ft-quad .ft-item:first-child { border-top: 0; padding-top: 0; }
+.ft-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 0;
+  border-top: 1px solid var(--rule);
+}
+.ft-item h3 { margin: 0; font-family: var(--sans); font-size: 16px; font-weight: 700; line-height: 1.28; color: var(--ink); }
+.ft-thumb img { display: block; width: 84px; height: 63px; object-fit: cover; }
+
+/* The Diary: an opinion column. A navy rule caps it, a faint warm ground sets
+   it apart from the news. Type matches the rest of the front page (2026-10-12). */
+.ft-diary {
+  --dpad: clamp(18px, 2vw, 26px);
+  background: #FAF7F1;
+  padding: 0 var(--dpad) 22px;
+  color: var(--ink);
+  font-family: var(--sans);
+}
+.ft-diary-head { margin-bottom: 18px; }
+.ft-diary-name { margin: 0; font-family: 'Times New Roman', Times, serif; font-size: clamp(28px, 2.6vw, 36px); font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+.ft-diary-name a { color: var(--brand-navy); }
+.ft-diary-by { margin: 6px 0 0; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ft-entry time, .ft-earlier time { display: block; margin-bottom: 4px; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ft-entry h3 { margin: 0 0 8px; font-family: var(--sans); font-size: 21px; font-weight: 700; line-height: 1.2; letter-spacing: -.005em; }
+.ft-entry h3 a, .ft-earlier a { color: var(--ink); }
+.ft-entry h3 a:hover, .ft-earlier a:hover, .ft-diary-name a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ft-entry p { margin: 0 0 10px; font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+.ft-read, .ft-all { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--brand-navy); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.ft-earlier { list-style: none; margin: 20px 0 16px; padding: 0; }
+.ft-earlier li { padding: 13px 0; border-top: 1px solid var(--rule); }
+.ft-earlier a { font-family: var(--sans); font-size: 16px; font-weight: 700; line-height: 1.28; }
+.ft-entry-img { display: block; margin-bottom: 12px; }
+.ft-entry-img img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.ft-earlier li.has-thumb { display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 14px; align-items: start; }
+.ft-earlier-img img { display: block; width: 84px; height: 63px; object-fit: cover; }
+
+/* The Tape row, inside the two-thirds under the lead and stack. */
+.ft-main { min-width: 0; }
+.ft-tape { margin-top: clamp(28px, 3vw, 40px); }
+.ft-tape-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 10px; margin-bottom: 16px; border-bottom: 2px solid var(--ink); }
+.ft-tape-head h2 { margin: 0; font-family: var(--sans); font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.ft-tape-head a { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.ft-tape-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 2.6vw, 32px) clamp(16px, 2vw, 28px); }
+.ft-card-img { display: block; margin-bottom: 10px; }
+.ft-card-img img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.ft-card h3 { margin: 0; font-family: var(--sans); font-size: 15px; font-weight: 700; line-height: 1.3; }
+.ft-card h3 a { color: var(--ink); }
+.ft-card h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 1000px) {
+  .ft-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .ft-tape-row { grid-template-columns: 1fr; }
+  .ft-news { grid-template-columns: 1fr; }
+  .ft-quad { border-left: 0; padding-left: 0; margin-top: 20px; }
+  .ft-quad .ft-item:first-child { border-top: 1px solid var(--rule); padding-top: 16px; }
+}
+
+/* David's posts in the news column: a light-blue marker behind the headline. */
+.ft-hl {
+  background: #DCE8FB;
+  padding: 0 .12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+
+/* ---- Diary heading: a navy band wider than the box, sitting over its top
+   edge and folding behind it at both ends, with the logo's red line under it. */
+.ft-diary-head { text-align: center; }
+.ft-band {
+  position: relative;
+  margin: -14px calc(-1 * var(--dpad) - 12px) 0;
+}
+.ft-band a {
+  display: block;
+  padding: 12px 0;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+  box-shadow: 0 6px 10px -4px rgba(12, 21, 48, .35);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: clamp(22px, 2vw, 27px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  text-align: center;
+}
+.ft-band::before, .ft-band::after { content: ""; position: absolute; bottom: -10px; border-style: solid; }
+.ft-band::before { left: 0;  border-width: 0 12px 10px 0; border-color: transparent #02060F transparent transparent; }
+.ft-band::after  { right: 0; border-width: 10px 12px 0 0; border-color: #02060F transparent transparent transparent; }
+.ft-diary-head .ft-diary-by { margin-top: 14px; }
+
+/* David's posts in the news column: a small blue ribbon tag in place of the
+   red place name, notched at the end, matching the headline's blue marker. */
+.ft-kicker .ft-diary-tag {
+  display: inline-block;
+  padding: 4px 18px 4px 9px;
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  font-size: 11px;
+  letter-spacing: .1em;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+}
+
+/* Bigger thumbnails (2026-10-12): at 84px the photos were too small to read. */
+.ft-item { grid-template-columns: minmax(0, 1fr) 120px; }
+.ft-thumb img { width: 120px; height: 90px; }
+.ft-earlier li.has-thumb { grid-template-columns: minmax(0, 1fr) 112px; }
+.ft-earlier-img img { width: 112px; height: 84px; }
+/* With bigger thumbnails the stack needs more room: lead and stack closer to even. */
+.ft-news { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); }
+/* Earlier Diary entries: the date trails the headline, small and grey. */
+.ft-earlier a { display: inline; }
+.ft-earlier .ft-earlier-date { display: inline; margin: 0 0 0 4px; white-space: nowrap; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
+/* Last Tape row: full page width, four across, under both columns. */
+.ft-tape-wide { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: clamp(24px, 2.6vw, 32px); }
+@media (max-width: 1000px) { .ft-tape-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .ft-tape-wide { grid-template-columns: 1fr; } }
+/* The handwritten note under the band: Caveat in navy, tilted a touch, with a
+   hand-drawn red underline. */
+.ft-diary-note {
+  position: relative;
+  display: inline-block;
+  margin: 16px 0 2px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--brand-navy);
+  transform: rotate(-1.5deg);
+}
+.ft-diary-scribble {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin-top: 1px;
+  overflow: visible;
+}
+.ft-diary-scribble path { fill: none; stroke: var(--brand-red); stroke-width: 2.2; stroke-linecap: round; }
+/* "Latest" over the news column, left-aligned, in the Diary note's hand. */
+.ft-hand-label {
+  display: table;
+  margin: -6px auto 10px 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--brand-navy);
+  transform: rotate(-2deg);
+}
+/* Keep the scribble to the word's width (an SVG's default 300px width was
+   stretching the label). */
+.ft-hand-label .ft-diary-scribble, .ft-diary-note .ft-diary-scribble { width: 0; min-width: 100%; }
+/* "Latest" in the middle of a hand-drawn red line across the news column. */
+.ft-hand-rule { display: flex; align-items: center; gap: 14px; margin: -8px 0 12px; }
+.ft-hand-rule svg { flex: 1; width: 0; height: 10px; overflow: visible; }
+.ft-hand-rule path { fill: none; stroke: var(--brand-red); stroke-width: 2.2; stroke-linecap: round; }
+.ft-hand-rule span { font-size: 26px; font-weight: 600; line-height: 1; color: var(--brand-navy); transform: rotate(-2deg); }
+.ft-hand-rule { margin: -8px 0 12px; }
+/* The Tape's heading in the "Latest" motif. */
+.ft-tape-rule { margin: 0 0 16px; font-weight: 600; }
+.ft-tape-rule a { font-size: 26px; line-height: 1; color: var(--brand-navy); display: inline-block; transform: rotate(-2deg); }
+.ft-tape-rule a:hover { text-decoration: underline; text-underline-offset: 4px; }

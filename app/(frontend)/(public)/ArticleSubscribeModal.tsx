@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 import { trackCapture } from '@/lib/analytics/capture'
+import { hand } from './hand-font'
 import { markSubscribed, modalSuppressed, markModalDismissed } from '@/lib/subscribe-flag'
 import './subscribe-modal.css'
 
@@ -297,7 +298,7 @@ export default function ArticleSubscribeModal({
 
         {state === 'sent' ? (
           <>
-            <div className="asm-kicker">You&rsquo;re in</div>
+            <p className={`asm-hand ${hand.className}`}>You&rsquo;re in.</p>
             <h2 id="asm-title" className="asm-title">Done. You&rsquo;re on the list.</h2>
             <p className="asm-done">
               Next one lands Friday morning. Back to the article.
@@ -305,12 +306,15 @@ export default function ArticleSubscribeModal({
           </>
         ) : (
           <>
-            <div className="asm-kicker">The Friday Dispatch</div>
-            <h2 id="asm-title" className="asm-title">Deals like this one, every Friday.</h2>
+            {/* Restyled 2026-10-12 to the new front page: the Diary's navy band
+                for the name, a line in David's hand, Helvetica for the rest. */}
+            {/* The headline in David's hand. */}
+            <h2 id="asm-title" className="asm-title asm-title-hand" style={{ fontFamily: hand.style.fontFamily }}>
+              {slug === 'home' ? 'What traded in LA every Friday' : 'Deals like this one every Friday'}
+            </h2>
             <p className="asm-sub">
-              David Safai builds and owns multifamily in Los Angeles. Every Friday he
-              sends what traded that week, what it really sold for, and what the
-              numbers say the market is doing. Free.
+              I build and own multifamily in Los Angeles. Every Friday I send a short
+              note on the deals that closed that week and what I make of them.
             </p>
 
             <form onSubmit={submit} noValidate>

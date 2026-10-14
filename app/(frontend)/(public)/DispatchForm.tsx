@@ -92,7 +92,7 @@ export default function DispatchForm({
         <div className="tm-d-head">
           <span className="tm-d-label">Subscribe to the Friday Dispatch</span>
           <span className="tm-d-note">
-            One note per week &mdash; what traded, what&rsquo;s listed, what the numbers say. Free.
+            One email a week with the best of Atlas Brief.
           </span>
         </div>
         <div className="tm-d-row">

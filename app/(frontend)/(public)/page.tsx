@@ -65,6 +65,7 @@ import Footer from './Footer'
 import DispatchBanner from './DispatchBanner'
 import CenterPackage from './CenterPackage'
 import TopStories from './TopStories'
+import FrontTop from './FrontTop'
 import { getArticles } from '@/lib/db/articles'
 import { getTrending } from '@/lib/db/trending'
 import ArticleSubscribeModal from './ArticleSubscribeModal'
@@ -92,15 +93,15 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const articles = await getArticles()
-  // The five newest make the Top Stories package (one lead, four stacked);
-  // everything after runs as the tape.
+  // Trial 2026-10-12: the left two-thirds is the five newest of anything, so
+  // David's posts land there by date (marked "David's Dispatches", headline
+  // highlighted). The Diary on the right holds his entries that aren't already
+  // on the left; the Tape cards under the stack are deals not already shown.
   const [lead, ...afterLead] = articles
-  const stack = afterLead.slice(0, 4)
-  const rest = afterLead.slice(4)
-  // One feature plus five cards per stream, drawn from what the package above
-  // hasn't already used, so nothing headlines twice on one page.
-  const tapeCards = rest.filter(a => a.kind !== 'post').slice(0, 6)
-  const dispatchCards = rest.filter(a => a.kind === 'post').slice(0, 6)
+  const top = [lead, ...afterLead.slice(0, 4)].filter(Boolean)
+  const shown = new Set(top.map(a => a.id))
+  const tapeCards = articles.filter(a => a.kind !== 'post' && !shown.has(a.id)).slice(0, 7)
+  const diaryPosts = articles.filter(a => a.kind === 'post' && !shown.has(a.id)).slice(0, 7)
 
   // Trending: rank the articles we already have by reader counts. Anything the
   // ranking names that isn't in the published set (unpublished, deleted) simply
@@ -116,12 +117,14 @@ export default async function HomePage() {
       {/* The masthead lives in SiteNav on the front page since 2026-10-07: one
           WaPo-style flag (name, tagline, section row) instead of the compact
           bar plus a second, larger copy of the name under it. */}
-      {lead && <TopStories lead={lead} stack={stack} mostRead={trending} />}
+      {lead && (
+        <FrontTop deals={top} more={tapeCards} diary={diaryPosts} diaryName="Owner's Notes" diaryHref="/atlas-brief/dispatch" />
+      )}
+
 
       {/* The centre package, arranged the way a broadsheet arranges a page: a
           row of Tape cards, two features — the deal on the left, the dispatch
           on the right — and a row of Dispatch cards beneath them. */}
-      <CenterPackage tape={tapeCards} dispatch={dispatchCards} />
 
       <DispatchBanner />
 

@@ -432,3 +432,67 @@
 .asm-skip:hover { color: #FFFFFF; }
 
 .asm-done { font-family: var(--serif); font-size: 16px; color: rgba(255,255,255,0.85); margin: 0 auto; max-width: 34ch; }
+
+
+/* ===========================================================================
+   2026-10-12 — restyled to the new front page. Paper card (the Diary's ground),
+   the name on the Diary's navy band with the red line, wrapping past the card's
+   edges; a line in David's hand with a red pen stroke; Helvetica in navy for
+   the rest; navy button.
+   =========================================================================== */
+.asm-panel {
+  max-width: 460px;
+  background: #FAF7F1;
+  border-top: 0;
+  border-radius: 0;
+  padding: 0 clamp(24px, 4vw, 36px) clamp(24px, 3.4vw, 32px);
+  color: var(--ink);
+  overflow: visible;
+}
+.asm-x { top: 10px; right: 12px; z-index: 2; color: rgba(255,255,255,0.75); }
+.asm-x:hover { color: #FFFFFF; }
+.asm-band {
+  position: relative;
+  margin: 0 calc(-1 * clamp(24px, 4vw, 36px) - 12px) 0;
+  padding: 16px 40px;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+  box-shadow: 0 6px 10px -4px rgba(12, 21, 48, .35);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.asm-band::before, .asm-band::after { content: ""; position: absolute; bottom: -13px; border-style: solid; }
+.asm-band::before { left: 0;  border-width: 0 12px 10px 0; border-color: transparent #02060F transparent transparent; }
+.asm-band::after  { right: 0; border-width: 10px 12px 0 0; border-color: #02060F transparent transparent transparent; }
+.asm-hand {
+  display: inline-block;
+  margin: 18px 0 14px;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--brand-navy);
+  transform: rotate(-1.5deg);
+}
+.asm-hand svg { display: block; width: 0; min-width: 100%; height: 10px; margin-top: 1px; overflow: visible; }
+.asm-hand path { fill: none; stroke: var(--brand-red); stroke-width: 2.2; stroke-linecap: round; }
+.asm-title { font-family: var(--sans); font-weight: 700; font-size: clamp(22px, 2.6vw, 27px); line-height: 1.15; letter-spacing: -.01em; color: var(--ink); }
+.asm-sub { font-family: var(--sans); font-size: 15px; color: var(--ink); opacity: .85; }
+.asm-field input { border: 1px solid var(--rule); }
+.asm-field input:focus { border-color: var(--brand-navy); }
+.asm-submit { background: var(--brand-navy); border-color: var(--brand-navy); color: #FFFFFF; }
+.asm-submit:hover { background: var(--brand-red); border-color: var(--brand-red); }
+.asm-skip { color: var(--muted); }
+.asm-skip:hover { color: var(--ink); }
+.asm-err { color: #B3261E; }
+.asm-done { font-family: var(--sans); font-size: 15px; color: var(--ink); }
+/* Headline in the hand: no separate note above it, so the card stays calm. */
+.asm-title.asm-title-hand { margin: 22px 0 10px; font-size: clamp(30px, 3.4vw, 36px); font-weight: 600; line-height: 1.05; letter-spacing: 0; color: var(--brand-navy); }
+/* No band: the card opens on the handwritten headline. */
+.asm-panel { padding-top: clamp(28px, 4vw, 40px); }
+.asm-x { color: var(--muted); }
+.asm-x:hover { color: var(--ink); }
+.asm-title.asm-title-hand { margin-top: 4px; }
+.asm-hand { margin-top: 0; }

@@ -76,6 +76,7 @@ export default function CenterPackage({
   return (
     <section className="cp">
       <div className="wrap">
+        {tape.length > 0 && (
         <div className="cp-band cp-band-tape">
           <div className="cp-head">
             <h2>The Tape</h2>
@@ -85,7 +86,9 @@ export default function CenterPackage({
             {tape.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
           </div>
         </div>
+        )}
 
+        {dispatch.length > 0 && (
         <div className="cp-band cp-band-dispatch">
           <div className="cp-head">
             <h2>Dispatch</h2>
@@ -95,6 +98,7 @@ export default function CenterPackage({
             {dispatch.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}
           </div>
         </div>
+        )}
       </div>
     </section>
   )
