@@ -16,7 +16,7 @@ type Filter = 'all' | 'brief' | 'post'
 const isPostEntry = (a: ArticleCard) => a.kind === 'post'
 
 function tierLabel(a: ArticleCard) {
-  if (isPostEntry(a)) return (a.cat_label ?? 'Dispatch').toUpperCase()
+  if (isPostEntry(a)) return (a.cat_label ?? 'Owner’s Notes').toUpperCase()
   return a.tape_tier ? `TAPE ${a.tape_tier}` : 'TAPE 3'
 }
 
@@ -37,7 +37,7 @@ export default function TapeTabs({ articles }: { articles: ArticleCard[] }) {
   const tabs: { key: Filter; label: string; count: number }[] = [
     { key: 'all', label: 'All', count: articles.length },
     { key: 'brief', label: 'The Tape', count: tape.length },
-    { key: 'post', label: 'Dispatch', count: dispatch.length },
+    { key: 'post', label: 'Owner’s Notes', count: dispatch.length },
   ]
 
   return (

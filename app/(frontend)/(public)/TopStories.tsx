@@ -20,7 +20,7 @@ function apDate(s: string | null | undefined): string {
 }
 
 function kicker(a: ArticleCard): string {
-  if (a.kind === 'post') return a.cat_label ?? 'Dispatch'
+  if (a.kind === 'post') return a.cat_label ?? 'Owner’s Notes'
   const p = a.listing?.property
   return p?.neighborhood ?? p?.city ?? 'The Tape'
 }

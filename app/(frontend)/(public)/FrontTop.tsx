@@ -131,7 +131,7 @@ export default function FrontTop({
               <h2 className="ft-band"><Link href={diaryHref}>{diaryName}</Link></h2>
               {/* A handwritten note in place of the byline: what the diary is. */}
               <p className={`ft-diary-note ${hand.className}`}>
-                Notes on operating, building &amp; the LA market
+                Thoughts on operating, building &amp; the LA market
                 <svg className="ft-diary-scribble" viewBox="0 0 220 12" preserveAspectRatio="none" aria-hidden="true">
                   <path d="M3 8 C 40 3, 80 11, 120 6 S 190 3, 217 7" />
                 </svg>

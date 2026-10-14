@@ -20,7 +20,7 @@ function apDate(s: string | null | undefined): string {
 const isPost = (a: ArticleCard) => a.kind === 'post'
 
 function kickerFor(a: ArticleCard): string {
-  if (isPost(a)) return a.cat_label ?? 'Dispatch'
+  if (isPost(a)) return a.cat_label ?? 'Owner’s Notes'
   const p = a.listing?.property ?? null
   return [statusKicker(a.listing?.status), p?.neighborhood ?? p?.city].filter(Boolean).join(' · ')
 }
@@ -91,8 +91,8 @@ export default function CenterPackage({
         {dispatch.length > 0 && (
         <div className="cp-band cp-band-dispatch">
           <div className="cp-head">
-            <h2>Dispatch</h2>
-            <Link href="/atlas-brief/dispatch">All dispatches →</Link>
+            <h2>Owner&rsquo;s Notes</h2>
+            <Link href="/atlas-brief/dispatch">All owner&rsquo;s notes →</Link>
           </div>
           <div className="cp-row">
             {dispatch.slice(0, 5).map(a => <Card key={a.id} a={a} size="sm" />)}

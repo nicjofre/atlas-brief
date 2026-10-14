@@ -21,7 +21,7 @@ const ROTATE_MS = 6000
 type Tab = 'latest' | 'trending'
 
 function kickerFor(a: ArticleCard, trending: boolean) {
-  if (a.kind === 'post') return (a.cat_label ?? 'Dispatch').toUpperCase()
+  if (a.kind === 'post') return (a.cat_label ?? 'Owner’s Notes').toUpperCase()
   if (trending) return 'MOST READ'
   return a.tape_tier ? `TAPE ${a.tape_tier}` : 'TAPE 3'
 }

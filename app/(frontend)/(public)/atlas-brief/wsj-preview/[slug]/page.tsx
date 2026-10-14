@@ -169,7 +169,7 @@ const fmtPct = (n: number | null | undefined) => (n == null ? null : `${(n > 1 ?
 function postToArticle(post: Post): Article {
   const hero = asMedia(post.heroImage)
   return {
-    section: post.kicker || 'Dispatch',
+    section: post.kicker || 'Owner’s Notes',
     // ATLAS BRIEF (2026-09-22): was '/atlas-brief', which 308s to the
     // homepage now. A dispatch's section link belongs on the Dispatch archive.
     sectionHref: '/atlas-brief/dispatch',

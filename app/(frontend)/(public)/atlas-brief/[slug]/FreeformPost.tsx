@@ -26,7 +26,7 @@ function asMedia(v: unknown): Media | null {
 // composed block layout instead of the fixed brief sections.
 export default function FreeformPost({ post, preview = false, showBar = false }: { post: Post; preview?: boolean; showBar?: boolean }) {
   const hero = asMedia(post.heroImage)
-  const kicker = post.kicker || 'Dispatch'
+  const kicker = post.kicker || 'Owner’s Notes'
   const dateStr = fmtDate(post.publishedAt)
   // Set only on essays about a specific building (the CMS field is optional).
   const address = post.propertyAddress?.trim() || null

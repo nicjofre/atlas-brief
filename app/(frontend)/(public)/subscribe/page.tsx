@@ -49,7 +49,7 @@ const STATUS: Record<string, string> = {
 // so the email's own "Brief" kicker would repeat on every line here. A
 // dispatch has no listing, so it's labelled as one.
 function dealKicker(a: ArticleCard): string {
-  if (a.kind === 'post') return a.cat_label || 'Dispatch'
+  if (a.kind === 'post') return a.cat_label || 'Owner’s Notes'
   const place = a.listing?.property?.neighborhood || a.listing?.property?.city
   const status = a.listing?.status ? STATUS[a.listing.status] : null
   return [place, status].filter(Boolean).join(' · ') || a.cat_label || 'Brief'

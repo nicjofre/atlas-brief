@@ -104,7 +104,7 @@ function postToCard(post: Post): ArticleCard {
     id: `post_${post.id}`,
     slug: post.slug,
     section_slug: 'the-tape',
-    cat_label: post.kicker ?? 'Dispatch',
+    cat_label: post.kicker ?? 'Owner’s Notes',
     entry_num: 0,
     tape_tier: null,
     headline: post.title ?? '',

@@ -41,9 +41,9 @@ function dateline(): string {
 }
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Dispatch · Atlas Brief',
+  title: 'Owner’s Notes · Atlas Brief',
   description:
-    'Every Atlas Brief dispatch — market essays, construction cost reads and policy notes from a Los Angeles owner-operator.',
+    'Owner’s Notes: David Safai’s essays on operating, building and the Los Angeles market.',
   path: '/atlas-brief/dispatch',
 })
 
@@ -90,7 +90,7 @@ export default async function DispatchPage() {
               branding device borrowed from the Atlas *Brief* lockup, where the
               italic half is a separate word — inside a single word it reads as
               a typo rather than a mark. */}
-          <h1>Dispatch</h1>
+          <h1>Owner&rsquo;s Notes</h1>
           {/* The dek and the entry-count row came out on 2026-09-22. Both were
               explaining the section to someone who had already clicked into
               it, which is the thing a newspaper never does. A flag carries the
@@ -122,7 +122,7 @@ export default async function DispatchPage() {
         <div className="wrap">
           {/* Client-side because paging is a reader control; the first page is
               server-rendered either way. */}
-          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Dispatch" />
+          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Owner’s Notes" />
         </div>
       </section>
 
