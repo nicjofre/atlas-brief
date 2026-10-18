@@ -47,7 +47,7 @@ export default function Footer() {
           {/* Just the mark — the old legal strip and the brand block (roundel,
               wordmark, tagline) were cut 2026-10-07 as superfluous; the nav
               already carries the name. */}
-          <p className="footer-copy">&copy; {new Date().getFullYear()} Atlas Brief</p>
+          <p className="footer-copy">&copy; {new Date().getFullYear()} Atlas Brief · <a href="/privacy">Privacy</a></p>
         </div>
       </div>
     </footer>

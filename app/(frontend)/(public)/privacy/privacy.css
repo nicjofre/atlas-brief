@@ -1,0 +1,12 @@
+.privacy { max-width: 720px; padding-top: 56px; padding-bottom: 72px; font-size: 17px; line-height: 1.6; color: var(--ink, #111); }
+.privacy h1 { font-size: 40px; line-height: 1.1; margin: 0 0 8px; }
+.privacy-updated { color: #6b6b6b; font-size: 14px; margin: 0 0 32px; }
+.privacy h2 { font-size: 20px; margin: 36px 0 10px; }
+.privacy p { margin: 0 0 14px; }
+.privacy ul { margin: 0 0 14px; padding-left: 22px; }
+.privacy li { margin: 0 0 6px; }
+.privacy a { color: inherit; text-decoration: underline; }
+@media (max-width: 640px) {
+  .privacy { padding-top: 32px; font-size: 16px; }
+  .privacy h1 { font-size: 30px; }
+}

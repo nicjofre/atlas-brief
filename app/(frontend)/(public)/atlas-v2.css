@@ -686,6 +686,7 @@ body {
 .footer .disclaimer b { color: rgba(255,255,255,0.72); }
 
 .footer-copy { margin: 12px 0 0; font-size: 12px; color: rgba(255,255,255,0.46); }
+.footer-copy a { color: inherit; text-decoration: underline; }
 @media (max-width: 640px) {
   .footer { margin-top: 80px; padding-top: 40px; }
   .footer-top { flex-direction: column; gap: 32px; padding-bottom: 36px; }

@@ -31,6 +31,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: '/tax-appeals', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/survival-guide', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/rso-briefing', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/privacy', priority: 0.2, changeFrequency: 'yearly' },
 ]
 
 function toDate(value: string | null | undefined): Date {
