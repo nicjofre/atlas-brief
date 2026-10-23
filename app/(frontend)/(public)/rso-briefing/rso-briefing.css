@@ -8,7 +8,7 @@
   --sage:#4E6349;
   --ink:#2B2117; --dim:#7A6A57; --dimmer:#9C8B76;
   background:var(--cream); color:var(--ink);
-  font-family:'Helvetica Neue',Arial,sans-serif;
+  font-family:var(--sans, Arial, sans-serif);
   -webkit-font-smoothing:antialiased; line-height:1.5;
   overflow-x:hidden;
 }

@@ -44,12 +44,12 @@
 
   /* Plain Times since 2026-10-07 (was Newsreader). */
   /* All-sans since 2026-10-07 (Nic's call after a trial); the logo is pinned to Times separately. Was: 'Times New Roman', Times, serif */
-  --serif:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --serif:  Arial, sans-serif;
   /* Helvetica since 2026-10-07 (was Inter Tight). --mono, which sets the small
      spaced caps (datelines, credits, kickers), was JetBrains Mono and now
      shares it, the way a paper sets its datelines. */
-  --sans:   'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --mono:   'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sans:   Arial, sans-serif;
+  --mono:   Arial, sans-serif;
 
   --maxw: 1360px;
   --pad-x: clamp(20px, 4vw, 56px);
@@ -64,6 +64,18 @@
   --h-card:    clamp(20px, 1.6vw, 26px);
 
   --eyebrow:   11px;
+}
+/* Helvetica on Apple only (2026-10-23). Off Apple, "Helvetica" is whatever a
+   font pack installed under that name: David's Windows PC had a novelty
+   all-caps face called Helvetica, so the whole site rendered in it. Arial is
+   real everywhere, so it's the default; Safari (Mac and iPhone), where
+   Helvetica is the system's own, gets Helvetica. */
+@supports (font: -apple-system-body) {
+  :root {
+    --serif: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --sans:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --mono:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
 }
 
 /* ---- Reset ---- */
