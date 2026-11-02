@@ -11,6 +11,8 @@
 //   RESEND_API_KEY      — secret API key from resend.com
 //   RESEND_AUDIENCE_ID  — the Audience (subscriber list) to mirror into
 
+import { LATEST_HEADING_PNG_BASE64 } from './email/latest-heading'
+
 const RESEND_API = 'https://api.resend.com'
 
 // Env values are read trimmed: Vercel/CI env editors silently keep trailing
@@ -196,6 +198,8 @@ export function sendWelcomeEmail(args: {
     to: [args.to],
     subject: 'Thanks for subscribing to Atlas Brief',
     html: args.html,
+    // The handwritten "Latest" heading, shown inline via cid:latest.
+    attachments: [{ filename: 'latest.png', content: LATEST_HEADING_PNG_BASE64, content_id: 'latest' }],
     headers: {
       'List-Unsubscribe': `<${oneClick}>`,
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

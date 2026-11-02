@@ -3,6 +3,7 @@ import {
   Container,
   Head,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -13,7 +14,8 @@ import {
 // Friday roundup (still on the old cream palette): it borrows Nic's front page
 // (2026-10) — the navy band with the red line under it for the masthead, the
 // red place kicker for The Tape, the blue tag and light-blue highlight for
-// Owner's Notes. No handwriting: Caveat can't load in most mail apps.
+// Owner's Notes. Caveat can't load in most mail apps, so the one handwritten
+// touch, "Latest", is an image (lib/email/latest-heading.ts).
 //
 // Sent from a no-reply address (Lucas, 2026-11-01) so automatic signups can't
 // put spam in David's inbox; the footer says so. Editorial rule: no em-dashes
@@ -100,10 +102,9 @@ export function WelcomeEmail({ cards, forwardUrl, unsubscribeUrl, mailingAddress
 
           {cards.length > 0 ? (
             <Section style={{ padding: '26px 24px 6px' }}>
-              {/* "The latest" over a red rule, after the front page's "Latest". */}
-              <Text style={{ margin: '0 8px 18px', paddingBottom: '8px', borderBottom: `2px solid ${C.red}`, fontFamily: C.sans, fontSize: '13px', lineHeight: '1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.navy }}>
-                The latest
-              </Text>
+              {/* The front page's handwritten "Latest" and red line, as an
+                  inline image (attached by sendWelcomeEmail as cid:latest). */}
+              <Img src="cid:latest" width="496" height="36" alt="The latest" style={{ display: 'block', width: '100%', maxWidth: '496px', height: 'auto', margin: '0 8px 18px', border: 0, fontFamily: C.sans, fontSize: '13px', fontWeight: 700, color: C.navy }} />
               <div style={{ textAlign: 'center', fontSize: 0 }}>
                 {cards.map(card => <Card key={card.stream} card={card} />)}
               </div>
