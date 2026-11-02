@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { subscriberAttribution } from '@/lib/analytics/attribution-server'
-import { syncContactToResend, isReservedEmail } from '@/lib/resend'
+import { syncContactToResend, isReservedEmail, sendWelcomeEmail } from '@/lib/resend'
+import { renderWelcomeHtml } from '@/lib/email/render-welcome'
 
 export const runtime = 'nodejs'
 
@@ -92,6 +93,22 @@ export async function POST(req: Request) {
   const sync = await syncContactToResend(email, { firstName, lastName })
   if (sync.ok === false && !sync.skipped) {
     console.error('[subscribe] resend sync failed', sync.error)
+  }
+
+  // Welcome email, on a fresh signup only: a 23505 repeat gets nothing, so the
+  // response stays identical and resubmitting can't be used to spam an inbox.
+  // after() sends it once the response is out; a failure is logged, never
+  // surfaced, because the signup itself already succeeded.
+  if (!error) {
+    after(async () => {
+      try {
+        const { html, unsubscribeUrl } = await renderWelcomeHtml(email)
+        const sent = await sendWelcomeEmail({ to: email, html, unsubscribeUrl })
+        if (!sent.ok) console.error('[subscribe] welcome email failed', sent.error)
+      } catch (e) {
+        console.error('[subscribe] welcome email failed', e instanceof Error ? e.message : e)
+      }
+    })
   }
 
   return NextResponse.json({ ok: true })

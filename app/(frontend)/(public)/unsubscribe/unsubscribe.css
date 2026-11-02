@@ -1,0 +1,11 @@
+.unsub { max-width: 620px; padding-top: 72px; padding-bottom: 96px; font-family: var(--sans); font-size: 17px; line-height: 1.55; color: var(--ink); }
+.unsub h1 { margin: 0 0 14px; font-size: 36px; line-height: 1.1; letter-spacing: -.015em; color: var(--brand-navy); }
+.unsub p { margin: 0 0 18px; }
+.unsub a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.unsub-btn { margin-top: 6px; padding: 12px 22px; border: 0; background: var(--brand-navy); border-bottom: 3px solid var(--brand-red); color: #FFFFFF; font-family: var(--sans); font-size: 15px; font-weight: 700; cursor: pointer; }
+.unsub-btn:hover { background: #0B2547; }
+.unsub-err { color: var(--danger); font-weight: 700; }
+@media (max-width: 640px) {
+  .unsub { padding-top: 40px; font-size: 16px; }
+  .unsub h1 { font-size: 28px; }
+}
