@@ -36,5 +36,12 @@ export async function renderWelcomeHtml(email: string): Promise<{ html: string; 
     />,
     { pretty: false }
   )
-  return { html, unsubscribeUrl }
+  // Keep Resend's click tracking off the Unsubscribe link (it stays on the
+  // article cards): a tracked unsubscribe adds a redirect hop and looks shady to
+  // spam filters. Resend's tracking is Amazon SES's, which skips any link with
+  // the `ses:no-track` attribute; React can't write a colon attribute, so it's
+  // added to the rendered HTML.
+  const tracked = `href="${unsubscribeUrl}"`
+  if (!html.includes(tracked)) console.error('[welcome] unsubscribe link not found; it will be click-tracked')
+  return { html: html.replace(tracked, `ses:no-track ${tracked}`), unsubscribeUrl }
 }

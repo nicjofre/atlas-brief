@@ -14,7 +14,7 @@ import { markSubscribed } from '@/lib/subscribe-flag'
 // Skipping the extra fields still subscribes (email only).
 
 const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 type State = 'idle' | 'modal' | 'submitting' | 'sent' | 'error'
 

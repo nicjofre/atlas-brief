@@ -15,7 +15,7 @@ export const runtime = 'nodejs'
 
 // Deliberately permissive: a single @ with a dot in the domain. Real validation
 // is delivery itself; this only catches obvious typos/garbage before storage.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 // Optional profile collected by the signup pop-up. Role is constrained to a
 // known set so it stays clean for segmentation; anything else is dropped.

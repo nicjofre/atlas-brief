@@ -11,7 +11,7 @@ import { markSubscribed } from '@/lib/subscribe-flag'
 // subscribe.css, because DispatchForm's live in home.css and only load there.
 
 const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 type State = 'idle' | 'submitting' | 'sent'
 
