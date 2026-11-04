@@ -6,9 +6,9 @@ import { unsubscribeToken } from './unsubscribe-token'
 import { WelcomeEmail, type WelcomeCard } from './welcome-template'
 
 // The physical address CAN-SPAM requires in every commercial email. The site
-// only says "Los Angeles, California", which isn't enough. TODO before merge:
-// David's real mailing address (a PO box is fine).
-export const MAILING_ADDRESS = '[MAILING ADDRESS NEEDED] · Los Angeles, CA'
+// only says "Los Angeles, California", which isn't enough. This is The Felix
+// on Fairfax, a building David owns; mail sent there has to reach him.
+export const MAILING_ADDRESS = '731 N Fairfax Ave · Los Angeles, CA 90046'
 
 function tapeLabel(a: ArticleCard): string {
   return a.listing?.property?.neighborhood ?? a.listing?.property?.city ?? 'The Tape'
