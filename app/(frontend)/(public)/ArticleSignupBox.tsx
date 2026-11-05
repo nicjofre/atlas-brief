@@ -18,7 +18,7 @@ import './signup-box.css'
 // article. It does hide once this browser has subscribed, so a subscriber isn't
 // asked again mid-read.
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 export default function ArticleSignupBox({
   slug,

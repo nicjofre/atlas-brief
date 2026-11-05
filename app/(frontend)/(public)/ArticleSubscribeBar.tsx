@@ -6,7 +6,7 @@ import { hand } from './hand-font'
 import { trackNewsletterSignup } from '@/lib/analytics/conversions'
 import './subscribe-bar.css'
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 // A thin subscribe bar that reveals once the reader has scrolled into the
 // article, then stays pinned. Hidden at the very top so it doesn't fight the

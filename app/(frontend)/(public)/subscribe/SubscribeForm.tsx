@@ -11,12 +11,13 @@ import { markSubscribed } from '@/lib/subscribe-flag'
 // subscribe.css, because DispatchForm's live in home.css and only load there.
 
 const ROLES = ['Broker', 'Investor', 'Owner-Operator', 'Lender', 'Other']
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const SOURCE = 'subscribe_page'
+import { EMAIL_RE } from '@/lib/email-address'
 
 type State = 'idle' | 'submitting' | 'sent'
 
-export default function SubscribeForm() {
+// `source` is 'subscribe_page', or 'forward' when the reader came from the
+// welcome email's forward ask.
+export default function SubscribeForm({ source }: { source: string }) {
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -46,7 +47,7 @@ export default function SubscribeForm() {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           role: role || undefined,
-          source: SOURCE,
+          source,
         }),
       })
       if (!res.ok) {
@@ -55,7 +56,7 @@ export default function SubscribeForm() {
         setState('idle')
         return
       }
-      trackNewsletterSignup(SOURCE)
+      trackNewsletterSignup(source)
       markSubscribed()
       setState('sent')
     } catch {

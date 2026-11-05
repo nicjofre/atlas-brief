@@ -19,13 +19,14 @@ const PRIVATE_PREFIXES = [
 
 // Public POST endpoints: `/api/subscribe` (signup), `/api/track/view` (the
 // reader-analytics beacon from the public article page), `/api/track/capture`
-// (signup pop-up shown/dismissed/submitted), and
+// (signup pop-up shown/dismissed/submitted), `/api/unsubscribe` (the welcome
+// email's unsubscribe, verified by signed token), and
 // `/api/webhooks/resend` (Resend posts email events, verified by signature).
 // Every other /api/* route is admin-only and stays gated.
 const PUBLIC_API = new Set([
   '/api/subscribe', '/api/track/view', '/api/track/capture', '/api/webhooks/resend',
   '/api/tax-appeals/waitlist', '/api/deals/submit', '/api/white-paper/lead',
-  '/api/rso-briefing/lead',
+  '/api/rso-briefing/lead', '/api/unsubscribe',
 ])
 
 function isPrivatePath(pathname: string): boolean {

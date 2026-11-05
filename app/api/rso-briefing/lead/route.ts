@@ -10,7 +10,7 @@ export const runtime = 'nodejs'
 // dispatch (deduped), and emails the device-matched PDF. Mirrors the survival
 // guide mechanism.
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 function cleanText(v: unknown, max: number): string | null {
   if (typeof v !== 'string') return null

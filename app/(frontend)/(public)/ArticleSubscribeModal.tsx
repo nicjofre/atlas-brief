@@ -14,7 +14,7 @@ import './subscribe-modal.css'
 // insert-only (no UPDATE policy), so a two-step flow can't top up a row after
 // the fact. Same constraint the homepage form works around.
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_RE } from '@/lib/email-address'
 
 // The trigger measures progress through the BODY, not the page. These pieces
 // carry a lot above the prose (crumb, kicker, headline, deck, byline, hero,

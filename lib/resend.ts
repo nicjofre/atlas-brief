@@ -11,6 +11,8 @@
 //   RESEND_API_KEY      — secret API key from resend.com
 //   RESEND_AUDIENCE_ID  — the Audience (subscriber list) to mirror into
 
+import { LATEST_HEADING_PNG_BASE64 } from './email/latest-heading'
+
 const RESEND_API = 'https://api.resend.com'
 
 // Env values are read trimmed: Vercel/CI env editors silently keep trailing
@@ -175,6 +177,33 @@ export function sendDispatchTest(args: {
     reply_to: DISPATCH_REPLY_TO,
     subject: args.subject,
     html: args.html,
+  })
+}
+
+// The welcome email goes out on every fresh signup, so it sends from a no-reply
+// address with no reply_to: automatic sends shouldn't put spam in David's inbox
+// (Lucas, 2026-11-01). The one-click List-Unsubscribe headers let Gmail and
+// Apple Mail show their own Unsubscribe button; it POSTs to /api/unsubscribe.
+export const WELCOME_FROM = 'Atlas Brief <noreply@atlasbrief.la>'
+
+export function sendWelcomeEmail(args: {
+  to: string
+  html: string
+  unsubscribeUrl: string
+}): Promise<SendResult<{ id: string }>> {
+  if (!resendConfigured()) return Promise.resolve({ ok: false, error: 'Resend is not configured.' })
+  const oneClick = args.unsubscribeUrl.replace('/unsubscribe?', '/api/unsubscribe?')
+  return resendPost('/emails', {
+    from: WELCOME_FROM,
+    to: [args.to],
+    subject: 'Thanks for subscribing to Atlas Brief',
+    html: args.html,
+    // The handwritten "Latest" heading, shown inline via cid:latest.
+    attachments: [{ filename: 'latest.png', content: LATEST_HEADING_PNG_BASE64, content_id: 'latest' }],
+    headers: {
+      'List-Unsubscribe': `<${oneClick}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   })
 }
 

@@ -55,7 +55,15 @@ function dealKicker(a: ArticleCard): string {
   return [place, status].filter(Boolean).join(' · ') || a.cat_label || 'Brief'
 }
 
-export default async function SubscribePage() {
+export default async function SubscribePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string }>
+}) {
+  // The welcome email's forward ask links here with ?source=forward, so those
+  // signups are counted apart from people who found the page themselves.
+  const { source } = await searchParams
+  const formSource = source === 'forward' ? 'forward' : 'subscribe_page'
   // Most read first, by distinct readers over the last week — the same ranking
   // the homepage's Most Read uses. Anything it names that's no longer published
   // drops out; if the week is thin, the latest pieces fill the gap.
@@ -82,7 +90,7 @@ export default async function SubscribePage() {
               development and policy. One email a week. Free.
             </p>
 
-            <SubscribeForm />
+            <SubscribeForm source={formSource} />
 
             <div className="sp-cred">
               <p className="sp-cred-label">Written by</p>
