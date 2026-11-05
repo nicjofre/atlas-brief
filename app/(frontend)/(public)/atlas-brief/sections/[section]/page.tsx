@@ -141,21 +141,29 @@ export default async function SectionPage(
   const picks = mostRead
     .map(r => bySlug.get(r.slug))
     .filter((a): a is NonNullable<typeof a> => !!a)
-    .slice(0, 3)
+    .slice(0, 2)   // two picks, not three (Lucas, 2026-11-04), to shorten the right column
   for (const a of afterLead) {
-    if (picks.length >= 3) break
+    if (picks.length >= 2) break
     if (!picks.includes(a)) picks.push(a)
   }
   const stack = picks
   const stackLabel = 'Interesting deals'
-  const rest = afterLead
 
   // "Recent deals" under the picks, one card at a time (WeekCarousel): the
   // five newest entries that aren't the lead or a pick (Lucas, 2026-11-04).
   // It was "Others this week", a seven-day window, but a quiet week left one
   // card and nothing to rotate. The seven-day test is parked above the component.
   const notPicked = afterLead.filter(a => !picks.includes(a))
-  const weekCards: WeekCard[] = notPicked.slice(0, 5).map(a => ({
+  const recent = notPicked.slice(0, 5)
+
+  // The archive leaves out everything the top section shows (lead, picks,
+  // recent), so each deal appears once on the page (Lucas, 2026-11-04). It
+  // opens where the top section leaves off. A pick that drops out of the top
+  // two returns to its place in the archive on its own.
+  const shownAbove = new Set([...picks, ...recent].map(a => a.slug))
+  const rest = afterLead.filter(a => !shownAbove.has(a.slug))
+
+  const weekCards: WeekCard[] = recent.map(a => ({
     slug: a.slug,
     headline: calmHeadline(a.headline),
     heroUrl: a.heroUrl,
@@ -291,9 +299,20 @@ export default async function SectionPage(
           {/* No head here any more: the tabs below name the list and carry the
               counts, and "Every entry, newest first" stopped being true the
               moment a status filter was applied. */}
+          {/* "Our archive" heading (2026-11-04), in the hand of the
+              package's heads but without a line. It replaces the "Page 1 of
+              5" bar, which section.css hides on this page. */}
+          <h2 className={`cat-archive-hed ${hand.className}`}>
+            <span>Our archive</span>
+            {/* The red line, as after "Latest": the two main sections of the
+                page each open with one (Lucas, 2026-11-04). */}
+            <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M3 6 C 90 9, 180 3, 270 7 S 360 5, 397 6" />
+            </svg>
+          </h2>
           {/* Client-side because paging is a reader control; the first page
               is server-rendered either way. */}
-          <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} />
+          <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} pageSize={15} />
         </div>
       </section>
 

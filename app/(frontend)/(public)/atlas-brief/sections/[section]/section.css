@@ -957,3 +957,57 @@
    The handwriting stays; "Latest" keeps its line, as on the front page. The
    svg is still in page.tsx, so deleting this rule brings it back. */
 .cat-package .ts-stack > .ts-col-hed .cat-hand-line { display: none; }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — "Our archive": a handwritten heading in place of the
+   "Page 1 of N" bar, and a staircase grid on desktop. In each row of four the
+   cards step down left to right (0 / 40 / 80 / 120px), following the package
+   above, whose left column ends higher than its right. The space between the
+   package and the archive is tightened to pull the first step up. Tablet and
+   phone keep plain rows. Delete this block and the <h2> in page.tsx to undo.
+   --------------------------------------------------------------------------- */
+.cat-archive-hed {
+  margin: 0 0 clamp(16px, 2vw, 24px);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--brand-navy);
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+.tpc-tape .tpc-bar { display: none; }
+.cat-package .top-stories { padding-bottom: 0; }
+.archive-feed { padding-top: clamp(20px, 2.4vw, 32px) !important; }
+/* The staircase (cards stepping down 40/80/120px per row on desktop) was
+   tried and removed the same day: it added white space rather than filling it. */
+
+/* "Our archive" gets the red line too (Lucas, 2026-11-04): word, then the
+   line drawn to the edge of the page, like "Latest". The word tilts, the line
+   doesn't, so the tilt moves from the h2 to the span. */
+.cat-archive-hed {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transform: none;
+}
+.cat-archive-hed span { display: inline-block; transform: rotate(-2deg); white-space: nowrap; }
+.cat-archive-hed .cat-hand-line { flex: 1; width: 0; height: 10px; overflow: visible; }
+.cat-archive-hed .cat-hand-line path {
+  fill: none;
+  stroke: var(--brand-red);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Right column heads (Lucas, 2026-11-04): no red line after "Recent deals"
+   either, and "Interesting deals" / "Recent deals" underlined in their own
+   navy instead. The underline sits on the word, so it tilts with it. The
+   svgs are still in the markup; deleting these rules brings the lines back. */
+.cat-package .wk-hed .cat-hand-line { display: none; }
+.cat-package .ts-stack .ts-col-hed .cat-hand-label {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
+}

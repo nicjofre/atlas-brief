@@ -85,6 +85,11 @@ export type ArticleCard = Pick<
   kind?: 'brief' | 'post'
   listing: {
     status: string | null
+    // The deal's price, for the Tape archive's preview (2026-11-04): sale
+    // price when sold, list price when for sale. Optional so cards built
+    // elsewhere (bridged posts) needn't carry them.
+    sale_price?: number | null
+    list_price?: number | null
     property: {
       street_address: string | null
       city: string | null
@@ -129,6 +134,7 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
       hero_photo_url,
       listing:listings (
         status, hero_photo_url,
+        sale_price, list_price,
         property:properties (
           street_address, city, neighborhood, year_built, unit_count
         )
@@ -166,6 +172,8 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
       listing: {
         status: string | null
         hero_photo_url: string | null
+        sale_price: number | null
+        list_price: number | null
         property: ArticleCard['listing'] extends infer L ? L extends { property: infer P } ? P : never : never
       } | null
     }
@@ -186,7 +194,12 @@ export async function getArticles(opts: { sectionSlug?: string } = {}): Promise<
       updated_at: r.updated_at,
       heroUrl: resolveHeroUrl(supabase, raw),
       listing: r.listing
-        ? { status: r.listing.status, property: r.listing.property }
+        ? {
+            status: r.listing.status,
+            sale_price: r.listing.sale_price,
+            list_price: r.listing.list_price,
+            property: r.listing.property,
+          }
         : null,
     }
   })

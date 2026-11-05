@@ -291,3 +291,179 @@
   letter-spacing: 0;
   text-transform: none;
 }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the Tape archive, slimmed: five across on desktop (photo, place
+   and date, headline; the details line moved into the preview), and a preview
+   dialog on click (ArchivePreview.tsx). Tape only: .tpc-tape and .tpv exist
+   nowhere else. Delete this block, the onPreview wiring in CardFeed.tsx and
+   pageSize={15} in sections/[section]/page.tsx to go back.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1101px) {
+  .tpc-tape .tpc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+.tpc-tape .tpc-hed { font-size: 15px; }
+
+/* The dialog. Centred card on desktop, a sheet from the bottom on phones. */
+.tpv {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: var(--ink);
+  overflow: auto;
+  box-shadow: 0 18px 50px rgba(6, 24, 50, 0.28);
+}
+.tpv::backdrop { background: rgba(6, 12, 30, 0.62); }
+.tpv[open] { animation: tpv-in 180ms cubic-bezier(.2, .7, .3, 1) both; }
+.tpv[open]::backdrop { animation: tpv-fade-in 200ms ease-out both; }
+.tpv.is-closing { animation: tpv-out 160ms ease-in both; }
+.tpv.is-closing::backdrop { animation: tpv-fade-out 160ms ease-in both; }
+@keyframes tpv-in { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes tpv-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(6px) scale(.99); } }
+@keyframes tpv-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tpv-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+.tpv-card { position: relative; }
+.tpv-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--brand-navy);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tpv-x:hover { background: #FFFFFF; }
+.tpv-x:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 2px; }
+.tpv-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--rule-soft);
+}
+.tpv-body { padding: 20px 24px 24px; }
+/* The sold / for sale block, back where it has room to be information. Flat,
+   no shadow: the old badge's inset shadow and spaced caps read as a sticker. */
+.tpv-status {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 9px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+}
+.tpv-sold    { background: #A31414; }
+.tpv-forsale { background: #0A5417; }
+.tpv-other   { background: var(--brand-navy); }
+.tpv-hed {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(20px, 2.2vw, 24px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.tpv-meta { margin: 0 0 12px; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.tpv-blurb {
+  margin: 0 0 20px;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tpv-more {
+  display: inline-block;
+  padding: 11px 20px;
+  border-radius: 2px;
+  background: var(--brand-red);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: background-color .15s;
+}
+.tpv-more:hover { background: #C42A2A; color: #FFFFFF; }
+.tpv-more:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .tpv {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 88vh;
+    margin: auto 0 0;
+    border-radius: 12px 12px 0 0;
+  }
+  .tpv[open] { animation-name: tpv-sheet-in; }
+  .tpv.is-closing { animation-name: tpv-sheet-out; }
+  .tpv-body { padding: 18px 18px 28px; }
+}
+@keyframes tpv-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes tpv-sheet-out { from { transform: none; } to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .tpv[open], .tpv[open]::backdrop, .tpv.is-closing, .tpv.is-closing::backdrop { animation: none; }
+}
+/* The close button's X, drawn and centred (was the × character). */
+.tpv-x { display: inline-flex; align-items: center; justify-content: center; }
+.tpv-x svg { display: block; }
+.tpv-x path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.tpv-card:focus { outline: none; }
+
+/* Preview additions (2026-11-04): the price as the one number, the headline
+   as a link, and Previous / Next beside Read more. */
+.tpv-hed a { color: inherit; text-decoration: none; }
+.tpv-hed a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.tpv-hed a:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.tpv-price {
+  margin: 2px 0 6px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.tpv-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.tpv-nav { display: flex; gap: 18px; }
+.tpv-nav button {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-navy);
+  cursor: pointer;
+}
+.tpv-nav button:hover:not(:disabled) { color: var(--brand-red); }
+.tpv-nav button:disabled { color: var(--rule); cursor: default; }
+.tpv-nav button:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }

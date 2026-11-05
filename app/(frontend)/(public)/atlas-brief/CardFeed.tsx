@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import type { ArticleCard } from '@/lib/db/articles'
-import { cardMeta, statusBadgeKey, statusKicker } from '@/lib/db/article-render'
 import { calmHeadline } from '@/lib/db/headline-case'
+import ArchivePreview from './ArchivePreview'
 
 // The paged card feed, shared by The Tape and Dispatch. Every entry as a card
 // grid in the same language as the homepage's centre package — cards rather
@@ -58,15 +58,31 @@ function cardKicker(a: ArticleCard, stream: Stream, fallback: string): string {
 
 export type Stream = 'tape' | 'dispatch'
 
-function FeedCard({ a, stream, fallback }: { a: ArticleCard; stream: Stream; fallback: string }) {
+function FeedCard({ a, stream, fallback, onPreview }: {
+  a: ArticleCard
+  stream: Stream
+  fallback: string
+  // Tape only (2026-11-04): a plain click opens ArchivePreview instead of the
+  // article. Modified and middle clicks fall through to the link as normal.
+  onPreview?: (a: ArticleCard) => void
+}) {
   const p = a.listing?.property ?? null
+  const preview = onPreview
+    ? (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+        e.preventDefault()
+        onPreview(a)
+      }
+    : undefined
   // Listing chrome — the place line, the status badge — only means anything on
   // a brief. A dispatch gets its deck in that slot instead.
   const isTape = stream === 'tape'
-  const meta = isTape ? cardMeta(p) : (a.deck ?? a.excerpt ?? '')
+  // The Tape's units/year/place line moved into the preview (2026-11-04) to
+  // slim the archive cards; it was `isTape ? cardMeta(p) : ...`.
+  const meta = isTape ? '' : (a.deck ?? a.excerpt ?? '')
   return (
     <article className="tpc-card">
-      <Link href={`/atlas-brief/${a.slug}`} className="tpc-thumb" tabIndex={-1} aria-hidden="true">
+      <Link href={`/atlas-brief/${a.slug}`} className="tpc-thumb" tabIndex={-1} aria-hidden="true" onClick={preview}>
         {a.heroUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={a.heroUrl} alt="" loading="lazy" width={420} height={236} />
@@ -85,16 +101,19 @@ function FeedCard({ a, stream, fallback }: { a: ArticleCard; stream: Stream; fal
       </div>
 
       <h3 className="tpc-hed">
-        <Link href={`/atlas-brief/${a.slug}`}>{calmHeadline(a.headline)}</Link>
+        <Link href={`/atlas-brief/${a.slug}`} onClick={preview}>{calmHeadline(a.headline)}</Link>
       </h3>
 
       {meta && <p className={isTape ? 'tpc-place' : 'tpc-dek'}>{meta}</p>}
 
-      {isTape && a.listing?.status && (
-        <span className={`badge badge-${statusBadgeKey(a.listing.status)} tpc-badge`}>
-          {statusKicker(a.listing.status)}
-        </span>
-      )}
+      {/* PARKED (2026-11-04, Lucas: "get rid of those red and green sold
+          boxes"): the status badge under each Tape card. Restore by pasting
+          this back and re-importing statusBadgeKey/statusKicker.
+          {isTape && a.listing?.status && (
+            <span className={`badge badge-${statusBadgeKey(a.listing.status)} tpc-badge`}>
+              {statusKicker(a.listing.status)}
+            </span>
+          )} */}
     </article>
   )
 }
@@ -103,13 +122,19 @@ export default function CardFeed({
   rows,
   stream,
   fallbackLabel,
+  pageSize = PAGE_SIZE,
 }: {
   rows: ArticleCard[]
   stream: Stream
   // Kicker text for an entry that carries no category of its own.
   fallbackLabel: string
+  // Cards per page (2026-11-04). The Tape passes 15, three rows of five;
+  // Owner's Notes keeps the default 24.
+  pageSize?: number
 }) {
   const [page, setPage] = useState(0)
+  // The deal open in the Tape's preview, if any (ArchivePreview).
+  const [previewing, setPreviewing] = useState<ArticleCard | null>(null)
   // True while the outgoing page is fading. The swap happens at the far end of
   // that fade, so the cards never change in front of the reader.
   const [fading, setFading] = useState(false)
@@ -119,10 +144,10 @@ export default function CardFeed({
   const turned = useRef(false)
   const fadeTimer = useRef<number | null>(null)
 
-  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
   // Clamp rather than trust: the feed can shrink under us between renders.
   const current = Math.min(page, pageCount - 1)
-  const shown = rows.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE)
+  const shown = rows.slice(current * pageSize, current * pageSize + pageSize)
 
   // Matches the .tpc-grid transition in section.css. Kept in sync by hand —
   // reading it off the element would mean a getComputedStyle per click for a
@@ -187,7 +212,13 @@ export default function CardFeed({
 
           <div className={`tpc-grid${fading ? ' is-fading' : ''}`} ref={gridRef}>
             {shown.map(a => (
-              <FeedCard key={a.id} a={a} stream={stream} fallback={fallbackLabel} />
+              <FeedCard
+                key={a.id}
+                a={a}
+                stream={stream}
+                fallback={fallbackLabel}
+                onPreview={stream === 'tape' ? setPreviewing : undefined}
+              />
             ))}
           </div>
 
@@ -233,6 +264,14 @@ export default function CardFeed({
             </nav>
           )}
         </>
+      )}
+      {stream === 'tape' && (
+        <ArchivePreview
+          article={previewing}
+          list={rows}
+          onNavigate={setPreviewing}
+          onClosed={() => setPreviewing(null)}
+        />
       )}
     </div>
   )
