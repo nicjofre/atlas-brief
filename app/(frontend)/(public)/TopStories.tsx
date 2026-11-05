@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import type { ArticleCard } from '@/lib/db/articles'
 import { calmHeadline } from '@/lib/db/headline-case'
 import './top-stories.css'
@@ -32,6 +33,7 @@ export default function TopStories({
   mostRead,
   leadLabel,
   stackLabel,
+  stackFooter,
 }: {
   lead: ArticleCard
   stack: ArticleCard[]
@@ -39,8 +41,13 @@ export default function TopStories({
   // Optional column headings. The front page runs without them — the masthead
   // says what the package is — but a section page uses them to divide the
   // newest entry from the rest of the week.
-  leadLabel?: string
-  stackLabel?: string
+  // ReactNode rather than string (2026-11-04) so the Tape can pass its
+  // handwritten "Latest"; plain strings render exactly as before.
+  leadLabel?: ReactNode
+  stackLabel?: ReactNode
+  // Optional extra content under the stack (2026-11-04): the Tape's rotating
+  // "Others this week" card. Nothing renders when it's left out.
+  stackFooter?: ReactNode
 }) {
   const hasMostRead = mostRead.length >= 3
   return (
@@ -86,6 +93,7 @@ export default function TopStories({
                 )}
               </article>
             ))}
+            {stackFooter}
           </div>
 
           {hasMostRead && (

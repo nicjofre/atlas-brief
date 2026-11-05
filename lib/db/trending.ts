@@ -54,3 +54,39 @@ export const getTrending = unstable_cache(queryTrending, ['trending-articles'], 
   revalidate: REVALIDATE_SECONDS,
   tags: ['trending'],
 })
+
+// Most read over any window (2026-11-04), for the Tape's "Interesting deals".
+// Same ranking and failure behaviour as getTrending above, which stays as it
+// is for the front page. Returns more rows than a page shows so the caller can
+// filter to its own section; unstable_cache keys on the arguments.
+async function queryMostRead(days: number, limit: number): Promise<TrendingRow[]> {
+  if (!process.env.DATABASE_URI) return []
+  const client = new Client({ connectionString: process.env.DATABASE_URI })
+  try {
+    await client.connect()
+    const { rows } = await client.query<TrendingRow>(
+      `select slug,
+              count(*)::int                        as views,
+              count(distinct visitor_hash)::int    as readers
+         from post_views
+        where kind = 'article'
+          and slug is not null
+          and viewed_at >= now() - make_interval(days => $1)
+        group by slug
+        order by readers desc, views desc
+        limit $2`,
+      [days, limit],
+    )
+    return rows
+  } catch (err) {
+    console.error('[getMostRead] query failed', err)
+    return []
+  } finally {
+    await client.end().catch(() => {})
+  }
+}
+
+export const getMostRead = unstable_cache(queryMostRead, ['most-read-articles'], {
+  revalidate: REVALIDATE_SECONDS,
+  tags: ['trending'],
+})

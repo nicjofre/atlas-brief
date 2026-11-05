@@ -511,3 +511,449 @@
   .cat-hero-img img { object-position: center 46%; }
   .cat-masthead::after { display: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the masthead in the front page's hand (Nic's October flag).
+   Everything above stays as it was; this block overrides it.
+
+   BACKUP — the Tape page as it was before 2026-11-04 (main @ f5a1a1e). Paste
+   back to restore. Delete this block only after Lucas confirms.
+
+   1. CSS: every rule above this block is the old page, untouched. Deleting
+      this block brings the old masthead back.
+
+   2. page.tsx, the masthead title (the wordmark is also parked there):
+        <div className="cat-mark">
+          <span className="cat-wordmark">Atlas <em>Brief</em></span>
+        </div>
+        <h1>
+          {section.name} <em>{section.emName}</em>
+        </h1>
+
+   3. page.tsx, the feed section's inline style:
+        padding: 'clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px)',
+        borderTop: '1px solid var(--ink)',
+        borderBottom: '1px solid var(--ink)',
+
+   4. ../../CardFeed.tsx, cardKicker() for the Tape:
+        const status = statusKicker(a.listing?.status)
+        const p = a.listing?.property
+        const place = p?.neighborhood ?? p?.city ?? a.cat_label ?? fallback
+        return [status, place].filter(Boolean).join(' · ')
+
+   5. ../../cards.css: the old .tpc-kicker and .tpc-plate span rules are in
+      a BACKUP comment at the foot of that file.
+   --------------------------------------------------------------------------- */
+.cat-masthead { border-bottom: 0; }
+.cat-masthead-inner,
+.cat-masthead-inner > div:first-child { text-align: left; }
+.cat-masthead-inner {
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;
+}
+/* The front page's .ft-hand-rule, at masthead size: the name in Caveat, then a
+   red line drawn out to the edge of the page. A copy under this page's own
+   class rather than a shared one: front-top.css only loads on the front page,
+   and shared generic names have leaked between routes before. */
+.cat-masthead h1.cat-hand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  font-size: clamp(40px, 4.6vw, 64px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--brand-navy);
+}
+.cat-masthead h1.cat-hand span {
+  display: inline-block;
+  white-space: nowrap;
+  transform: rotate(-2deg);
+}
+.cat-masthead h1.cat-hand svg { flex: 1; width: 0; height: 12px; overflow: visible; }
+.cat-masthead h1.cat-hand path {
+  fill: none;
+  stroke: var(--brand-red);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+/* Place and date in plain sentence case: "Los Angeles, Wednesday, November 4,
+   2026". Was tracked caps split by a middle dot. */
+.cat-masthead .cat-dateline {
+  justify-content: flex-start;
+  gap: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+.cat-masthead .cat-dateline span::after {
+  content: ",\00a0";
+  margin-left: 0;
+  color: inherit;
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — TopStories' labels and kickers in sentence case, on the Tape
+   only (.cat-package wraps the package in page.tsx). The front page and
+   Owner's Notes keep Nic's top-stories.css untouched.
+
+   BACKUP — the rules this block overrides, in top-stories.css (still live
+   there; deleting this block restores them on this page):
+     .ts-col-hed      { font-size: 13px; font-weight: 700; letter-spacing: .04em;
+                        text-transform: uppercase; }
+     .ts-kicker span  { font-weight: 700; letter-spacing: .04em;
+                        text-transform: uppercase; color: var(--brand-red); }
+   The dateline also lost its weekday in page.tsx: it read "Wednesday,
+   November 4, 2026" (`weekday: 'long'` in dateline()).
+   --------------------------------------------------------------------------- */
+.cat-package .ts-col-hed {
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.cat-package .ts-kicker span {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the title in bold Times, like the logo (.nav-logo and the front
+   page's .mast-wordmark). Lucas picked this over the handwriting. Overrides
+   the .cat-hand block above, which is the backup for the handwritten version:
+   it set Caveat (from page.tsx), font-size clamp(40px, 4.6vw, 64px), weight
+   600, and tilted the words -2deg.
+   --------------------------------------------------------------------------- */
+.cat-masthead h1.cat-hand {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+.cat-masthead h1.cat-hand span { transform: none; }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — a one-line description of the Tape in the empty space right of
+   the title. The title's column becomes a two-column grid: name and dateline
+   on the left, the description on the right, bottoms lined up. Stacks under
+   the dateline on narrow screens. Delete this block and the <p> in page.tsx
+   to remove it.
+   --------------------------------------------------------------------------- */
+.cat-masthead-inner > div:first-child {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(32px, 6vw, 96px);
+  align-items: end;
+}
+.cat-masthead h1.cat-hand,
+.cat-masthead .cat-dateline { grid-column: 1; }
+.cat-masthead .cat-about {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  max-width: 44ch;
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+@media (max-width: 760px) {
+  .cat-masthead-inner > div:first-child { grid-template-columns: 1fr; }
+  .cat-masthead .cat-about {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+    margin-top: 14px;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the header set on the package's grid (top-stories.css .ts-grid,
+   no-rail: 7fr | 4fr, 3fr | 2fr under 1100px, one column under 720px). The
+   title sits over "Latest"; the description starts exactly where "Others this
+   week" does (same gap, same inset as the stack's divider), so it stops
+   floating. The gap between the header and the package is tightened too.
+   Overrides the description block above; delete this block to go back to it.
+   --------------------------------------------------------------------------- */
+.cat-masthead-inner > div:first-child {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  column-gap: clamp(24px, 2.6vw, 40px);
+}
+.cat-masthead .cat-about {
+  justify-self: stretch;
+  max-width: none;
+  padding-left: clamp(24px, 2.6vw, 40px);
+  font-size: 17px;
+  line-height: 1.45;
+}
+.cat-package .top-stories { padding-top: clamp(24px, 2.8vw, 40px); }
+@media (max-width: 1100px) {
+  .cat-masthead-inner > div:first-child {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
+@media (max-width: 720px) {
+  .cat-masthead-inner > div:first-child { grid-template-columns: 1fr; }
+  .cat-masthead .cat-about {
+    grid-column: 1;
+    grid-row: auto;
+    padding-left: 0;
+    margin-top: 14px;
+    font-size: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — description joined to the title (Lucas: "connect the
+   description to the title"), and the title in brand red. One column: title,
+   description, dateline. Overrides the two-column grid above; delete this
+   block to go back to it (title was var(--brand-navy)).
+   --------------------------------------------------------------------------- */
+.cat-masthead-inner > div:first-child { grid-template-columns: minmax(0, 1fr); }
+.cat-masthead h1.cat-hand { grid-column: 1; grid-row: 1; color: var(--brand-red); }
+.cat-masthead .cat-about {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  max-width: 62ch;
+  padding-left: 0;
+  margin: 2px 0 10px;
+}
+.cat-masthead .cat-dateline { grid-column: 1; grid-row: 3; }
+@media (max-width: 1100px) {
+  .cat-masthead-inner > div:first-child { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .cat-masthead .cat-about { grid-row: 2; margin: 2px 0 10px; }
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — description beside the title, not under it: "The Tape" then
+   the sentence right next to it, the dateline under the title. Overrides the
+   stacked block above; delete this block to go back to it.
+   --------------------------------------------------------------------------- */
+.cat-masthead-inner > div:first-child {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(24px, 3vw, 44px);
+  align-items: center;
+}
+.cat-masthead h1.cat-hand { grid-column: 1; grid-row: 1; }
+.cat-masthead .cat-about {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  align-self: center;
+  max-width: 46ch;
+  margin: 0;
+}
+.cat-masthead .cat-dateline { grid-column: 1 / -1; grid-row: 2; }
+@media (max-width: 1100px) {
+  .cat-masthead-inner > div:first-child { grid-template-columns: auto minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .cat-masthead-inner > div:first-child { grid-template-columns: 1fr; }
+  .cat-masthead .cat-about { grid-column: 1; grid-row: 2; margin: 2px 0 10px; }
+  .cat-masthead .cat-dateline { grid-row: 3; }
+}
+/* Two lines, running further right (was 46ch, three lines). Balanced so the
+   two lines come out about even. */
+.cat-masthead .cat-about { max-width: 68ch; text-wrap: balance; }
+/* One line where the screen allows (Lucas, 2026-11-04): no width cap, and a
+   point smaller so the whole sentence fits beside the title on a desktop.
+   Narrower screens still wrap (balanced) rather than overflow. */
+.cat-masthead .cat-about { max-width: none; font-size: 16px; }
+
+/* 2026-11-04 — "The" navy, "Tape" red, like the logo's "Atlas Brief"; and a
+   red rule under the description, the width of its text. Was: the whole title
+   red, no rule. */
+.cat-masthead h1.cat-hand { color: var(--brand-navy); }
+.cat-masthead h1.cat-hand em { font-style: normal; color: var(--brand-red); }
+.cat-masthead .cat-about {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--brand-red);   /* was 2px */
+}
+/* Italic, and the last clause on its own line (the <br> is in page.tsx). */
+.cat-masthead .cat-about { font-style: italic; text-wrap: wrap; }
+/* A red underline on each line of the description, instead of one rule under
+   the block (was border-bottom: 1px solid var(--brand-red); padding-bottom: 6px). */
+.cat-masthead .cat-about {
+  border-bottom: 0;
+  padding-bottom: 0;
+  text-decoration: underline;
+  text-decoration-color: var(--brand-red);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  line-height: 1.6;
+}
+.cat-masthead .cat-about { line-height: 2; }   /* more room between the two lines (was 1.6) */
+/* Description pops more (Lucas, 2026-11-04): bigger, full navy, a touch
+   heavier. Was 16px, var(--ink-soft), regular weight, line-height 2. */
+.cat-masthead .cat-about {
+  font-size: clamp(18px, 1.55vw, 22px);
+  font-weight: 500;
+  color: var(--brand-navy);
+  line-height: 1.85;
+  text-underline-offset: 6px;
+}
+/* No underlines (Lucas, 2026-11-04): underlined text reads as a link. Was
+   text-decoration: underline, red, 1px, offset 6px, on each line. */
+.cat-masthead .cat-about { text-decoration: none; line-height: 1.55; }
+.cat-masthead .cat-about { font-weight: 700; }   /* bold (Lucas, 2026-11-04); was 500 */
+/* TRIAL (2026-11-04): description further right. Gap was
+   clamp(24px, 3vw, 44px); delete this rule to put it back. */
+.cat-masthead-inner > div:first-child { column-gap: clamp(40px, 7vw, 110px); }
+@media (max-width: 720px) { .cat-masthead-inner > div:first-child { column-gap: 0; } }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the Tape's "Latest" in the front page's hand (front-top.css
+   .ft-hand-rule): Caveat, navy, tilted, then a red line drawn to the column's
+   edge. Lead column only; "Others this week" keeps the plain label.
+   Was: bold sans 15px over a 1px ink rule (top-stories.css .ts-col-hed, with
+   the sentence-case override above). Delete this block and pass
+   leadLabel="Latest" in page.tsx to go back.
+   --------------------------------------------------------------------------- */
+.cat-package .ts-lead .ts-col-hed {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -4px 0 14px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.cat-package .cat-hand-label {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--brand-navy);
+  display: inline-block;
+  transform: rotate(-2deg);
+}
+.cat-package .cat-hand-line { flex: 1; width: 0; height: 10px; overflow: visible; }
+.cat-package .cat-hand-line path {
+  fill: none;
+  stroke: var(--brand-red);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* "Others this week" in the same hand and line as "Latest" (Lucas,
+   2026-11-04). Was the plain bold label over a 1px ink rule. */
+.cat-package .ts-stack .ts-col-hed {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -4px 0 14px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* No vertical divider between "Latest" and the stack (Lucas, 2026-11-04).
+   top-stories.css draws it as border-left: 1px solid var(--rule) on
+   .ts-grid > * + *; the column gap still separates them. */
+.cat-package .ts-grid > * + * { border-left: 0; }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — "Others this week": one large card at a time under "Interesting
+   deals" (WeekCarousel.tsx). The heading reuses the handwritten rule above
+   (.cat-package .ts-stack .ts-col-hed). Remove with the stackFooter prop in
+   page.tsx and this block.
+   --------------------------------------------------------------------------- */
+.wk { margin-top: clamp(28px, 3vw, 40px); }
+.wk-card { transition: opacity .3s ease; }
+.wk-card.is-fading { opacity: 0; }
+.wk-img { display: block; margin-bottom: 12px; overflow: hidden; }
+.wk-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--rule-soft);
+  transition: opacity .15s;
+}
+.wk-img:hover img { opacity: .92; }
+.wk-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(20px, 1.7vw, 24px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  /* Two lines held open so the controls don't jump as headlines change. */
+  min-height: 2.4em;
+}
+.wk-title a { color: var(--ink); }
+.wk-title a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.wk-title a:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.wk-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.wk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--brand-navy);
+  border-radius: 50%;
+  font-family: var(--sans);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--brand-navy);
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.wk-btn span { display: block; margin-top: -2px; }
+.wk-btn:hover { background: var(--brand-navy); color: #FFFFFF; }
+.wk-btn:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+.wk-count { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+.cat-package .wk .ts-kicker span { letter-spacing: 0; text-transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .wk-card, .wk-img img { transition: none; }
+}
+
+/* Dots under the rotating card, replacing the arrows (Lucas, 2026-11-04).
+   Navy rings, the current one filled red, like the feed's pager dots. */
+.wk-controls { gap: 10px; margin-top: 16px; }
+.wk-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid var(--brand-navy);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .15s;
+}
+.wk-dot:hover { background: var(--brand-navy); }
+.wk-dot.is-active {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  transform: scale(1.25);
+}
+.wk-dot:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .wk-dot { transition: none; }
+  .wk-dot.is-active { transform: none; }
+}
+.wk-controls { justify-content: center; }   /* Dots centred under the card (Lucas, 2026-11-04) */
+
+/* No red line after "Interesting deals" (Lucas, 2026-11-04: "a bit much").
+   The handwriting stays; "Latest" keeps its line, as on the front page. The
+   svg is still in page.tsx, so deleting this rule brings it back. */
+.cat-package .ts-stack > .ts-col-hed .cat-hand-line { display: none; }

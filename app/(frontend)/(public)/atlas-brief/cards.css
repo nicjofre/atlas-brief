@@ -266,3 +266,28 @@
   background: var(--brand-navy);
   border-color: var(--brand-navy);
 }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the Tape's kickers and plates in sentence case, overriding the
+   rules above. Scoped to .tpc-tape so Owner's Notes is untouched.
+
+   BACKUP — the rules as they were before (main @ f5a1a1e). They're still live
+   above; deleting this block restores them. Delete only after Lucas confirms.
+     .tpc-kicker    { font-weight: 700; letter-spacing: 0.06em;
+                      text-transform: uppercase; color: var(--brand-red); }
+     .tpc-plate span { font-family: var(--mono); font-size: 11px;
+                      line-height: 1.35; letter-spacing: 0.06em;
+                      text-transform: uppercase; color: rgba(255,255,255,0.86); }
+   --------------------------------------------------------------------------- */
+.tpc-tape .tpc-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.tpc-tape .tpc-plate span {
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}

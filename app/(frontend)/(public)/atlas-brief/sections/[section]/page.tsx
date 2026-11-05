@@ -5,9 +5,13 @@ import Footer from '../../../Footer'
 import ArticleSubscribeModal from '../../../ArticleSubscribeModal'
 import { createClient } from '@/lib/supabase/server'
 import { getArticles } from '@/lib/db/articles'
+import { getMostRead } from '@/lib/db/trending'
+import { calmHeadline } from '@/lib/db/headline-case'
+import WeekCarousel, { type WeekCard } from './WeekCarousel'
 import CardFeed from '../../CardFeed'
 import TopStories from '../../../TopStories'
 import { sectionLabel } from '@/lib/db/article-render'
+import { hand } from '../../../hand-font'
 import '../../feed.css'
 import '../../cards.css'
 import './section.css'
@@ -67,11 +71,25 @@ export async function generateMetadata(
 function dateline(): string {
   return new Date().toLocaleDateString('en-US', {
     timeZone: 'America/Los_Angeles',
-    weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+// PARKED: the seven-day test "Others this week" used, before it became the five
+// most recent. Module-level so the clock is read outside the component body
+// (react-hooks/purity).
+//   function publishedWithinDays(s: string | null | undefined, days: number): boolean {
+//     if (!s) return false
+//     const t = new Date(s).getTime()
+//     return !Number.isNaN(t) && Date.now() - t <= days * 24 * 60 * 60 * 1000
+//   }
+const MONTHS_AP = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.']
+function apDate(s: string | null | undefined): string {
+  if (!s) return ''
+  const d = new Date(s)
+  return Number.isNaN(d.getTime()) ? '' : `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}`
 }
 
 export default async function SectionPage(
@@ -98,18 +116,53 @@ export default async function SectionPage(
   // the week falls into the feed. On a quiet week the window can come back
   // empty, so it falls back to the five most recent and says so instead of
   // claiming they're from this week.
-  const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  //
+  // 2026-11-04: the stack is now "Interesting deals", the three most-read Tape
+  // entries over the last 30 days (Lucas's pick), instead of the rest of the
+  // week. If view data is thin it tops up with the newest entries. The feed
+  // below keeps every entry after the lead in date order, so a pick can also
+  // appear there; that beats leaving a hole in the chronology.
+  //
+  // BACKUP — the seven-day stack this replaced. Delete only after Lucas confirms.
+  //   const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  //   const withinWeek = afterLead.filter(a => {
+  //     if (!a.published_at) return false
+  //     const t = new Date(a.published_at).getTime()
+  //     return !Number.isNaN(t) && Date.now() - t <= WEEK_MS
+  //   })
+  //   const thisWeek = withinWeek.length > 0
+  //   const stack = (thisWeek ? withinWeek : afterLead).slice(0, 5)
+  //   const stackLabel = thisWeek ? 'Others This Week' : 'Most Recent'
+  //   const stackSlugs = new Set(stack.map(a => a.slug))
+  //   const rest = afterLead.filter(a => !stackSlugs.has(a.slug))
   const [lead, ...afterLead] = list
-  const withinWeek = afterLead.filter(a => {
-    if (!a.published_at) return false
-    const t = new Date(a.published_at).getTime()
-    return !Number.isNaN(t) && Date.now() - t <= WEEK_MS
-  })
-  const thisWeek = withinWeek.length > 0
-  const stack = (thisWeek ? withinWeek : afterLead).slice(0, 5)
-  const stackLabel = thisWeek ? 'Others This Week' : 'Most Recent'
-  const stackSlugs = new Set(stack.map(a => a.slug))
-  const rest = afterLead.filter(a => !stackSlugs.has(a.slug))
+  const bySlug = new Map(afterLead.map(a => [a.slug, a]))
+  const mostRead = await getMostRead(30, 60)
+  const picks = mostRead
+    .map(r => bySlug.get(r.slug))
+    .filter((a): a is NonNullable<typeof a> => !!a)
+    .slice(0, 3)
+  for (const a of afterLead) {
+    if (picks.length >= 3) break
+    if (!picks.includes(a)) picks.push(a)
+  }
+  const stack = picks
+  const stackLabel = 'Interesting deals'
+  const rest = afterLead
+
+  // "Recent deals" under the picks, one card at a time (WeekCarousel): the
+  // five newest entries that aren't the lead or a pick (Lucas, 2026-11-04).
+  // It was "Others this week", a seven-day window, but a quiet week left one
+  // card and nothing to rotate. The seven-day test is parked above the component.
+  const notPicked = afterLead.filter(a => !picks.includes(a))
+  const weekCards: WeekCard[] = notPicked.slice(0, 5).map(a => ({
+    slug: a.slug,
+    headline: calmHeadline(a.headline),
+    heroUrl: a.heroUrl,
+    place: a.listing?.property?.neighborhood ?? a.listing?.property?.city ?? 'The Tape',
+    date: apDate(a.published_at),
+  }))
+  const weekLabel = 'Recent deals'
 
   return (
     <>
@@ -129,11 +182,26 @@ export default async function SectionPage(
                 away if that changes.
                 `eyebrow` stays on the registry entry: the (hidden) photo
                 caption still reads it, and it's the string to fall back to. */}
-            <div className="cat-mark">
-              <span className="cat-wordmark">Atlas <em>Brief</em></span>
-            </div>
-            <h1>
-              {section.name} <em>{section.emName}</em>
+            {/* PARKED (2026-11-04): the small wordmark above the title. The nav
+                already carries the name, and Nic's front page shows it once.
+                <div className="cat-mark">
+                  <span className="cat-wordmark">Atlas <em>Brief</em></span>
+                </div>
+                The title was `{section.name} <em>{section.emName}</em>`, a serif
+                lockup with a red rule. It's in the front page's hand now: the
+                same Caveat heading and drawn red line as "The Tape" there. */}
+            {/* Bold Times like the logo (2026-11-04, Lucas's pick). It was in
+                the front page's hand: className={`cat-hand ${hand.className}`}
+                style={{ fontFamily: hand.style.fontFamily }}, with
+                `import { hand } from '../../../hand-font'` at the top. */}
+            <h1 className="cat-hand">
+              {/* "Tape" in red, the way the logo sets "Brief". */}
+              <span>{section.name} <em>{section.emName}</em></span>
+              {/* PARKED (2026-11-04, Lucas: "get rid of that red line"): the
+                  drawn red line out to the page edge, from the front page.
+                  <svg viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M3 6 C 80 10, 160 3, 240 7 S 350 4, 397 6" />
+                  </svg> */}
             </h1>
             {/* The deck and the sold/for-sale row came out on 2026-09-22,
                 following Dispatch. Both were explaining the section to someone
@@ -145,7 +213,19 @@ export default async function SectionPage(
               <span>Los Angeles</span>
               <time dateTime={new Date().toISOString().slice(0, 10)}>{dateline()}</time>
             </p>
-          </div>
+            {/* What the Tape is, in the space right of the title (2026-11-04,
+                Lucas's ask). Same sentence as the meta description, so the
+                two can't drift apart. */}
+            {/* Broken before its last clause (", and what an operator thinks
+                of the number." on its own line). Split here rather than in the
+                registry string, which is also the meta description. */}
+            <p className="cat-about">
+              {(() => {
+                const i = section.deck.lastIndexOf(', and ')
+                if (i < 0) return section.deck
+                return <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</>
+              })()}
+            </p>          </div>
           <div className="cat-hero-img">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={section.heroImage} alt={`${section.name} ${section.emName}`} />
@@ -154,22 +234,57 @@ export default async function SectionPage(
         </div>
       </header>
 
+      {/* .cat-package lets section.css restyle TopStories' labels on this page
+          only; the front page and Owner's Notes keep Nic's styles. */}
       {lead && (
-        <TopStories
-          lead={lead}
-          stack={stack}
-          mostRead={[]}
-          leadLabel="Latest"
-          stackLabel={stackLabel}
-        />
+        <div className="cat-package">
+          <TopStories
+            lead={lead}
+            stack={stack}
+            mostRead={[]}
+            // The front page's handwritten "Latest" (FrontTop.tsx): the word
+            // in Caveat, then a red line drawn out to the column's edge.
+            // Was leadLabel="Latest".
+            leadLabel={
+              <>
+                <span className={`cat-hand-label ${hand.className}`}>Latest</span>
+                <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M3 7 C 70 3, 140 10, 210 6 S 340 3, 397 7" />
+                </svg>
+              </>
+            }
+            // Same hand and line as "Latest", so the two columns match.
+            stackLabel={
+              <>
+                <span className={`cat-hand-label ${hand.className}`}>{stackLabel}</span>
+                <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M3 6 C 80 10, 160 3, 240 7 S 350 4, 397 6" />
+                </svg>
+              </>
+            }
+            stackFooter={
+              <WeekCarousel
+                items={weekCards}
+                heading={
+                  <>
+                    <span className={`cat-hand-label ${hand.className}`}>{weekLabel}</span>
+                    <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+                      <path d="M3 7 C 90 3, 170 9, 250 5 S 350 8, 397 6" />
+                    </svg>
+                  </>
+                }
+              />
+            }
+          />
+        </div>
       )}
 
       <section
         className="archive-feed"
         style={{
+          // The 1px ink rules above and below came out on 2026-11-04, as Nic
+          // took the rules off the front page: the spacing separates it.
           padding: 'clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px)',
-          borderTop: '1px solid var(--ink)',
-          borderBottom: '1px solid var(--ink)',
         }}
       >
         <div className="wrap">

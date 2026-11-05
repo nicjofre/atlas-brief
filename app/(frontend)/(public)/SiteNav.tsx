@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import AtlasMark from './AtlasMark'
 
 // The public site header. Client component so the hamburger menu is interactive.
 // Desktop: editorial links centered, CTA cluster right (Work with Atlas / Tax
@@ -59,11 +58,16 @@ export default function SiteNav() {
       ) : (
       <nav className="nav">
         <div className="nav-inner">
-          {/* Lockup = roundel + wordmark + tracked tagline, per the identity sheet.
+          {/* The name alone, set like the front page's flag (2026-11-04).
+              BACKUP — the lockup it replaced (roundel + wordmark + tracked
+              tagline, per the identity sheet). Paste back, and re-add
+              `import AtlasMark from './AtlasMark'`, to restore. Delete only
+              after Lucas confirms.
+                <Link href="/" className="nav-logo" onClick={closeMenu}><AtlasMark /><span className="nav-wordmark">Atlas <em>Brief</em></span></Link>
+                <span className="nav-tagline" aria-hidden="true">Los Angeles<br />Real Estate<br />Intelligence</span>
               One grid cell so the nav stays a 3-column layout. */}
           <div className="nav-lockup">
-            <Link href="/" className="nav-logo" onClick={closeMenu}><AtlasMark /><span className="nav-wordmark">Atlas <em>Brief</em></span></Link>
-            <span className="nav-tagline" aria-hidden="true">Los Angeles<br />Real Estate<br />Intelligence</span>
+            <Link href="/" className="nav-logo" onClick={closeMenu}><span className="nav-wordmark">Atlas <em>Brief</em></span></Link>
           </div>
           <ul className="nav-links">
             {/* One entry per stream. "The Tape" is the deals page — it used to
@@ -73,10 +77,14 @@ export default function SiteNav() {
             <li><Link href="/atlas-brief/dispatch">Owner&rsquo;s Notes</Link></li>
             <li><Link href="/about">About</Link></li>
             <li><Link href="/contact">Contact</Link></li>
+            {/* Work with Atlas joins the row after a divider, as on the front
+                page's flag (2026-11-04). It used to sit on the right as
+                `<Link href="/contact" className="nav-tertiary">Work with Atlas</Link>`,
+                before Subscribe. */}
+            <li className="nav-sep" aria-hidden="true" />
+            <li className="nav-work"><Link href="/contact">Work with Atlas</Link></li>
           </ul>
           <div className="nav-right">
-            {/* Tertiary → secondary → primary, ascending in prominence toward the edge. */}
-            <Link href="/contact" className="nav-tertiary">Work with Atlas</Link>
             {/* Tax Appeals is on hold, so the slot goes to the thing we always
                 want asked for. /tax-appeals still exists, just unlinked. */}
             {/* Goes to /subscribe (2026-09-29). It used to fire

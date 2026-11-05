@@ -49,10 +49,11 @@ function apDate(s: string | null | undefined): string {
 // A dispatch has no listing behind it — its own category is the whole kicker.
 function cardKicker(a: ArticleCard, stream: Stream, fallback: string): string {
   if (stream === 'dispatch') return a.cat_label ?? fallback
-  const status = statusKicker(a.listing?.status)
+  // Place only (2026-11-04). It was "SOLD · Beverly Grove", but the badge under
+  // the headline already says Sold, so the status printed twice per card. The
+  // front page's cards show the neighbourhood alone (FrontTop.tsx).
   const p = a.listing?.property
-  const place = p?.neighborhood ?? p?.city ?? a.cat_label ?? fallback
-  return [status, place].filter(Boolean).join(' · ')
+  return p?.neighborhood ?? p?.city ?? a.cat_label ?? fallback
 }
 
 export type Stream = 'tape' | 'dispatch'
@@ -167,7 +168,8 @@ export default function CardFeed({
 
   // `.tpc-dispatch` on the wrapper is what swaps red for blue; see cards.css.
   return (
-    <div className={stream === 'dispatch' ? 'tpc-dispatch' : undefined}>
+    // `.tpc-tape` lets the Tape restyle its cards without touching Owner's Notes.
+    <div className={stream === 'dispatch' ? 'tpc-dispatch' : 'tpc-tape'}>
       {shown.length === 0 ? (
         <p className="sec-empty">Nothing here yet.</p>
       ) : (

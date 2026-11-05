@@ -1390,3 +1390,95 @@ html, body {
   #universal-signup button { width: 100%; text-align: center; }
   #universal-signup .us-fine { max-width: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the nav wordmark set like the front page's flag (.mast-wordmark
+   in home.css): bold Times, "Atlas" white, "Brief" red and upright. The roundel
+   and the tracked tagline are out of the markup (parked in SiteNav.tsx).
+
+   BACKUP — the rules this block overrides. They're still live above; deleting
+   this block restores them. Delete only after Lucas confirms.
+     .nav-logo    { font-family: 'Times New Roman', Times, serif;
+                    font-weight: 500; font-size: 20px; letter-spacing: 0.02em;
+                    display: inline-flex; align-items: center; gap: 10px; }
+     .nav-logo em { font-style: italic; color: var(--brand-red);
+                    margin-left: -0.04em; }
+     @media (max-width: 1024px) { .nav-logo { font-size: 19px; letter-spacing: 0; gap: 7px; } }
+     @media (max-width: 480px)  { .nav-logo { font-size: 16px; gap: 6px; } }
+   --------------------------------------------------------------------------- */
+.nav-logo {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  gap: 0;
+}
+.nav-logo em {
+  font-style: normal;
+  color: var(--brand-red);
+  margin-left: 0;
+}
+@media (max-width: 1024px) {
+  .nav-logo { font-size: 26px; letter-spacing: -0.02em; }
+}
+@media (max-width: 480px) {
+  .nav-logo { font-size: 22px; }
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — the nav's link row copied from the front page's section row
+   (.mast-links in home.css): bold sentence case, a divider, then a quieter
+   Work with Atlas. The front page keeps its own flag and isn't affected.
+
+   BACKUP — the rules this block overrides. They're still live above; deleting
+   this block (and restoring the markup parked in SiteNav.tsx) brings them back.
+   Delete only after Lucas confirms.
+     .nav-links   { gap: 28px; }
+     .nav-links a { font-size: 11px; font-weight: 600;
+                    color: rgba(255,255,255,0.82); letter-spacing: 0.16em;
+                    text-transform: uppercase; padding: 6px 0;
+                    border-bottom: 1px solid transparent; }
+     .nav-links a:hover, .nav-links a.active { color: #FFFFFF;
+                    border-color: var(--brand-red); }
+     .nav-tertiary (Work with Atlas, on the right): 13px, weight 500,
+                    rgba(255,255,255,0.62), letter-spacing 0.1em, uppercase.
+   --------------------------------------------------------------------------- */
+.nav-links {
+  align-items: center;
+  gap: clamp(20px, 2.6vw, 44px);
+}
+.nav-links a {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 0;
+  transition: color .15s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--brand-red); }
+.nav-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.3); }
+.nav-links .nav-work a { font-weight: 500; color: rgba(255,255,255,0.72); }
+.nav-links .nav-work a:hover { color: var(--brand-red); }
+/* Between the phone layout (1024px) and a wide screen the bigger links get
+   tight beside the wordmark and Subscribe, so they step down a little. */
+@media (max-width: 1240px) {
+  .nav-links { gap: 20px; }
+  .nav-links a { font-size: 14px; }
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-04 — no red rule under the toolbar, as on the front page (Nic took
+   the rules off its flag in October). Lucas: "this red line is annoying me".
+
+   BACKUP — still live above; deleting this block restores it:
+     .nav { border-bottom: 3px solid var(--brand-red); }
+     @media (max-width: 1024px) { .nav { border-bottom: 3px solid var(--brand-red); } }
+   --------------------------------------------------------------------------- */
+.nav { border-bottom: 0; }
+@media (max-width: 1024px) {
+  .nav { border-bottom: 0; }
+}
