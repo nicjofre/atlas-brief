@@ -560,7 +560,9 @@ body {
    surface of the same colour to sit on, instead of a white one to fight. */
 .footer {
   margin-top: 80px;
-  border-top: 3px solid var(--brand-red);
+  /* No red rule on top (Lucas, 2026-11-04), sitewide, front page included,
+     like the toolbar's. Was: border-top: 3px solid var(--brand-red); */
+  border-top: 0;
   background: var(--brand-navy);
   color: rgba(255,255,255,0.82);
   padding-top: 56px;
