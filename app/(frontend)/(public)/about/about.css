@@ -834,3 +834,187 @@
 }
 /* No rule under the header's lede (2026-10-07). */
 .ab-lead { border-bottom: 0; }
+
+/* ===========================================================================
+   2026-11-04 — About brought in line with the Tape (design/touch-up).
+
+   BACKUP — the page as it was before this block (design/touch-up @ 93245d9,
+   same as main @ f5a1a1e). Everything ABOVE this line is that page, untouched.
+   To restore it exactly: delete from here to the end of the file, and undo the
+   three marked spots in markup:
+     - about/page.tsx: the .ab-headrow wrapper (old markup in its comment) and
+       the --hand style on .ab-split
+     - _blocks/RenderBlocks.tsx: the two .replace(/ · /g, ', ') calls on the
+       building cards' category and caption
+   Delete this note only after Lucas confirms.
+   =========================================================================== */
+
+/* 1. Header: title left in bold Times, the lede beside it in bold italic. */
+.ab-headrow {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) clamp(8px, 1vw, 16px);
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 3vw, 44px);
+}
+.ab-headrow .ab-top,
+.ab-headrow .ab-lead { padding: 0; margin: 0; max-width: none; flex: none; }
+.ab-headrow .ab-lead { flex: 1; min-width: 0; }
+.ab-headrow .wrap { max-width: none; margin: 0; padding: 0; }
+.ab-top h1 {
+  text-align: left;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+.ab-lead p {
+  margin: 0;
+  max-width: none;
+  text-align: left;
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(18px, 1.55vw, 22px);
+  line-height: 1.55;
+  color: var(--brand-navy);
+}
+@media (max-width: 720px) {
+  .ab-headrow { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+/* The title and the lede are one sentence now ("Atlas | is a Los Angeles…",
+   the leading "Atlas" is dropped in page.tsx), so they share a baseline and
+   sit at a word's distance rather than a column's. */
+@media (min-width: 721px) {
+  .ab-headrow { align-items: baseline; gap: 0.45em; }
+}
+
+/* 2 + 7. Company names and "Two buildings…" in bold Times, the logo's face.
+   Were italic sans, weight 500. */
+.ab-body .prose h2,
+.ab-split .ab-portfolio .section-head h2 {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+
+/* The three arms each open with the drawn red line of the Tape's "Latest"
+   and the front page (Lucas, 2026-11-04): the name, then the line out to the
+   column's edge. The headings are CMS text, so the line is a background image
+   on ::after rather than an <svg> in the markup. #E73736 is --brand-red; a
+   data URI can't read a CSS variable. */
+.ab-body .prose h2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* REMOVED the same evening (Lucas): three lines stacked in one column read as
+   automatic. Kept here, switched off; delete `display: none` to bring back. */
+.ab-body .prose h2::after {
+  display: none;
+  content: "";
+  flex: 1;
+  min-width: 40px;
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 12' preserveAspectRatio='none'%3E%3Cpath d='M3 6 C 80 10, 160 3, 240 7 S 350 4, 397 6' fill='none' stroke='%23E73736' stroke-width='2.2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+}
+
+/* The buildings as the front page's Owner's Notes column (Lucas, 2026-11-04;
+   front-top.css .ft-diary / .ft-band / .ft-diary-note): a warm panel, a navy
+   ribbon wider than the panel folding behind it at both ends with the red line
+   under it, and the CMS heading as a handwritten note with a red underline.
+   Copies under About's own classes: front-top.css only loads on the front
+   page. Remove with this block and the head markup in RenderBlocks. */
+.ab-split .ab-portfolio {
+  --dpad: clamp(18px, 2vw, 26px);
+  background: #FAF7F1;
+  padding: 0 var(--dpad) clamp(22px, 2.4vw, 30px);
+  margin-top: 14px;
+}
+.ab-bldg-head { text-align: center; margin-bottom: clamp(18px, 2vw, 26px); }
+.ab-band {
+  position: relative;
+  margin: -14px calc(-1 * var(--dpad) - 12px) 0;
+}
+.ab-band span {
+  display: block;
+  padding: 12px 0;
+  background: var(--brand-navy);
+  border-bottom: 3px solid var(--brand-red);
+  box-shadow: 0 6px 10px -4px rgba(12, 21, 48, .35);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: clamp(22px, 2vw, 27px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  text-align: center;
+}
+.ab-band::before, .ab-band::after { content: ""; position: absolute; bottom: -10px; border-style: solid; }
+.ab-band::before { left: 0;  border-width: 0 12px 10px 0; border-color: transparent #02060F transparent transparent; }
+.ab-band::after  { right: 0; border-width: 10px 12px 0 0; border-color: #02060F transparent transparent transparent; }
+.ab-bldg-note {
+  position: relative;
+  display: inline-block;
+  margin: 18px 0 2px;
+  font-size: clamp(20px, 1.7vw, 24px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--brand-navy);
+  transform: rotate(-1.5deg);
+}
+.ab-scribble { display: block; width: 0; min-width: 100%; height: 10px; margin-top: 2px; overflow: visible; }
+.ab-scribble path { fill: none; stroke: var(--brand-red); stroke-width: 2.2; stroke-linecap: round; }
+
+/* 3. Building cards: no grey box, no red stripe; they sit on the page. */
+.ab-split .project {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.ab-split .projects { gap: clamp(36px, 3.6vw, 52px); }
+.ab-split .project .p-head h3 {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 1.8vw, 26px);
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.ab-split .project .p-photo { border: 0; background: none; }
+
+/* 4. Labels in sentence case, in the body face (were spaced caps). The
+   middle dots in the CMS text are swapped for commas in RenderBlocks. */
+.project .p-head .cat,
+.ab-split .project .p-cap,
+.ab-split .project dt {
+  font-family: var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.project .p-head .cat { font-size: 14px; color: var(--muted); }
+.ab-split .project .p-cap { font-size: 13px; padding: 8px 0 0; border-top: 0; }
+.ab-split .project dt { font-size: 12px; color: var(--muted); }
+.ab-split .project dd { font-size: 16px; font-weight: 600; }
+
+/* 5. No vertical divider between the columns, as on the Tape. */
+.ab-split > section + section,
+.ab-split > .ab-col + section { border-left: 0; }
+
+/* 6. David's signature in the hand (the face arrives as --hand from
+   page.tsx). It's the sign-off's second-to-last paragraph, just before the
+   email; if David reorders that text, this follows the position, not the
+   words. */
+.ab-split .ab-tail .payload-richtext > p:nth-last-child(2) {
+  font-family: var(--hand), cursive;
+  font-size: clamp(28px, 2.4vw, 34px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--brand-navy);
+  transform: rotate(-2deg);
+  transform-origin: left center;
+  margin: 0.6em 0 0.5em;
+}

@@ -2,6 +2,7 @@ import React from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Page, Media } from '@/payload-types'
 import AtlasMark from '../AtlasMark'
+import { hand } from '../hand-font'
 
 type Block = NonNullable<Page['layout']>[number]
 
@@ -111,10 +112,25 @@ function BlockItem({ block }: { block: Block }) {
       return (
         <section className="ab-portfolio">
           <div className="wrap">
-            <div className="section-head">
-              {block.eyebrow && <div className="num">{block.eyebrow}</div>}
-              {block.heading && <h2>{block.heading}</h2>}
-            </div>
+            {/* The front page's Owner's Notes head (2026-11-04, Lucas): a navy
+                ribbon folding behind the panel, then the CMS heading as a
+                handwritten note with a red underline. Was:
+                  <div className="section-head">
+                    {block.eyebrow && <div className="num">{block.eyebrow}</div>}
+                    {block.heading && <h2>{block.heading}</h2>}
+                  </div>
+                (the eyebrow was cleared in the CMS on 2026-09-11). */}
+            <header className="ab-bldg-head">
+              <h2 className="ab-band"><span>Our buildings</span></h2>
+              {block.heading && (
+                <p className={`ab-bldg-note ${hand.className}`}>
+                  {block.heading}
+                  <svg className="ab-scribble" viewBox="0 0 220 12" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M3 8 C 40 3, 80 11, 120 6 S 190 3, 217 7" />
+                  </svg>
+                </p>
+              )}
+            </header>
             <div className="projects">
               {(block.items || []).map((item, idx) => {
                 const photo = item.photo && typeof item.photo === 'object' ? (item.photo as Media) : null
@@ -124,13 +140,15 @@ function BlockItem({ block }: { block: Block }) {
                       {/* item.code ("P-01") is no longer shown (2026-10-07): it read
                           as a template's numbering. The CMS field stays. */}
                       <h3>{item.name}</h3>
-                      {item.category && <span className="cat">{item.category}</span>}
+                      {/* " · " shown as ", " (2026-11-04): middle-dot strings
+                          read as template chrome. The CMS text is unchanged. */}
+                      {item.category && <span className="cat">{item.category.replace(/ · /g, ', ')}</span>}
                     </header>
                     {photo?.url && (
                       <figure className="p-photo">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={photo.url} alt={photo.alt || ''} loading="lazy" width={1200} height={675} />
-                        {item.caption && <figcaption className="p-cap">{item.caption}</figcaption>}
+                        {item.caption && <figcaption className="p-cap">{item.caption.replace(/ · /g, ', ')}</figcaption>}
                       </figure>
                     )}
                     {item.stats && item.stats.length > 0 && (

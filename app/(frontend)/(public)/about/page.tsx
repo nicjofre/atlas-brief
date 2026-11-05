@@ -9,6 +9,7 @@ import { getPageBySlug } from '@/lib/getPage'
 import ArticleSubscribeBar from '../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../ArticleSubscribeModal'
 import { createClient } from '@/lib/supabase/server'
+import { hand } from '../hand-font'
 import './about.css'
 
 export const dynamic = 'force-dynamic'
@@ -39,9 +40,25 @@ export default async function AboutPage() {
   const bodyContent: any =
     bodyIdx >= 0 ? (middleRaw[bodyIdx] as any).content ?? null : null
   const kids: any[] = bodyContent?.root?.children ?? []
+  // The lede continues the title (2026-11-04, Lucas): "Atlas" is the h1, so a
+  // leading "Atlas " comes off the sentence's first text node here and the
+  // line reads "Atlas | is a Los Angeles real estate practice…". The CMS text
+  // keeps its "Atlas"; if it ever stops starting with it, nothing is removed.
+  const firstPara = kids[0]
+  const firstText = firstPara?.children?.[0]
+  const ledePara =
+    firstText && typeof firstText.text === 'string' && /^Atlas\s+/.test(firstText.text)
+      ? {
+          ...firstPara,
+          children: [
+            { ...firstText, text: firstText.text.replace(/^Atlas\s+/, '') },
+            ...firstPara.children.slice(1),
+          ],
+        }
+      : firstPara
   const lead: any =
     kids.length > 1 && bodyContent
-      ? { ...bodyContent, root: { ...bodyContent.root, children: kids.slice(0, 1) } }
+      ? { ...bodyContent, root: { ...bodyContent.root, children: [ledePara] } }
       : null
   const middle: Block[] =
     lead && bodyContent
@@ -69,20 +86,28 @@ export default async function AboutPage() {
           article and Contact pages divide copy from the thing it describes. The
           sign-off closes underneath, full width again. Partitioned here rather
           than in RenderBlocks so the block renderer stays a flat mapper. */}
-      <RenderBlocks blocks={hero} />
-      {lead && (
-        <section className="ab-lead">
-          <div className="wrap">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <RichText data={lead as any} />
-          </div>
-        </section>
-      )}
+      {/* .ab-headrow (2026-11-04): the title and the lede side by side, the
+          Tape's header. Before, the two stacked centred, with no wrapper:
+            <RenderBlocks blocks={hero} />
+            {lead && (<section className="ab-lead">…</section>)} */}
+      <div className="ab-headrow">
+        <RenderBlocks blocks={hero} />
+        {lead && (
+          <section className="ab-lead">
+            <div className="wrap">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <RichText data={lead as any} />
+            </div>
+          </section>
+        )}
+      </div>
       {/* David's sign-off opens the left column (2026-10-07) instead of closing
           the page under both columns: it's why the Brief exists, so it leads
           the arms rather than trailing the buildings. */}
       {middle.length > 0 && (
-        <div className="ab-split">
+        // --hand carries the handwritten face to about.css for David's
+        // signature (2026-11-04); the sign-off is CMS text, so CSS styles it.
+        <div className="ab-split" style={{ ['--hand' as string]: hand.style.fontFamily }}>
           <div className="ab-col">
             <RenderBlocks blocks={tail} />
             <RenderBlocks blocks={middle.filter(b => b.blockType !== 'projects')} />
