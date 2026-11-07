@@ -299,10 +299,123 @@
    nowhere else. Delete this block, the onPreview wiring in CardFeed.tsx and
    pageSize={15} in sections/[section]/page.tsx to go back.
    --------------------------------------------------------------------------- */
-@media (min-width: 1101px) {
-  .tpc-tape .tpc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* ---------------------------------------------------------------------------
+   2026-11-06 — the archive in mixed sizes, after HuffPost (Lucas: the bottom
+   half was too dense). Thirteen to a page on a twelve-column grid:
+     [ big big ][ a ][ b ]     1 at half width, 2 to 5 in a block beside it
+     [ big big ][ c ][ d ]
+     [  e  ][  f  ][  g  ]     6, 7, 8 at a third each
+     [ h ][ i ][ big big ]     9 to 12 in a block, 13 big on the other side
+     [ j ][ k ][ big big ]
+   Every second page is the mirror image (.is-mirrored, set in CardFeed.tsx), so
+   turning the page doesn't land on the same layout (Lucas, 2026-11-06).
+   A short last page simply stops where it runs out; Lucas is fine with that.
+   Tape only. Owner's Notes keeps the plain grid.
+
+   BACKUP — the five-across archive this replaced (22aa001), with pageSize={15}
+   in sections/[section]/page.tsx (now 13). Delete only after Lucas confirms.
+     @media (min-width: 1101px) {
+       .tpc-tape .tpc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+     }
+     .tpc-tape .tpc-hed { font-size: 15px; }
+   --------------------------------------------------------------------------- */
+.tpc-tape .tpc-grid {
+  gap: clamp(28px, 3vw, 44px) clamp(20px, 2.4vw, 36px);
 }
-.tpc-tape .tpc-hed { font-size: 15px; }
+.tpc-tape .tpc-hed { font-size: 19px; }
+.tpc-tape .tpc-meta { font-size: 12px; }
+
+/* Photos fade in over a soft grey block as they load, instead of popping in
+   (Lucas, 2026-11-06). The class comes from CardFeed.tsx, so this only hides a
+   photo where scripts are running to reveal it again. */
+.tpc-tape .tpc-thumb { background: var(--rule-soft); }
+.tpc-tape .tpc-thumb img { transition: opacity .35s ease; }
+@media (scripting: enabled) {
+  .tpc-tape .tpc-thumb img:not(.is-loaded) { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpc-tape .tpc-thumb img { transition: none; }
+}
+
+@media (min-width: 1101px) {
+  .tpc-tape .tpc-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    /* Lets 13 climb back up beside the block of 9 to 12. */
+    grid-auto-flow: dense;
+  }
+  .tpc-tape .tpc-card { grid-column: span 3; }
+  .tpc-tape .tpc-card:nth-child(13n + 1) { grid-column: 1 / span 6; grid-row: span 2; }
+  .tpc-tape .tpc-card:nth-child(13n + 6),
+  .tpc-tape .tpc-card:nth-child(13n + 7),
+  .tpc-tape .tpc-card:nth-child(13n + 8) { grid-column: span 4; }
+  .tpc-tape .tpc-card:nth-child(13n + 9),
+  .tpc-tape .tpc-card:nth-child(13n + 11) { grid-column: 1 / span 3; }
+  .tpc-tape .tpc-card:nth-child(13n + 10),
+  .tpc-tape .tpc-card:nth-child(13n + 12) { grid-column: 4 / span 3; }
+  .tpc-tape .tpc-card:nth-child(13n) { grid-column: 7 / span 6; grid-row: span 2; }
+
+  /* The mirrored page: the grid runs right to left, the cards inside don't. */
+  .tpc-tape .tpc-grid.is-mirrored { direction: rtl; }
+  .tpc-tape .tpc-grid.is-mirrored > .tpc-card { direction: ltr; }
+
+  /* The big photo grows to meet the bottom of the block beside it, so both
+     sides end level. 16:9 is its floor, for a short last page. */
+  .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb,
+  .tpc-tape .tpc-card:nth-child(13n) .tpc-thumb {
+    position: relative;
+    flex: 1 1 auto;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 14px;
+  }
+  .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb img,
+  .tpc-tape .tpc-card:nth-child(13n) .tpc-thumb img,
+  .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-plate,
+  .tpc-tape .tpc-card:nth-child(13n) .tpc-plate {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* The narrowest cards, in the blocks beside the big ones. */
+  .tpc-tape .tpc-card:nth-child(13n + 2) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 3) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 4) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 5) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 9) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 10) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 11) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 12) .tpc-hed { font-size: 17px; }
+
+  /* A step below the "Latest" headline, so the top of the page still leads. */
+  .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n) .tpc-hed {
+    font-size: clamp(24px, 2.2vw, 30px);
+    line-height: 1.12;
+    letter-spacing: -.015em;
+  }
+}
+
+/* Tablet: two across, with 1, 8 and 13 full width, which leaves no holes on a
+   full page. Phone: one column, same three big. Mirroring is desktop only. */
+@media (max-width: 1100px) {
+  .tpc-tape .tpc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tpc-tape .tpc-card:nth-child(13n + 1),
+  .tpc-tape .tpc-card:nth-child(13n + 8),
+  .tpc-tape .tpc-card:nth-child(13n) { grid-column: 1 / -1; }
+  .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n + 8) .tpc-hed,
+  .tpc-tape .tpc-card:nth-child(13n) .tpc-hed {
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+  }
+}
+@media (max-width: 460px) {
+  .tpc-tape .tpc-grid { grid-template-columns: 1fr; }
+}
 
 /* The dialog. Centred card on desktop, a sheet from the bottom on phones. */
 .tpv {

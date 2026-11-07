@@ -312,7 +312,7 @@ export default async function SectionPage(
           </h2>
           {/* Client-side because paging is a reader control; the first page
               is server-rendered either way. */}
-          <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} pageSize={15} />
+          <CardFeed rows={rest} stream="tape" fallbackLabel={sectionLabel(slug)} pageSize={13} />
         </div>
       </section>
 

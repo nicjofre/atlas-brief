@@ -84,8 +84,19 @@ function FeedCard({ a, stream, fallback, onPreview }: {
     <article className="tpc-card">
       <Link href={`/atlas-brief/${a.slug}`} className="tpc-thumb" tabIndex={-1} aria-hidden="true" onClick={preview}>
         {a.heroUrl ? (
+          // is-loaded starts the Tape's fade-in (cards.css). The ref catches a
+          // photo that finished before this code ran, which fires no load event.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={a.heroUrl} alt="" loading="lazy" width={420} height={236} />
+          <img
+            src={a.heroUrl}
+            alt=""
+            loading="lazy"
+            width={420}
+            height={236}
+            ref={el => { if (el?.complete) el.classList.add('is-loaded') }}
+            onLoad={e => e.currentTarget.classList.add('is-loaded')}
+            onError={e => e.currentTarget.classList.add('is-loaded')}
+          />
         ) : (
           // No photo on file. A plate with the address keeps the row even and
           // still says which building it is, which a grey box wouldn't.
@@ -128,7 +139,7 @@ export default function CardFeed({
   stream: Stream
   // Kicker text for an entry that carries no category of its own.
   fallbackLabel: string
-  // Cards per page (2026-11-04). The Tape passes 15, three rows of five;
+  // Cards per page. The Tape passes 13, its mixed-size layout in cards.css;
   // Owner's Notes keeps the default 24.
   pageSize?: number
 }) {
@@ -210,7 +221,11 @@ export default function CardFeed({
             </div>
           )}
 
-          <div className={`tpc-grid${fading ? ' is-fading' : ''}`} ref={gridRef}>
+          {/* is-mirrored flips every second page; only .tpc-tape styles it. */}
+          <div
+            className={`tpc-grid${current % 2 === 1 ? ' is-mirrored' : ''}${fading ? ' is-fading' : ''}`}
+            ref={gridRef}
+          >
             {shown.map(a => (
               <FeedCard
                 key={a.id}
