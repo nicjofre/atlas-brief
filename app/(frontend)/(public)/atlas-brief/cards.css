@@ -320,11 +320,21 @@
      }
      .tpc-tape .tpc-hed { font-size: 15px; }
    --------------------------------------------------------------------------- */
+/* Everything a size down (Lucas, 2026-11-06: "large right now"), same layout.
+   BACKUP — the sizes as first approved (ca85eba). Delete only after Lucas confirms.
+     grid gap clamp(28px, 3vw, 44px) clamp(20px, 2.4vw, 36px)
+     headlines: all 19px; beside the big posts 17px;
+       big clamp(24px, 2.2vw, 30px); big on tablet and phone 26px
+     meta 12px; kicker 12px; photos 16:9; big photo gap 14px */
 .tpc-tape .tpc-grid {
-  gap: clamp(28px, 3vw, 44px) clamp(20px, 2.4vw, 36px);
+  gap: clamp(20px, 2vw, 28px) clamp(16px, 1.8vw, 26px);
 }
-.tpc-tape .tpc-hed { font-size: 19px; }
-.tpc-tape .tpc-meta { font-size: 12px; }
+.tpc-tape .tpc-hed { font-size: 16px; }
+.tpc-tape .tpc-meta,
+.tpc-tape .tpc-kicker { font-size: 11.5px; }
+.tpc-tape .tpc-thumb { margin-bottom: 8px; }
+.tpc-tape .tpc-thumb img,
+.tpc-tape .tpc-plate { aspect-ratio: 2 / 1; }
 
 /* Photos fade in over a soft grey block as they load, instead of popping in
    (Lucas, 2026-11-06). The class comes from CardFeed.tsx, so this only hides a
@@ -360,13 +370,13 @@
   .tpc-tape .tpc-grid.is-mirrored > .tpc-card { direction: ltr; }
 
   /* The big photo grows to meet the bottom of the block beside it, so both
-     sides end level. 16:9 is its floor, for a short last page. */
+     sides end level. 2:1 is its floor, for a short last page. */
   .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb,
   .tpc-tape .tpc-card:nth-child(13n) .tpc-thumb {
     position: relative;
     flex: 1 1 auto;
-    aspect-ratio: 16 / 9;
-    margin-bottom: 14px;
+    aspect-ratio: 2 / 1;
+    margin-bottom: 10px;
   }
   .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb img,
   .tpc-tape .tpc-card:nth-child(13n) .tpc-thumb img,
@@ -387,12 +397,12 @@
   .tpc-tape .tpc-card:nth-child(13n + 9) .tpc-hed,
   .tpc-tape .tpc-card:nth-child(13n + 10) .tpc-hed,
   .tpc-tape .tpc-card:nth-child(13n + 11) .tpc-hed,
-  .tpc-tape .tpc-card:nth-child(13n + 12) .tpc-hed { font-size: 17px; }
+  .tpc-tape .tpc-card:nth-child(13n + 12) .tpc-hed { font-size: 15px; }
 
   /* A step below the "Latest" headline, so the top of the page still leads. */
   .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-hed,
   .tpc-tape .tpc-card:nth-child(13n) .tpc-hed {
-    font-size: clamp(24px, 2.2vw, 30px);
+    font-size: clamp(22px, 1.9vw, 25px);
     line-height: 1.12;
     letter-spacing: -.015em;
   }
@@ -408,7 +418,7 @@
   .tpc-tape .tpc-card:nth-child(13n + 1) .tpc-hed,
   .tpc-tape .tpc-card:nth-child(13n + 8) .tpc-hed,
   .tpc-tape .tpc-card:nth-child(13n) .tpc-hed {
-    font-size: 26px;
+    font-size: 22px;
     line-height: 1.1;
     letter-spacing: -.02em;
   }
