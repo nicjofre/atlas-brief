@@ -38,11 +38,16 @@ const PAGE_SIZE = 24
 
 const MONTHS_AP = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.']
 
-function apDate(s: string | null | undefined): string {
+// shortThisYear (2026-11-18, Lucas: "match the dates"): the Tape's archive
+// drops the year for this year's posts, like the top of the page ("Oct. 29"),
+// and keeps it on older ones. Owner's Notes doesn't pass it, so it's unchanged.
+function apDate(s: string | null | undefined, shortThisYear = false): string {
   if (!s) return ''
   const d = new Date(s)
   if (Number.isNaN(d.getTime())) return ''
-  return `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
+  const md = `${MONTHS_AP[d.getUTCMonth()]} ${d.getUTCDate()}`
+  if (shortThisYear && d.getUTCFullYear() === new Date().getUTCFullYear()) return md
+  return `${md}, ${d.getUTCFullYear()}`
 }
 
 // The Tape is a listings board, so "SOLD" leads and the neighbourhood follows.
@@ -108,7 +113,7 @@ function FeedCard({ a, stream, fallback, onPreview }: {
 
       <div className="tpc-meta">
         <span className="tpc-kicker">{cardKicker(a, stream, fallback)}</span>
-        <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
+        <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at, isTape)}</time>
       </div>
 
       <h3 className="tpc-hed">
@@ -140,7 +145,7 @@ export default function CardFeed({
   // Kicker text for an entry that carries no category of its own.
   fallbackLabel: string
   // Cards per page. The Tape passes 13, its mixed-size layout in cards.css;
-  // Owner's Notes keeps the default 24.
+  // Owner's Notes passes 9, its big essay and list in dispatch.css.
   pageSize?: number
 }) {
   const [page, setPage] = useState(0)

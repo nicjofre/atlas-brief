@@ -569,6 +569,19 @@
   letter-spacing: -0.01em;
   color: var(--brand-navy);
 }
+/* TRIAL 2026-11-18 (Lucas): the price line now sits ABOVE the headline as
+   "Sold for $8M", replacing the SOLD box. A step smaller so the headline stays
+   the lead. Was margin 2px 0 6px, clamp(28px, 3vw, 34px). Delete to go back
+   (the markup change is in ArchivePreview.tsx). */
+.tpv-price {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 2.2vw, 26px);
+}
+/* Lucas's colour call (2026-11-18): "Sold for" red, "Asking" green. Other
+   statuses (under construction, off market) keep the navy above. Green is the
+   old for-sale badge's #0A5417. */
+.tpv-price-sold    { color: var(--brand-red); }
+.tpv-price-forsale { color: #0A5417; }
 .tpv-foot {
   display: flex;
   align-items: center;

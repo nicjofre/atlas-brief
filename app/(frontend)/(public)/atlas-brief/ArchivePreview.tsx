@@ -53,7 +53,9 @@ function money(v: number | null | undefined): string {
 function price(a: ArticleCard): string {
   const l = a.listing
   if (!l) return ''
-  if (l.status === 'sold') return money(l.sale_price)
+  // "Sold for $8M" (2026-11-18, Lucas): status and price as one line, in
+  // place of the SOLD box + bare "$8M". Was: money(l.sale_price).
+  if (l.status === 'sold' && l.sale_price != null) return `Sold for ${money(l.sale_price)}`
   if (l.status === 'for_sale' && l.list_price) return `Asking ${money(l.list_price)}`
   return ''
 }
@@ -154,10 +156,16 @@ export default function ArchivePreview({
             <img className="tpv-img" src={a.heroUrl} alt="" width={720} height={405} />
           )}
           <div className="tpv-body">
-            {status && <span className={`tpv-status tpv-${status.key}`}>{status.text}</span>}
+            {/* One Times line above the headline (2026-11-18, Lucas): "Sold for
+                $8M" / "Asking $X", or the plain status ("Under construction")
+                when there's no price. Replaces the coloured SOLD box, which was:
+                <span className={`tpv-status tpv-${status.key}`}>{status.text}</span>
+                and the price under the headline. */}
+            {(figure || status) && (
+              <p className={`tpv-price${status ? ` tpv-price-${status.key}` : ''}`}>{figure || status?.text}</p>
+            )}
             {/* The headline is a link too: people click headlines. */}
             <h2 className="tpv-hed"><Link href={href}>{calmHeadline(a.headline)}</Link></h2>
-            {figure && <p className="tpv-price">{figure}</p>}
             {meta && <p className="tpv-meta">{meta}</p>}
             {blurb && <p className="tpv-blurb">{blurb}</p>}
             <div className="tpv-foot">

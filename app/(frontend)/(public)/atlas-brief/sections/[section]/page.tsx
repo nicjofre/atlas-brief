@@ -147,7 +147,8 @@ export default async function SectionPage(
     if (!picks.includes(a)) picks.push(a)
   }
   const stack = picks
-  const stackLabel = 'Interesting deals'
+  // TRIAL 2026-11-18 (Lucas): named for what it is. Was 'Interesting deals'.
+  const stackLabel = 'Most read deals'
 
   // "Recent deals" under the picks, one card at a time (WeekCarousel): the
   // five newest entries that aren't the lead or a pick (Lucas, 2026-11-04).
@@ -224,16 +225,13 @@ export default async function SectionPage(
             {/* What the Tape is, in the space right of the title (2026-11-04,
                 Lucas's ask). Same sentence as the meta description, so the
                 two can't drift apart. */}
-            {/* Broken before its last clause (", and what an operator thinks
-                of the number." on its own line). Split here rather than in the
-                registry string, which is also the meta description. */}
-            <p className="cat-about">
-              {(() => {
-                const i = section.deck.lastIndexOf(', and ')
-                if (i < 0) return section.deck
-                return <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</>
-              })()}
-            </p>          </div>
+            {/* No forced break any more (2026-11-18, Lucas): the sentence runs
+                the full width and wraps on its own as the window narrows. It
+                was broken before its last clause with:
+                  const i = section.deck.lastIndexOf(', and ')
+                  <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</> */}
+            <p className="cat-about">{section.deck}</p>
+          </div>
           <div className="cat-hero-img">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={section.heroImage} alt={`${section.name} ${section.emName}`} />
@@ -253,11 +251,17 @@ export default async function SectionPage(
             // The front page's handwritten "Latest" (FrontTop.tsx): the word
             // in Caveat, then a red line drawn out to the column's edge.
             // Was leadLabel="Latest".
+            // TRIAL 2026-11-18 (Lucas): the word "Latest" off the page, the red
+            // line alone across the full column. "Latest" stays for screen
+            // readers only. To bring the word back, restore:
+            //   <span className={`cat-hand-label ${hand.className}`}>Latest</span>
             leadLabel={
               <>
-                <span className={`cat-hand-label ${hand.className}`}>Latest</span>
+                <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>Latest</span>
+                {/* Runs edge to edge, the photo's width (was M3 … 397, a few
+                    px short at each end). */}
                 <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
-                  <path d="M3 7 C 70 3, 140 10, 210 6 S 340 3, 397 7" />
+                  <path d="M0 7 C 70 3, 140 10, 210 6 S 340 3, 400 7" />
                 </svg>
               </>
             }
@@ -303,11 +307,14 @@ export default async function SectionPage(
               package's heads but without a line. It replaces the "Page 1 of
               5" bar, which section.css hides on this page. */}
           <h2 className={`cat-archive-hed ${hand.className}`}>
-            <span>Our archive</span>
+            {/* "Archive" (2026-11-18, Lucas); was "Our archive". */}
+            <span>Archive</span>
             {/* The red line, as after "Latest": the two main sections of the
                 page each open with one (Lucas, 2026-11-04). */}
             <svg className="cat-hand-line" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M3 6 C 90 9, 180 3, 270 7 S 360 5, 397 6" />
+              {/* Out to the cards' right edge (2026-11-18; was M3 … 397,
+                  a few px short). */}
+              <path d="M3 6 C 90 9, 180 3, 270 7 S 360 5, 400 6" />
             </svg>
           </h2>
           {/* Client-side because paging is a reader control; the first page
