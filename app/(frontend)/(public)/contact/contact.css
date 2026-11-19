@@ -308,3 +308,153 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
      rather than stretching as the column keeps its width. */
   max-width: 62ch;
 }
+
+/* ===========================================================================
+   2026-11-06 — Contact brought in line with About (design/touch-up).
+
+   BACKUP — the page as it was before this block (design/touch-up @ 603a980).
+   Everything ABOVE this line is that page, untouched. To restore it exactly:
+   delete from here to the end of the file, and undo the marked spots in markup:
+     - contact/page.tsx: the .c-page wrapper and the hand import
+     - _blocks/RenderBlocks.tsx: the .replace() calls on the contact hero's
+       subtitle and on the role under David's name
+   Delete this note only after Lucas confirms.
+   =========================================================================== */
+
+/* 1. Header: About's. Title left in bold Times, the line beside it in bold
+   italic. Not one sentence as on About, so a wider gap between them. */
+.c-hero {
+  padding: clamp(28px, 3.4vw, 48px) 0 clamp(8px, 1vw, 16px);
+  border-bottom: 0;
+}
+.c-hero .wrap {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px clamp(14px, 1.6vw, 24px);
+}
+.c-hero h1 {
+  margin: 0;
+  text-align: left;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+.c-hero .c-kicker { margin: 0; justify-content: flex-start; }
+.c-hero .c-standfirst {
+  margin: 0;
+  text-align: left;
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(18px, 1.55vw, 22px);
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brand-navy);
+}
+
+/* 2. Body: About's two equal columns inside the page measure, no rules. */
+.c-main {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(22px, 2.6vw, 48px);
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(20px, 2.4vw, 36px) var(--pad-x);
+  align-items: start;
+  border-bottom: 0;
+}
+.c-form { padding: 0; border: 0; }
+
+/* HIDDEN — the red "Inquiries" label. The three headings say it. It's CMS text,
+   so delete this rule to bring it back. */
+.c-form .k { display: none; }
+
+/* 3. Inquiries: About's arms. Bold Times headings, serif copy, no rules. */
+.c-form h2 {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 34px) !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.4em !important;
+}
+.c-form h2 strong { font-weight: 700; }
+.c-form h2:not(:first-of-type) {
+  padding-top: 0;
+  border-top: 0;
+  margin-top: 1.3em !important;
+}
+.c-form p {
+  max-width: none;
+  font-family: var(--serif);
+  font-size: clamp(18px, 1.4vw, 21px);
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* 4. David's details: the cream of About's buildings panel, without the ribbon
+   (Lucas keeps that to the front page and About). His name in the hand, like
+   his signature there. The !importants beat inline styles in RenderBlocks. */
+.c-side {
+  padding: clamp(20px, 2.2vw, 30px) clamp(18px, 2vw, 26px);
+  background: #FAF7F1;
+  border: 0;
+}
+.c-side h3 {
+  margin: 0 0 4px;
+  font-family: var(--hand), cursive;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(32px, 2.8vw, 40px);
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--brand-navy);
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+/* HIDDEN — the role under his name, which repeats the line in the header
+   (Lucas, 2026-11-06). It's CMS text, so delete this rule to bring it back. */
+.c-side h3 + p { display: none; }
+.c-side dl { padding-top: 10px; border-top: 0; }
+.c-side dl > div {
+  grid-template-columns: 70px 1fr;
+  padding: 10px 0;
+  border-bottom: 0;
+}
+.c-side dt {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+.c-side dd {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+.c-side dd span {
+  font-family: var(--sans) !important;
+  font-size: 13px !important;
+  font-weight: 400;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* The footer's sitewide 120px margin, halved as on About. */
+.c-page + .footer { margin-top: clamp(28px, 3.4vw, 44px); }
+
+@media (max-width: 900px) {
+  .c-main { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 720px) {
+  .c-hero .wrap { flex-direction: column; gap: 10px; }
+}

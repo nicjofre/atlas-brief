@@ -48,7 +48,13 @@ function BlockItem({ block }: { block: Block }) {
               {(block.eyebrow || block.subtitle) && (
                 <div className="c-kicker">
                   {block.eyebrow && <div className="k">{block.eyebrow}</div>}
-                  {block.subtitle && <p className="c-standfirst">{block.subtitle}</p>}
+                  {/* Dots swapped for punctuation on display (2026-11-06), as on
+                      About's cards; the CMS text is untouched. Was {block.subtitle}. */}
+                  {block.subtitle && (
+                    <p className="c-standfirst">
+                      {block.subtitle.replace(' · ', '. ').replace(/ · /g, ', ')}
+                    </p>
+                  )}
                 </div>
               )}
               <h1>{withBriefMark(block.title)}</h1>
@@ -190,7 +196,7 @@ function BlockItem({ block }: { block: Block }) {
             {block.name && <h3>{block.name}</h3>}
             {block.role && (
               <p style={{ fontStyle: 'italic', fontSize: 13, color: 'var(--muted)', marginTop: -8, marginBottom: 18 }}>
-                {block.role}
+                {block.role.replace(/ · /g, ', ')}
               </p>
             )}
             <dl>

@@ -7,6 +7,7 @@ import { RefreshRouteOnSave } from '../_blocks/RefreshRouteOnSave'
 import { getPageBySlug } from '@/lib/getPage'
 import ArticleSubscribeBar from '../ArticleSubscribeBar'
 import { createClient } from '@/lib/supabase/server'
+import { hand } from '../hand-font'
 import './contact.css'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,11 @@ export default async function ContactPage() {
     <>
       {!user && <ArticleSubscribeBar />}
       <RefreshRouteOnSave />
-      <RenderBlocks blocks={page.layout} />
+      {/* --hand carries the handwritten face to contact.css for David's name
+          (2026-11-06), the same way About's signature gets it. */}
+      <div className="c-page" style={{ ['--hand' as string]: hand.style.fontFamily }}>
+        <RenderBlocks blocks={page.layout} />
+      </div>
       <Footer />
     </>
   )
