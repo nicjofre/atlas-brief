@@ -48,11 +48,14 @@ const STATUS: Record<string, string> = {
 // Where and what: "Beverly Grove · Sold". cat_label is empty on most briefs,
 // so the email's own "Brief" kicker would repeat on every line here. A
 // dispatch has no listing, so it's labelled as one.
-function dealKicker(a: ArticleCard): string {
-  if (a.kind === 'post') return a.cat_label || 'Owner’s Notes'
+// 2026-11-18: split into the place (red) and the status (plain), the Tape's
+// kicker style, instead of one caps string joined with a middle dot. Was:
+//   return [place, status].filter(Boolean).join(' · ') || a.cat_label || 'Brief'
+function dealKicker(a: ArticleCard): { place: string; status: string | null } {
+  if (a.kind === 'post') return { place: a.cat_label || 'Owner’s Notes', status: null }
   const place = a.listing?.property?.neighborhood || a.listing?.property?.city
   const status = a.listing?.status ? STATUS[a.listing.status] : null
-  return [place, status].filter(Boolean).join(' · ') || a.cat_label || 'Brief'
+  return { place: place || a.cat_label || 'Brief', status }
 }
 
 export default async function SubscribePage({
@@ -95,8 +98,11 @@ export default async function SubscribePage({
             <div className="sp-cred">
               <p className="sp-cred-label">Written by</p>
               <p className="sp-cred-name"><Link href="/contact">David Safai</Link></p>
-              <p className="sp-cred-line">Operator &middot; Developer &middot; GC</p>
-              <Link href="/about" className="sp-cred-link">About Atlas Brief &rarr;</Link>
+              {/* 2026-11-18: David's current title, as the front page's tagline
+                  has it since Oct 8, and no arrow on the link. Was
+                  "Operator &middot; Developer &middot; GC" and "About Atlas Brief &rarr;". */}
+              <p className="sp-cred-line">Owner/Operator/Builder</p>
+              <Link href="/about" className="sp-cred-link">About Atlas Brief</Link>
             </div>
           </section>
 
@@ -113,7 +119,10 @@ export default async function SubscribePage({
                   {sample.map(a => (
                     <li key={a.id} className="sp-deal">
                       <div className="sp-deal-text">
-                        <p className="sp-deal-kicker">{dealKicker(a)}</p>
+                        <p className={`sp-deal-kicker${a.kind === 'post' ? ' is-post' : ''}`}>
+                          <span>{dealKicker(a).place}</span>
+                          {dealKicker(a).status && <span className="sp-deal-status">{dealKicker(a).status}</span>}
+                        </p>
                         <Link href={`/atlas-brief/${a.slug}`} className="sp-deal-hed">
                           {calmHeadline(a.headline)}
                         </Link>

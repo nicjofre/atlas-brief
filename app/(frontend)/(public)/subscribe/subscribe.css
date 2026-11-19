@@ -198,3 +198,98 @@
 }
 .sp-deal-hed:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .sp-deal-dek { margin: 6px 0 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--muted); }
+
+/* ===========================================================================
+   2026-11-18 design pass (Lucas: "go ahead"). Everything above is the page as
+   it was; delete this block (and the marked edits in page.tsx) to go back.
+   =========================================================================== */
+
+/* 1. The headline in bold Times navy, like every other page title.
+      Was var(--serif) (Helvetica on this site), weight 600. */
+.sp-hed {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* 2. The sample issue. One box, not two: the grey desk behind the sheet is
+      gone, the sheet keeps its red top rule and gets a hairline border instead
+      of a shadow. "Brief" upright, like the toolbar's wordmark. "The Friday
+      Dispatch" in sentence case. Kickers as on the Tape: the place in red,
+      the status beside it in plain grey, no caps, no middle dot. */
+.sp-sample { padding: 0; background: none; }
+.sp-issue {
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--brand-red);
+  box-shadow: none;
+}
+.sp-issue-name {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+}
+.sp-issue-name em { font-style: normal; }
+.sp-issue-title {
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sp-deal-kicker {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sp-deal-status { font-weight: 400; color: var(--muted); }
+/* David's essays in blue, as Owner's Notes is everywhere else; deals stay red
+   (Lucas, 2026-11-18). */
+.sp-deal-kicker.is-post { color: var(--brand-blue); }
+
+/* 3. "Written by" in sentence case. Title and link text changed in page.tsx. */
+.sp-cred-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* 5. Second pass (Lucas, 2026-11-18: do 1 to 4). */
+/* The pitch in the body ink, not the pale muted grey. Was var(--muted),
+   clamp(17px, 1.4vw, 19px). */
+.sp-dek { font-size: clamp(17px, 1.3vw, 18px); color: var(--ink-soft); }
+/* David's name in bold Times, upright, like the site's headings. Was italic
+   var(--serif) (Helvetica) at weight 500. */
+.sp-cred-name {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.sp-cred-line { font-style: normal; }
+/* The button's text at 15px with normal spacing (the 0.06em was left over
+   from when it was in caps). Was 13px, letter-spacing 0.06em. */
+.sp-submit { font-size: 15px; letter-spacing: 0; }
+/* After subscribing: the cream panel (David welcoming them; cream = his
+   voice), no red bar, the line in bold Times navy. Was var(--bg-alt) grey
+   with a 3px red left border. */
+.sp-done {
+  background: #FAF7F1;
+  border-left: 0;
+}
+.sp-done-head {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+}
+
+/* 4. The dropdown the same height as the text fields: Safari draws a native
+      select at its own height and ignores the padding, so it's drawn by hand
+      here, with a chevron. */
+.sp-field select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 40px;
+  line-height: 1.25;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%235B6478' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
