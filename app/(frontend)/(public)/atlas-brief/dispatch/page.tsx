@@ -30,20 +30,25 @@ const HERO_IMAGE = '/images/la-skyline-dusk.jpg'
 // per request rather than at module load so it can't freeze at build time —
 // the route renders dynamically (getArticles reads cookies), so this is the
 // date the reader is actually looking at the page.
+// No weekday since 2026-11-07, as on the Tape (it read "Saturday, November 7,
+// 2026": `weekday: 'long'` here).
 function dateline(): string {
   return new Date().toLocaleDateString('en-US', {
     timeZone: 'America/Los_Angeles',
-    weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
+// What Owner's Notes is: shown beside the title and used in the meta
+// description, so the two can't drift apart (the Tape does the same with its
+// registry deck).
+const ABOUT = 'David Safai’s essays on operating, building and the Los Angeles market.'
+
 export const metadata: Metadata = pageMetadata({
   title: 'Owner’s Notes · Atlas Brief',
-  description:
-    'Owner’s Notes: David Safai’s essays on operating, building and the Los Angeles market.',
+  description: `Owner’s Notes: ${ABOUT}`,
   path: '/atlas-brief/dispatch',
 })
 
@@ -83,14 +88,20 @@ export default async function DispatchPage() {
         style={{ ['--dp-hero' as string]: `url(${HERO_IMAGE})` }}
       >
         <div className="dp-masthead-inner">
-          <div className="dp-mark">
-            <span className="dp-wordmark">Atlas <em>Brief</em></span>
-          </div>
-          {/* One word, one face. "Dis/patch" split roman + italic was a
-              branding device borrowed from the Atlas *Brief* lockup, where the
-              italic half is a separate word — inside a single word it reads as
-              a typo rather than a mark. */}
-          <h1>Owner&rsquo;s Notes</h1>
+          {/* 2026-11-07 — the Tape's header, in blue: bold Times title on the
+              left, the description beside it, the dateline under. dispatch.css
+              has the rules.
+              BACKUP — the markup it replaced. Paste back to restore; delete
+              only after Lucas confirms.
+                <div className="dp-mark">
+                  <span className="dp-wordmark">Atlas <em>Brief</em></span>
+                </div>
+                <h1>Owner&rsquo;s Notes</h1> */}
+          {/* The <em> is a colour hook only (upright). "Notes" was blue, like
+              the Tape's red "Tape"; Lucas made the whole title navy 2026-11-07,
+              and the hook stays in case a colour comes back. */}
+          <h1>Owner&rsquo;s <em>Notes</em></h1>
+          <p className="dp-about">{ABOUT}</p>
           {/* The dek and the entry-count row came out on 2026-09-22. Both were
               explaining the section to someone who had already clicked into
               it, which is the thing a newspaper never does. A flag carries the
@@ -122,7 +133,9 @@ export default async function DispatchPage() {
         <div className="wrap">
           {/* Client-side because paging is a reader control; the first page is
               server-rendered either way. */}
-          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Owner’s Notes" />
+          {/* MOCK (2026-11-06): nine a page, one big essay plus eight headlines
+              (dispatch.css). Was the 24 default, with no pageSize prop. */}
+          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Owner’s Notes" pageSize={9} />
         </div>
       </section>
 

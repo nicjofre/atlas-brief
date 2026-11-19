@@ -244,6 +244,77 @@
   color: var(--rule);
 }
 
+/* ---------------------------------------------------------------------------
+   2026-11-07 — the Tape's header, in blue (section.css, the 2026-11-04
+   blocks): "Owner's Notes" in bold Times on the left, "Notes" blue the way
+   "Tape" is red; the description beside it in bold italic navy; the dateline
+   under in sentence case. No small wordmark, no underline, no grey rule under
+   the band.
+
+   BACKUP — the masthead rules above this block are the old centred header,
+   untouched. Deleting this block (and restoring the markup parked in
+   page.tsx) brings it back. Delete only after Lucas confirms.
+   --------------------------------------------------------------------------- */
+.dp-masthead { border-bottom: 0; }
+.dp-masthead-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(40px, 7vw, 110px);
+  align-items: center;
+  text-align: left;
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;
+}
+.dp-masthead h1 {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+  white-space: nowrap;
+}
+/* Whole title navy (Lucas, 2026-11-07). Was "Notes" in var(--brand-blue). */
+.dp-masthead h1 em { font-style: normal; color: var(--brand-navy); }
+.dp-about {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  align-self: center;
+  margin: 0;
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(18px, 1.55vw, 22px);
+  line-height: 1.55;
+  color: var(--brand-navy);
+  text-wrap: balance;
+}
+.dp-dateline {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-content: flex-start;
+  gap: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.dp-dateline span::after { content: ",\00a0"; margin-left: 0; color: inherit; }
+/* The package sits closer under the header, as on the Tape. */
+.dp-package .top-stories { padding-top: clamp(24px, 2.8vw, 40px); }
+@media (max-width: 720px) {
+  .dp-masthead-inner { grid-template-columns: 1fr; column-gap: 0; }
+  .dp-masthead h1 { white-space: normal; }
+  .dp-about { grid-column: 1; grid-row: 2; margin: 2px 0 10px; }
+  .dp-dateline { grid-row: 3; }
+}
+
 /* ---- The package -------------------------------------------------------
    TopStories ships red kickers (top-stories.css line 18) because the front
    page and the Tape are the red stream. On this page they're blue, like the
@@ -332,3 +403,81 @@
   .dp-deck { display: none; }
 }
    --------------------------------------------------------------------------- */
+
+/* ===========================================================================
+   2026-11-06 — MOCK: the archive as one big essay plus a list of headlines
+   (Lucas's pick, option C). Owner's Notes only; the Tape has its own layout.
+
+   BACKUP — the archive as it was before this block (design/touch-up @ 603a980).
+   Everything ABOVE this line is that page, untouched, including the 4-across
+   grid from ../cards.css and:
+     .dp-feed { padding: clamp(36px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px);
+                border-top: 1px solid var(--ink);
+                border-bottom: 1px solid var(--ink); }
+   To restore it exactly: delete from here to the end of the file, and in
+   page.tsx take pageSize={9} off CardFeed (the default is 24).
+   Delete this note only after Lucas confirms.
+   =========================================================================== */
+.dp-feed { border-top: 0; border-bottom: 0; }
+/* The pager below already says where you are. */
+.dp-feed .tpc-bar { display: none; }
+
+.dp-feed .tpc-grid {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 0 clamp(24px, 3vw, 48px);
+  align-items: start;
+}
+
+/* The list: date, then headline. No photo or description; lazy photos that
+   aren't displayed don't download, so this page stays light. */
+.dp-feed .tpc-card {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 11px 0;
+}
+.dp-feed .tpc-thumb,
+.dp-feed .tpc-kicker,
+.dp-feed .tpc-dek { display: none; }
+.dp-feed .tpc-meta {
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.dp-feed .tpc-hed {
+  font-size: 17px;
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+
+/* The big essay: photo, date, headline, description. Spans the eight rows of
+   the list beside it. */
+.dp-feed .tpc-card:first-child {
+  grid-column: 1;
+  grid-row: 1 / span 8;
+  display: flex;
+  padding: 0;
+}
+.dp-feed .tpc-card:first-child .tpc-thumb { display: block; margin-bottom: 12px; }
+.dp-feed .tpc-card:first-child .tpc-meta { margin-bottom: 6px; }
+.dp-feed .tpc-card:first-child .tpc-hed {
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.12;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+}
+.dp-feed .tpc-card:first-child .tpc-dek {
+  display: -webkit-box;
+  margin-top: 10px;
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.45;
+  -webkit-line-clamp: 4;
+}
+
+@media (max-width: 820px) {
+  .dp-feed .tpc-grid { grid-template-columns: minmax(0, 1fr); }
+  .dp-feed .tpc-card { grid-column: 1; }
+  .dp-feed .tpc-card:first-child { grid-row: auto; margin-bottom: 18px; }
+}
