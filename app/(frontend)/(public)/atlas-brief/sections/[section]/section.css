@@ -776,11 +776,11 @@
    red, no rule. */
 .cat-masthead h1.cat-hand { color: var(--brand-navy); }
 .cat-masthead h1.cat-hand em { font-style: normal; color: var(--brand-red); }
-/* TRIAL 2026-11-18 (review pass): the whole title navy, one colour (all red
-   tried first: Lucas, "a bit harsh"). To go back to navy "The" + red "Tape",
-   delete this rule. */
-.cat-masthead h1.cat-hand,
-.cat-masthead h1.cat-hand em { color: var(--brand-navy); }
+/* 2026-11-18: the header went through a day of trials (whole title red, then
+   navy; description regular weight; stacked under the title; full width; date
+   at the right) and Lucas put it back to this, the Nov 4 version: navy "The",
+   red "Tape", bold italic description beside the title. The trials are in git
+   at 07e9a91 if any are wanted again. */
 .cat-masthead .cat-about {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--brand-red);   /* was 2px */
@@ -812,51 +812,10 @@
    text-decoration: underline, red, 1px, offset 6px, on each line. */
 .cat-masthead .cat-about { text-decoration: none; line-height: 1.55; }
 .cat-masthead .cat-about { font-weight: 700; }   /* bold (Lucas, 2026-11-04); was 500 */
-/* TRIAL 2026-11-18 (review pass): regular weight so the description reads as
-   a caption, not a second headline. Delete to go back to bold. */
-.cat-masthead .cat-about { font-weight: 400; }
 /* TRIAL (2026-11-04): description further right. Gap was
    clamp(24px, 3vw, 44px); delete this rule to put it back. */
 .cat-masthead-inner > div:first-child { column-gap: clamp(40px, 7vw, 110px); }
 @media (max-width: 720px) { .cat-masthead-inner > div:first-child { column-gap: 0; } }
-
-/* ---------------------------------------------------------------------------
-   TRIAL 2026-11-18 (review pass, option B): stacked. Title, description,
-   dateline, all on one left edge, like a headline and its summary. Description
-   smaller, upright, softer colour.
-   Tried first, option A (Lucas: "feels off"): description beside the title,
-   gap clamp(20px, 2vw, 28px), align-items/align-self: last baseline.
-   Was before both: description beside the title, centred, gap
-   clamp(40px, 7vw, 110px), italic, navy, clamp(18px, 1.55vw, 22px), line-height
-   1.55. Delete this block to go back to that.
-   --------------------------------------------------------------------------- */
-.cat-masthead-inner > div:first-child {
-  grid-template-columns: minmax(0, 1fr);
-  column-gap: 0;
-  align-items: start;
-}
-.cat-masthead h1.cat-hand { grid-column: 1; grid-row: 1; margin-bottom: 10px; }
-.cat-masthead .cat-about {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: start;
-  align-self: start;
-  max-width: 62ch;
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-style: normal;
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-.cat-masthead .cat-dateline { grid-column: 1; grid-row: 3; }
-
-/* Full width: one line on a wide screen, wrapping to two as it narrows
-   (Lucas, 2026-11-18). Was max-width 62ch with a forced break.
-   Tried and dropped the same day: the dateline at the right on the title's
-   line (grid-template-columns: minmax(0, 1fr) auto; dateline grid-column 2,
-   row 1, justify-self end). Once the description ran full width, Lucas said
-   the date looked out of place. It's back under the description. */
-.cat-masthead .cat-about { max-width: none; }
 
 /* ---------------------------------------------------------------------------
    2026-11-04 — the Tape's "Latest" in the front page's hand (front-top.css

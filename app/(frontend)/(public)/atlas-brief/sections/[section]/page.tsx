@@ -225,12 +225,17 @@ export default async function SectionPage(
             {/* What the Tape is, in the space right of the title (2026-11-04,
                 Lucas's ask). Same sentence as the meta description, so the
                 two can't drift apart. */}
-            {/* No forced break any more (2026-11-18, Lucas): the sentence runs
-                the full width and wraps on its own as the window narrows. It
-                was broken before its last clause with:
-                  const i = section.deck.lastIndexOf(', and ')
-                  <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</> */}
-            <p className="cat-about">{section.deck}</p>
+            {/* Broken before its last clause (", and what an operator thinks
+                of the number." on its own line). Split here rather than in the
+                registry string, which is also the meta description. Restored
+                2026-11-18 with the Nov 4 header. */}
+            <p className="cat-about">
+              {(() => {
+                const i = section.deck.lastIndexOf(', and ')
+                if (i < 0) return section.deck
+                return <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</>
+              })()}
+            </p>
           </div>
           <div className="cat-hero-img">
             {/* eslint-disable-next-line @next/next/no-img-element */}
