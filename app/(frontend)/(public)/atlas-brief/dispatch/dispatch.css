@@ -315,6 +315,36 @@
   .dp-dateline { grid-row: 3; }
 }
 
+/* ---------------------------------------------------------------------------
+   2026-11-18 (Lucas: "match" the Tape's new header). Stacked on one left edge:
+   title, then the description under it in regular weight, upright, 16px, the
+   softer ink, full width. No dateline (removed in page.tsx: essays don't need
+   today's date). The description's bottom margin stands in for the dateline's
+   line so the gap to the package matches the Tape.
+   Was: description beside the title, centred, bold italic navy
+   clamp(18px, 1.55vw, 22px), gap clamp(40px, 7vw, 110px). Delete to go back.
+   --------------------------------------------------------------------------- */
+.dp-masthead-inner {
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+  align-items: start;
+}
+.dp-masthead h1 { grid-column: 1; grid-row: 1; margin-bottom: 10px; }
+.dp-about {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: start;
+  max-width: none;
+  margin: 0 0 30px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  text-wrap: wrap;
+}
+
 /* ---- The package -------------------------------------------------------
    TopStories ships red kickers (top-stories.css line 18) because the front
    page and the Tape are the red stream. On this page they're blue, like the
@@ -322,6 +352,128 @@
    is untouched everywhere else; the extra class also wins on specificity, so
    stylesheet order doesn't matter. */
 .dp-package .ts-kicker span { color: var(--brand-blue); }
+
+/* ---------------------------------------------------------------------------
+   TRIAL 2026-11-18 (Lucas): words lead. The latest essay big on the left
+   (7 of 12 columns), photo over its text, no "Latest" label and no category
+   kicker, just the date. "Most recent" beside it as a dated headline list, no
+   photos (nine entries, page.tsx), headed in bold Times like the Tape.
+   Tried earlier the same day: the lead full width with Most recent as a row of
+   5 under it (photo "way too large"); the text beside the photo (Lucas:
+   underneath); six photo cards 2x3 on the right plus four dated headlines
+   under the lead (three layouts at once, a photo wall: too busy).
+   Was before all that: lead 7fr | stack 4fr side by side with a column rule
+   (top-stories.css .no-rail). Delete this block to go back.
+   --------------------------------------------------------------------------- */
+.dp-package .ts-grid {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) !important;
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: start;
+}
+.dp-package .ts-grid > * + * { border-left: 0; padding-left: 0; }
+/* "Most recent": bold Times navy, sentence case, no rule (the Tape's heads). */
+.dp-package .ts-stack > .ts-col-hed {
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--brand-navy);
+}
+/* Cream panel behind "Most recent" (Lucas, 2026-11-18). Cream means David's
+   own voice sitewide: the front page's Owner's Notes column and About's
+   buildings use the same #FAF7F1. Cream only, no navy band. Keep it off the
+   Tape. Delete to go back to white. */
+.dp-package .ts-stack {
+  background: #FAF7F1;
+  /* Sized down (Lucas, 2026-11-18). Was clamp(18px, 2vw, 26px) all round. */
+  padding: 14px clamp(14px, 1.4vw, 18px) 8px;
+}
+@media (max-width: 720px) {
+  .dp-package .ts-stack { padding: 14px 14px 6px; }
+}
+/* Each entry: date in a narrow column, headline beside it. No photo, no
+   category. A faint rule between entries. */
+.dp-package .ts-stack .ts-item {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 12px 0;
+  border-top: 1px solid var(--rule-soft);
+}
+.dp-package .ts-stack .ts-col-hed + .ts-item { border-top: 0; padding-top: 10px; }
+.dp-package .ts-stack .ts-item-img { display: none; }
+.dp-package .ts-stack .ts-item-text {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: baseline;
+}
+.dp-package .ts-stack .ts-kicker { margin: 0; white-space: nowrap; }
+.dp-package .ts-kicker span { display: none; }   /* the "ESSAY" label, lead too */
+
+/* TRIAL 2026-11-18 (Lucas: "see how this was styled on the home page? I like
+   it"): the lead gets the front page's Owner's Notes treatment
+   (front-top.css .ft-diary-tag and .ft-hl): a blue ribbon tag notched at the
+   end, and a light-blue marker behind the headline. The ribbon carries the
+   post's own category label. Delete to go back to the plain date + headline. */
+.dp-package .ts-lead .ts-kicker { align-items: center; gap: 2px 14px; }
+.dp-package .ts-lead .ts-kicker span {
+  display: inline-block;
+  padding: 4px 18px 4px 9px;
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+}
+.dp-package .ts-lead-hed a {
+  background: #DCE8FB;
+  padding: 0 .12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* Expanded (Lucas, 2026-11-18): the same marker on the archive's big essay
+   (each archive page opens with it), and on the Most recent list only on
+   hover, in place of the underline. */
+.dp-feed .tpc-card:first-child .tpc-hed a {
+  background: #DCE8FB;
+  padding: 0 .12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* Hover on this page is an underline everywhere (Lucas, 2026-11-18), on the
+   lead, the Most recent list and the archive alike. The blue marker on hover
+   in Most recent was tried and replaced. */
+.dp-package .ts-lead-hed a:hover,
+.dp-package .ts-item-hed a:hover,
+.dp-feed .tpc-hed a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.dp-package .ts-stack .ts-item-hed { font-size: 17px; line-height: 1.25; text-wrap: pretty; }
+/* "LATEST" and the rule under it removed from view (Lucas, 2026-11-18: "looks
+   weird now"). Kept for screen readers. Delete to bring them back. */
+.dp-package .ts-lead > .ts-col-hed {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+@media (max-width: 720px) {
+  .dp-package .ts-grid { grid-template-columns: minmax(0, 1fr) !important; row-gap: 32px; }
+}
 
 /* ---- Feed band ----------------------------------------------------------
    The grid and pager themselves come from ../cards.css. This is just the band
@@ -480,4 +632,112 @@
   .dp-feed .tpc-grid { grid-template-columns: minmax(0, 1fr); }
   .dp-feed .tpc-card { grid-column: 1; }
   .dp-feed .tpc-card:first-child { grid-row: auto; margin-bottom: 18px; }
+}
+
+/* ===========================================================================
+   TRIAL 2026-11-18 (Lucas: "the same thing we did with the Tape archive"):
+   two big essays a page on opposite sides, the dated headlines filling the
+   space beside each, the way the Tape's small cards sit beside its big ones.
+   14 a page (pageSize in page.tsx):
+     card 1      big, left (7 of 12 columns), beside headlines 2-7
+     cards 8-13  headlines, left (5 of 12), beside card 14
+     card 14     big, right
+   Overrides the one-big-essay mock above (option C, 9 a page); delete this
+   block and set pageSize back to 9 to return to it.
+   =========================================================================== */
+@media (min-width: 821px) {
+  .dp-feed .tpc-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .dp-feed .tpc-card { grid-column: 8 / -1; }
+  .dp-feed .tpc-card:nth-child(n+8) { grid-column: 1 / 6; }
+  .dp-feed .tpc-card:first-child { grid-column: 1 / 8; grid-row: 1 / span 6; }
+  .dp-feed .tpc-card:nth-child(14) { grid-column: 6 / -1; grid-row: 7 / span 6; }
+  /* Room between the two halves. */
+  .dp-feed .tpc-card:nth-child(8) { margin-top: clamp(28px, 3vw, 44px); }
+  .dp-feed .tpc-card:nth-child(14) { padding-top: clamp(28px, 3vw, 44px); }
+}
+/* Card 14 dressed like card 1: photo, bigger headline with the blue marker,
+   description. */
+.dp-feed .tpc-card:nth-child(14) { display: flex; }
+.dp-feed .tpc-card:nth-child(14) .tpc-thumb { display: block; margin-bottom: 12px; }
+.dp-feed .tpc-card:nth-child(14) .tpc-meta { margin-bottom: 6px; }
+.dp-feed .tpc-card:nth-child(14) .tpc-hed {
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.12;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+}
+.dp-feed .tpc-card:nth-child(14) .tpc-hed a {
+  background: #DCE8FB;
+  padding: 0 .12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.dp-feed .tpc-card:nth-child(14) .tpc-dek {
+  display: -webkit-box;
+  margin-top: 10px;
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.45;
+  -webkit-line-clamp: 4;
+}
+
+/* Less white space between the top section and the archive (Lucas,
+   2026-11-18: "condense this"). Was the package's clamp(28px, 3.5vw, 48px)
+   bottom padding plus the feed's clamp(28px, 3.4vw, 48px) top padding. */
+.dp-package .top-stories { padding-bottom: clamp(12px, 1.4vw, 20px); }
+.dp-feed { padding-top: clamp(12px, 1.4vw, 20px); }
+/* "Archive", as on the Tape: bold Times navy, then a hand-drawn line to the
+   edge, in this page's blue rather than the Tape's red. */
+.dp-archive-hed {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 clamp(16px, 2vw, 24px);
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.dp-archive-hed span { white-space: nowrap; }
+.dp-archive-hed svg { flex: 1; width: 0; height: 10px; overflow: visible; margin-right: -5px; }
+.dp-archive-hed path {
+  fill: none;
+  stroke: var(--brand-blue);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Smaller big essays (Lucas, 2026-11-18: "shrink those"). Narrower (5 of 12
+   columns, was 7), a wider and shorter 2:1 photo, a smaller headline and a
+   three-line summary, like the Tape archive's size-down. The headlines beside
+   them get the room. Delete to go back to the bigger cards. */
+@media (min-width: 821px) {
+  .dp-feed .tpc-card { grid-column: 6 / -1; }
+  .dp-feed .tpc-card:nth-child(n+8) { grid-column: 1 / 8; }
+  .dp-feed .tpc-card:first-child { grid-column: 1 / 6; }
+  .dp-feed .tpc-card:nth-child(14) { grid-column: 8 / -1; }
+  /* Headlines packed at their own height (Lucas, 2026-11-18: "tighten the
+     gaps"). Each big essay spans its six headline rows plus a flexible
+     seventh row, so the extra height lands in that empty row under the
+     headlines instead of being spread between them. */
+  .dp-feed .tpc-grid { grid-template-rows: repeat(6, auto) 1fr repeat(6, auto) 1fr; }
+  .dp-feed .tpc-card:first-child { grid-row: 1 / span 7; }
+  .dp-feed .tpc-card:nth-child(14) { grid-row: 8 / span 7; }
+}
+.dp-feed .tpc-card:first-child .tpc-thumb img,
+.dp-feed .tpc-card:nth-child(14) .tpc-thumb img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+.dp-feed .tpc-card:first-child .tpc-hed,
+.dp-feed .tpc-card:nth-child(14) .tpc-hed { font-size: clamp(20px, 1.8vw, 24px); }
+.dp-feed .tpc-card:first-child .tpc-dek,
+.dp-feed .tpc-card:nth-child(14) .tpc-dek {
+  margin-top: 8px;
+  font-size: 16px;
+  -webkit-line-clamp: 3;
 }

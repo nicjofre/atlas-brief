@@ -26,20 +26,8 @@ import './dispatch.css'
 // required. The same asset the Tape masthead uses.
 const HERO_IMAGE = '/images/la-skyline-dusk.jpg'
 
-// A paper's flag carries a dateline, not a description of the section. Built
-// per request rather than at module load so it can't freeze at build time —
-// the route renders dynamically (getArticles reads cookies), so this is the
-// date the reader is actually looking at the page.
-// No weekday since 2026-11-07, as on the Tape (it read "Saturday, November 7,
-// 2026": `weekday: 'long'` here).
-function dateline(): string {
-  return new Date().toLocaleDateString('en-US', {
-    timeZone: 'America/Los_Angeles',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
+// The dateline() helper came out with the dateline on 2026-11-18 (essays
+// don't need today's date). It's in git history at 2e60cdb if it's wanted back.
 
 // What Owner's Notes is: shown beside the title and used in the meta
 // description, so the two can't drift apart (the Tape does the same with its
@@ -65,16 +53,23 @@ export default async function DispatchPage() {
   // seven-day window means it re-forms on its own as David publishes; on a
   // quiet week it comes back empty and falls back to the five most recent,
   // saying so rather than claiming they're from this week.
-  const WEEK_MS = 7 * 24 * 60 * 60 * 1000
   const [lead, ...afterLead] = posts
-  const withinWeek = afterLead.filter(a => {
-    if (!a.published_at) return false
-    const t = new Date(a.published_at).getTime()
-    return !Number.isNaN(t) && Date.now() - t <= WEEK_MS
-  })
-  const thisWeek = withinWeek.length > 0
-  const stack = (thisWeek ? withinWeek : afterLead).slice(0, 5)
-  const stackLabel = thisWeek ? 'Others This Week' : 'Most Recent'
+  // 2026-11-18 (Lucas): always the nine most recent, as a dated headline list
+  // beside the lead (dispatch.css). Tried the same day: six as a 2x3 photo
+  // grid, with four more as a dated list under the lead (too busy). Was the
+  // week's posts, else the five most recent:
+  //   const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  //   const withinWeek = afterLead.filter(a => {
+  //     if (!a.published_at) return false
+  //     const t = new Date(a.published_at).getTime()
+  //     return !Number.isNaN(t) && Date.now() - t <= WEEK_MS
+  //   })
+  //   const thisWeek = withinWeek.length > 0
+  //   const stack = (thisWeek ? withinWeek : afterLead).slice(0, 5)
+  //   const stackLabel = thisWeek ? 'Others This Week' : 'Most Recent'
+  // Dropping the week window also clears the Date.now-in-render lint error.
+  const stack = afterLead.slice(0, 9)
+  const stackLabel = 'Most recent'
   const stackSlugs = new Set(stack.map(a => a.slug))
   const rest = afterLead.filter(a => !stackSlugs.has(a.slug))
 
@@ -106,10 +101,12 @@ export default async function DispatchPage() {
               explaining the section to someone who had already clicked into
               it, which is the thing a newspaper never does. A flag carries the
               place and the date; the stories say what the section is. */}
-          <p className="dp-dateline">
-            <span>Los Angeles</span>
-            <time dateTime={new Date().toISOString().slice(0, 10)}>{dateline()}</time>
-          </p>
+          {/* Dateline removed 2026-11-18 (Lucas: "this isn't really needed
+              now"). To restore:
+              <p className="dp-dateline">
+                <span>Los Angeles</span>
+                <time dateTime={new Date().toISOString().slice(0, 10)}>{dateline()}</time>
+              </p> */}
         </div>
       </header>
 
@@ -135,7 +132,17 @@ export default async function DispatchPage() {
               server-rendered either way. */}
           {/* MOCK (2026-11-06): nine a page, one big essay plus eight headlines
               (dispatch.css). Was the 24 default, with no pageSize prop. */}
-          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Owner’s Notes" pageSize={9} />
+          {/* "Archive" heading (2026-11-18, Lucas), the Tape's: bold Times,
+              then a hand-drawn line out to the edge, blue on this page. */}
+          <h2 className="dp-archive-hed">
+            <span>Archive</span>
+            <svg viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M3 6 C 90 9, 180 3, 270 7 S 360 5, 400 6" />
+            </svg>
+          </h2>
+          {/* 2026-11-18: 14 a page, two big essays on opposite sides with six
+              headlines beside each (dispatch.css). Was pageSize={9}. */}
+          <CardFeed rows={rest} stream="dispatch" fallbackLabel="Owner’s Notes" pageSize={14} />
         </div>
       </section>
 
