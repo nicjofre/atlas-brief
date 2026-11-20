@@ -1020,185 +1020,354 @@
 }
 
 /* ===========================================================================
-   2026-11-19 feedback round (Lucas): stacked instead of two columns. David's
-   note across the top, the three arms as three columns (split from the CMS
-   body in page.tsx, .ab-arms-cols), and the buildings along the bottom in a
-   row. Two columns on tablets, one on phones. Delete this block, and the
-   is-stacked markup in page.tsx, to go back to the split.
+   2026-11-20 — "About us": the title set like the Tape's and Owner's Notes'
+   (section.css .cat-masthead, dispatch.css .dp-masthead) and placed like
+   Contact's (.c-title): bold navy Times on the left, the description beside
+   it in 18px regular body text, one line on wide screens, under the title on
+   phones. Replaces .ab-headrow (its rules above are left in place, unused;
+   the markup backup is in page.tsx).
    =========================================================================== */
-.ab-split.is-stacked { grid-template-columns: minmax(0, 1fr); }
-.ab-split.is-stacked > .ab-col + section { border-left: 0; padding-left: 0; }
-
-/* The arms, one column each. */
-.ab-arms-cols > .wrap {
+.ab-title {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  /* More room under the header (Lucas, 2026-11-20): bottom padding was
+     clamp(8px, 1vw, 16px), then clamp(28px, 3.4vw, 48px), then clamp(48px, 6vw, 88px); "maybe even bigger". */
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) clamp(72px, 9vw, 128px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(24px, 3vw, 48px);
-  align-items: start;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(24px, 2.4vw, 36px);
+  align-items: center;
 }
-/* Two arms now (Atlas Brief moved into the panel), centred on the page as a
-   pair at the width a third of the page gave them (Lucas, 2026-11-19: "center
-   these 2 sections"). Text stays left-aligned inside each. */
-@media (min-width: 901px) {
-  .ab-arms-cols > .wrap {
-    --arm-gap: clamp(24px, 3vw, 48px);
-    grid-template-columns: repeat(auto-fit, minmax(0, calc((100% - 2 * var(--arm-gap)) / 3)));
-    justify-content: center;
-    gap: var(--arm-gap);
-  }
-  /* Across the full width, the first (longer) arm about two-thirds and the
-     second a third, so the two end close to level (Lucas, 2026-11-19, option
-     1). Overrides the centred pair just above; with any other number of arms
-     the rule above still applies. */
-  .ab-arms-cols > .wrap:has(> .ab-arm:nth-child(2):last-child) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    justify-content: stretch;
-  }
-}
-.ab-arms-cols .ab-arm { margin: 0; max-width: none; }
-.ab-arms-cols .ab-arm h2 { margin-top: 0; }
-@media (max-width: 900px) {
-  .ab-arms-cols > .wrap { grid-template-columns: minmax(0, 1fr); }
-}
-
-/* David's note gets the cream panel and navy ribbon (Lucas, 2026-11-19),
-   "From David". The ribbon's rules (.ab-band) are the ones the buildings used;
-   --dpad is the panel's side padding, which the ribbon overhangs. */
-.ab-from-david {
-  --dpad: clamp(18px, 2vw, 26px);
-  background: #FAF7F1;
-  padding: 0 var(--dpad) clamp(18px, 2vw, 26px);
-  margin: 14px 0 clamp(28px, 3vw, 44px);
-}
-.ab-from-david .ab-band { margin-bottom: clamp(18px, 2vw, 26px); }
-/* The ribbon's label as the site's wordmark (Lucas, 2026-11-19): bold Times,
-   "Brief" in red and upright, as in the toolbar. "Atlas" is white rather than
-   navy because it sits on the navy ribbon, as on the tab icon. */
-.ab-band-brand .ab-brand {
-  /* The wordmark is a span inside the ribbon's span, so .ab-band span's
-     block, padding, red bottom rule and shadow landed on it too: a second red
-     line (Lucas, 2026-11-19). Reset here so only the ribbon's own rule shows. */
-  display: inline;
-  padding: 0;
-  background: none;
-  border: 0;
-  box-shadow: none;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: clamp(26px, 2.4vw, 32px);
-  letter-spacing: 0;
-  color: #FFFFFF;
-}
-.ab-band-brand .ab-brand em { font-style: normal; color: var(--brand-red); }
-/* The Atlas Brief description, then David's note, in the panel. */
-/* Set as one text with David's note (Lucas, 2026-11-19: same size and font,
-   still separate paragraphs): the "opening line as a lead" rule
-   (.ab-body .prose > .payload-richtext > p:first-child, bigger) is undone
-   here, and the gap to David's note is the note's own paragraph spacing. */
-.ab-from-david .ab-brief-body { padding: 0; border: 0; background: none; margin: 0; }
-.ab-from-david .ab-brief-body .prose {
+.ab-title h1 {
   margin: 0;
-  max-width: none;
-  font-family: var(--serif);
-  font-size: clamp(18px, 1.4vw, 21px);
-  line-height: 1.6;
-  color: var(--ink);
-}
-.ab-from-david .ab-brief-body .prose > .payload-richtext > p:first-child {
-  font-size: inherit;
-  line-height: inherit;
-}
-.ab-from-david .ab-brief-body .prose p,
-.ab-from-david .ab-brief-body .prose p:last-child { margin: 0 0 1.15em; }
-/* David's note lost .ab-col > section's padding: 0 when it moved inside the
-   panel, so it picked up the section's own top and bottom padding: the big
-   gap above "Atlas Brief exists…" (Lucas, 2026-11-19). */
-.ab-from-david > section,
-.ab-from-david .ab-tail { padding: 0; border: 0; background: none; }
-.ab-from-david .ab-tail .wrap { padding: 0; }
-/* Shorter panel (Lucas, 2026-11-19): the email line under David's signature
-   is hidden (it's the last paragraph of the CMS note; the CMS is unchanged and
-   the signature rule keys off nth-last-child(2), so it still finds the name),
-   and less cream under the signature. Delete both rules to bring them back. */
-.ab-from-david .ab-tail .payload-richtext > p:last-child { display: none; }
-.ab-from-david { padding-bottom: clamp(8px, 1vw, 14px); }
-/* The "— David Safai" sign-off hidden too (Lucas, 2026-11-19): the panel ends
-   on "Read it like a trade journal, not a brochure." It's the second-to-last
-   paragraph of the CMS note; the CMS is unchanged. */
-.ab-from-david .ab-tail .payload-richtext > p:nth-last-child(2) { display: none; }
-.ab-from-david .ab-tail .payload-richtext > p:nth-last-child(3) { margin-bottom: 0; }
-.ab-split.is-stacked .ab-from-david .ab-tail { margin: 0; }
-
-/* The buildings along the bottom, side by side, now without the panel and
-   ribbon: no cream, and "Our buildings" as a plain bold Times heading, left,
-   like the site's other heads. The handwritten line stays under it for now. */
-.ab-split.is-stacked .ab-portfolio {
-  margin-top: clamp(28px, 3vw, 44px);
-  background: none;
-  padding: 0;
-}
-.ab-split.is-stacked .ab-bldg-head { text-align: left; }
-.ab-split.is-stacked .ab-portfolio .ab-band { margin: 0; }
-.ab-split.is-stacked .ab-portfolio .ab-band::before,
-.ab-split.is-stacked .ab-portfolio .ab-band::after { content: none; }
-.ab-split.is-stacked .ab-portfolio .ab-band span {
-  display: inline;
-  padding: 0;
-  background: none;
-  border: 0;
-  box-shadow: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--brand-navy);
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-align: left;
 }
-.ab-split.is-stacked .ab-bldg-note { margin-top: 8px; }
-/* Both removed (Lucas, 2026-11-19: "these are redundant"): the Home Builders
-   text above already introduces the two buildings. The heading and the CMS
-   line are still in the markup; delete this rule to bring them back. */
-.ab-split.is-stacked .ab-bldg-head { display: none; }
-/* Then (same evening): the handwritten line comes back as the heading, set in
-   the "Our buildings" style (bold Times navy, 24px, upright, no scribble), and
-   "Our buildings" itself stays hidden. */
-.ab-split.is-stacked .ab-bldg-head { display: block; margin-bottom: clamp(16px, 2vw, 24px); }
-.ab-split.is-stacked .ab-portfolio .ab-band { display: none; }
-.ab-split.is-stacked .ab-bldg-note {
-  display: block;
+.ab-title .ab-about p {
   margin: 0;
-  transform: none;
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+@media (min-width: 1360px) {
+  .ab-title .ab-about p { white-space: nowrap; }
+}
+@media (max-width: 720px) {
+  .ab-title { grid-template-columns: 1fr; row-gap: 2px; }
+  .ab-title .ab-about p { margin: 2px 0 10px; }
+}
+
+/* TRIAL (Lucas, 2026-11-20: "grab attention"): the description the title's
+   size, centred in the space beside the title. Wraps instead of holding one
+   line. Was 18px, left-aligned, nowrap from 1360px. Delete to go back. */
+.ab-title .ab-about p {
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+  white-space: normal;
+  /* Navy, in the title's bold Times (Lucas). Was var(--sans), regular,
+     var(--ink-soft). */
   font-family: 'Times New Roman', Times, serif;
-  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+
+/* TRIAL (Lucas, 2026-11-20): the title smaller and up into the top-left
+   corner: it sits at the top of the header rather than centred against the
+   description, with less room above. Was clamp(40px, 4.4vw, 60px),
+   align-items: center, top padding clamp(28px, 3.4vw, 48px). */
+.ab-title { padding-top: clamp(14px, 1.6vw, 24px); }
+.ab-title h1 {
+  align-self: start;
+  font-size: clamp(26px, 2.6vw, 36px);
+}
+
+/* TRIAL (Lucas, 2026-11-20): "About us" as a small note in the top-left
+   corner, and the description as the page's real title, centred on the whole
+   page. It was centred in the column right of "About us", which pushed it
+   right of the page's centre. Both now share one grid cell: the note pinned
+   top-left, the description centred across the full width, padded equally on
+   both sides so it can't run into the note. Title was clamp(26px, 2.6vw, 36px). */
+.ab-title { grid-template-columns: minmax(0, 1fr); }
+.ab-title h1,
+.ab-title .ab-about { grid-column: 1; grid-row: 1; }
+.ab-title h1 {
+  align-self: start;
+  justify-self: start;
+  font-size: clamp(16px, 1.4vw, 20px);
+}
+.ab-title .ab-about {
+  justify-self: stretch;
+  padding: 0 clamp(90px, 10vw, 150px);
+}
+@media (max-width: 720px) {
+  .ab-title h1 { grid-row: 1; }
+  .ab-title .ab-about { grid-row: 2; padding: 8px 0 0; }
+}
+
+/* ===========================================================================
+   2026-11-20 — the three parts in a cream banner under the title (Lucas).
+   The names are set exactly like their headings further down (.ab-body .prose
+   h2: bold Times, navy, clamp(24px, 2.4vw, 34px)). The cream is the buildings
+   panel's #FAF7F1. Same width as the page's content. Remove this block and
+   the .ab-arms-banner markup in page.tsx to take it out.
+   =========================================================================== */
+.ab-arms-banner {
+  max-width: var(--maxw);
+  margin: 0 auto clamp(48px, 6vw, 88px);
+  padding: 0 var(--pad-x);
+}
+.ab-arms-banner ul {
+  list-style: none;
+  margin: 0;
+  padding: clamp(22px, 2.6vw, 36px) clamp(18px, 2vw, 26px);
+  background: #FAF7F1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: baseline;
+  gap: 14px clamp(24px, 3vw, 48px);
+}
+.ab-arms-banner li {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 34px);
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--brand-navy);
 }
-.ab-split.is-stacked .ab-bldg-note .ab-scribble { display: none; }
-/* Just the building names (Lucas, 2026-11-19): the category line under each
-   ("Multifamily, Ground-up", "Condominium, Twelve Homes") hidden as noise.
-   It's CMS text, unchanged; delete this rule to bring it back. */
-.ab-split.is-stacked .project .p-head .cat { display: none; }
-/* Captions and the stats row hidden too (Lucas, 2026-11-19); each card is
-   name, photo, then its description, which is set like the rest of the
-   page's text (the panel and arms: serif, clamp(18px, 1.4vw, 21px), 1.6,
-   body ink). Was 14px / 1.5. CMS text unchanged; delete to bring back. */
-.ab-split.is-stacked .project .p-cap,
-.ab-split.is-stacked .project dl { display: none; }
-.ab-split.is-stacked .project p {
-  /* Full width of the photo above it (Lucas, 2026-11-19); the base rule
-     capped it at 48ch. */
-  max-width: none;
-  margin-top: 14px;
-  font-family: var(--serif);
-  font-size: clamp(18px, 1.4vw, 21px);
+@media (max-width: 720px) {
+  .ab-arms-banner ul { flex-direction: column; align-items: center; }
+}
+
+/* ===========================================================================
+   2026-11-20 — SPRUCE-UP of the header and banner (Lucas: "more professional
+   and tasteful… free rein"). Same structure: note top-left, the sentence as
+   the title, the three parts in cream below. Overrides the trials above;
+   delete this block (and the marked markup in page.tsx) to go back.
+   =========================================================================== */
+
+/* "About us": an editor's label — small sans, navy, a short red rule in front
+   of it, the way a section is marked in print. Was bold Times 16-20px. */
+.ab-title h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.35em;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--brand-navy);
+}
+/* Red dash in front removed (Lucas, 2026-11-20: "it feels off"). Was:
+   .ab-title h1::before { content: ""; width: 26px; height: 2px;
+                          background: var(--brand-red); } */
+
+/* The headline: a touch tighter, and "three sides." in the brand red. Less
+   dead air under it now that the banner follows (bottom padding was
+   clamp(72px, 9vw, 128px)). */
+.ab-title { padding-bottom: clamp(40px, 4.6vw, 64px); }
+.ab-title .ab-about p {
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+.ab-title .ab-about em { font-style: normal; color: var(--brand-red); }
+
+/* The banner: three framed columns on the cream. A navy rule on top and a
+   hairline under, thin dividers between the parts, and each name over a
+   one-line role in small muted sans. Names keep the headings' face, colour
+   and size. */
+.ab-arms-banner ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+  border-top: 3px solid var(--brand-navy);
+  border-bottom: 1px solid #E8E1D3;
+}
+.ab-arms-banner li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(26px, 3vw, 40px) clamp(14px, 1.6vw, 24px);
+  text-align: center;
+}
+.ab-arms-banner li + li { border-left: 1px solid #E8E1D3; }
+.ab-arm-role {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+@media (max-width: 720px) {
+  .ab-arms-banner ul { grid-template-columns: 1fr; }
+  .ab-arms-banner li + li { border-left: 0; border-top: 1px solid #E8E1D3; }
+  .ab-title h1 { margin-top: 0; }
+}
+
+/* More white space above the header (Lucas, 2026-11-20). Was
+   clamp(14px, 1.6vw, 24px); now the same as the space under it. */
+.ab-title { padding-top: clamp(40px, 4.6vw, 64px); }
+
+/* ===========================================================================
+   2026-11-20 — ONE SECTION PER SIDE, buildings at the bottom (Lucas). The
+   intro and banner above, then each side as a full-width section: name and
+   role in a narrow column on the left, the text on the right, a hairline
+   between sections. David's note sits in the Atlas Brief section, in a cream
+   panel. The buildings follow, full width, the two side by side. Remove this
+   block and the .ab-sides / .ab-bottom markup in page.tsx to go back.
+   =========================================================================== */
+html { scroll-behavior: smooth; }
+.ab-arms-banner a { display: contents; color: inherit; text-decoration: none; }
+.ab-arms-banner li:has(a):hover .ab-arm-name { color: var(--brand-red); }
+.ab-arm-name { transition: color .15s ease; }
+
+.ab-sides {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--pad-x);
+}
+.ab-side {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  column-gap: clamp(28px, 4vw, 72px);
+  padding: clamp(40px, 5vw, 72px) 0;
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 90px;
+}
+.ab-side:first-child { border-top: 0; padding-top: 0; }
+.ab-side-head h2 {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.ab-side-role {
+  margin: 10px 0 0;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+.ab-side-text p {
+  margin: 0 0 1em;
+  font-family: var(--sans);
+  font-size: clamp(18px, 1.45vw, 21px);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 62ch;
+}
+.ab-side-text p:last-child { margin-bottom: 0; }
+
+/* David's note, in the Brief section: cream, like the banner, his signature
+   in the hand (the face arrives as --hand on .ab-sides). */
+.ab-side-note {
+  margin-top: clamp(28px, 3vw, 40px);
+  padding: clamp(22px, 2.6vw, 34px) clamp(22px, 2.8vw, 40px);
+  background: #FAF7F1;
+  border-left: 3px solid var(--brand-navy);
+  max-width: 62ch;
+}
+.ab-side-note p {
+  margin: 0 0 0.9em;
+  font-family: var(--sans);
+  font-size: clamp(17px, 1.35vw, 19px);
   line-height: 1.6;
   color: var(--ink);
 }
-.ab-split.is-stacked .projects {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  /* More room between the two buildings (Lucas, 2026-11-19). Was
-     clamp(24px, 3vw, 48px). */
-  gap: clamp(40px, 5vw, 80px);
+.ab-side-note p:last-child { margin-bottom: 0; }
+.ab-side-note .payload-richtext > p:nth-last-child(2) {
+  font-family: var(--hand), cursive;
+  font-size: clamp(26px, 2.2vw, 32px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--brand-navy);
+  transform: rotate(-2deg);
+  transform-origin: left center;
+  margin: 0.7em 0 0.4em;
+}
+.ab-side-note a { color: var(--brand-navy); }
+
+/* The buildings, full width at the bottom: the cream panel and ribbon from
+   before, the two cards side by side. */
+.ab-split.ab-bottom {
+  display: block;
+  padding-top: clamp(16px, 2vw, 28px);
+  padding-bottom: clamp(56px, 6vw, 96px);
+}
+.ab-bottom .projects {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(28px, 3.4vw, 56px);
+}
+
+@media (max-width: 760px) {
+  .ab-side { grid-template-columns: 1fr; row-gap: 18px; }
+  .ab-bottom .projects { grid-template-columns: 1fr; }
+}
+
+/* David's signature and email out of the Brief section (Lucas, 2026-11-20).
+   They're the note's last two paragraphs (CMS text, so hidden here, not
+   deleted). Delete this rule to bring them back. */
+.ab-side-note .payload-richtext > p:nth-last-child(-n + 2) { display: none; }
+/* The line now closing the note loses its bottom margin, so the cream panel
+   doesn't end on a gap. */
+.ab-side-note .payload-richtext > p:nth-last-child(3) { margin-bottom: 0; }
+
+/* David's note joined to the Brief's text (Lucas, 2026-11-20: "combine these
+   two"): no cream panel or navy edge, its paragraphs set like the section's
+   own and following straight on. Was background #FAF7F1, border-left 3px
+   navy, padding, margin-top clamp(28px, 3vw, 40px), text 17-19px. */
+.ab-side-note {
+  margin-top: 1em;
+  padding: 0;
+  background: none;
+  border-left: 0;
+}
+.ab-side-note p {
+  margin: 0 0 1em;
+  font-size: clamp(18px, 1.45vw, 21px);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+/* Text fills the space (Lucas, 2026-11-20): no width caps, so every
+   paragraph runs the full width of the text column (the note's box was capped
+   at 62ch at a smaller size, which is why its lines stopped short), and the
+   name column narrower so the text starts further left. Was 4fr | 8fr and
+   max-width: 62ch on the text, the note and its paragraphs. */
+.ab-side { grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); }
+.ab-side-text p,
+.ab-side-note,
+.ab-side-note p { max-width: none; }
+@media (max-width: 760px) {
+  .ab-side { grid-template-columns: 1fr; }
+}
+
+/* Text under the name, from the left edge (Lucas, 2026-11-20): each section
+   stacks, name then text, full width. Was the name in a 3fr column on the
+   left, the text in 9fr beside it. */
+.ab-side {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: clamp(16px, 1.8vw, 24px);
 }

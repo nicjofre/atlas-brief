@@ -30,8 +30,6 @@ export default async function AboutPage() {
   type Block = NonNullable<typeof page.layout>[number]
   const isTail = (b: Block) => b.blockType === 'prose' && b.variant === 'tail'
   const layout: Block[] = page.layout ?? []
-  // Unused while the header is commented out (2026-11-19); kept for it.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hero = layout.filter(b => b.blockType === 'hero')
   const tail = layout.filter(isTail)
   // Everything between the masthead and the sign-off: the arms and the
@@ -62,6 +60,55 @@ export default async function AboutPage() {
     kids.length > 1 && bodyContent
       ? { ...bodyContent, root: { ...bodyContent.root, children: [ledePara] } }
       : null
+  // The description beside "About us" (2026-11-20) is the whole sentence, so
+  // it keeps its leading "Atlas" — the unstripped first paragraph.
+  // The three arms' names for the cream banner under the title (2026-11-20),
+  // read off the CMS headings so they always match the sections below.
+  const arms: string[] = kids
+    .filter((n: any) => n?.type === 'heading' && n?.tag === 'h2')
+    .map((n: any) => (n.children ?? []).map((c: any) => c?.text ?? '').join('').trim())
+    .filter(Boolean)
+  // Spruce-up (2026-11-20, Lucas: "free rein"). The headline is rendered as
+  // plain text so its closing "three sides." can take the brand red, the way
+  // the logo sets "Brief" — it points at the banner of three underneath. If
+  // David rewrites the sentence and the phrase goes, it renders all navy.
+  const aboutText: string = (firstPara?.children ?? [])
+    .map((c: any) => c?.text ?? '')
+    .join('')
+    .trim()
+  const accent = aboutText.match(/^(.*?)(three sides\.?)$/i)
+  // What each part does, under its name in the banner. Same wording as the
+  // page's meta description; matched on the name so a reorder can't misplace it.
+  const role = (name: string) =>
+    /brief/i.test(name) ? 'The publication'
+    : /builders/i.test(name) ? 'General contractor'
+    : /pro\b/i.test(name) ? 'Acquisitions'
+    : null
+  // One section per side (Lucas, 2026-11-20): the CMS body after its opening
+  // sentence is cut at each h2, so every side gets its own heading and the
+  // paragraphs under it. A section's slug is its anchor, which the banner links to.
+  const sides: { name: string; slug: string; content: any }[] = []
+  for (const n of kids.slice(1)) {
+    if (n?.type === 'heading' && n?.tag === 'h2') {
+      const name = (n.children ?? []).map((c: any) => c?.text ?? '').join('').trim()
+      sides.push({
+        name,
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        content: { ...bodyContent, root: { ...bodyContent.root, children: [] } },
+      })
+    } else if (sides.length) {
+      sides[sides.length - 1].content.root.children.push(n)
+    }
+  }
+  const slugOf = (name: string) => sides.find(s => s.name === name)?.slug
+  const projects = middleRaw.filter(b => b.blockType === 'projects')
+  // Any other blocks between the hero and the sign-off besides the body text
+  // and the buildings (none today) still render, after the sides.
+  const otherMiddle = middleRaw.filter((b, i) => i !== bodyIdx && b.blockType !== 'projects')
+  const about: any =
+    kids.length > 1 && bodyContent
+      ? { ...bodyContent, root: { ...bodyContent.root, children: [firstPara] } }
+      : null
   const middle: Block[] =
     lead && bodyContent
       ? middleRaw.map((b: Block, i: number) =>
@@ -73,42 +120,6 @@ export default async function AboutPage() {
             : b
         )
       : middleRaw
-  // 2026-11-19 (Lucas): the three arms in columns, one each. The body is one
-  // rich-text block in the CMS, so it's split here at each heading into its
-  // own group; the CMS is untouched. Anything before the first heading stays
-  // a group of its own at the start.
-  const bodyKids: any[] = bodyIdx >= 0 ? ((middle[bodyIdx] as any).content?.root?.children ?? []) : []
-  const armGroups: any[][] = []
-  for (const node of bodyKids) {
-    if (node?.type === 'heading' || armGroups.length === 0) armGroups.push([])
-    armGroups[armGroups.length - 1].push(node)
-  }
-  const armsAsColumns = armGroups.length > 1 && bodyContent
-  // 2026-11-19 (Lucas): the Atlas Brief arm moves into the cream panel, under
-  // a ribbon with the site's Atlas Brief wordmark (replacing "From David"). It's
-  // found by its heading text, so the order in the CMS doesn't matter; its own
-  // heading is dropped since the ribbon names it. The other arms stay columns.
-  const headingText = (n: any): string =>
-    (n?.children ?? []).map((c: any) => c?.text ?? '').join('').trim()
-  const briefIdx = armGroups.findIndex(g => g[0]?.type === 'heading' && /^Atlas Brief$/i.test(headingText(g[0])))
-  const briefBodyRaw: any[] = briefIdx >= 0 ? armGroups[briefIdx].slice(1) : []
-  // "The publication you are reading." taken off the front of the first
-  // paragraph (Lucas, 2026-11-19); the CMS text is unchanged. If David rewords
-  // it, nothing is stripped.
-  const OPENER = /^The publication you are reading\.\s*/
-  const firstNode = briefBodyRaw[0]
-  const firstLeaf = firstNode?.children?.[0]
-  const briefBody: any[] =
-    firstLeaf && typeof firstLeaf.text === 'string' && OPENER.test(firstLeaf.text)
-      ? [
-          {
-            ...firstNode,
-            children: [{ ...firstLeaf, text: firstLeaf.text.replace(OPENER, '') }, ...firstNode.children.slice(1)],
-          },
-          ...briefBodyRaw.slice(1),
-        ]
-      : briefBodyRaw
-  const otherArms = briefIdx >= 0 ? armGroups.filter((_, i) => i !== briefIdx) : armGroups
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
   return (
@@ -128,76 +139,113 @@ export default async function AboutPage() {
           Tape's header. Before, the two stacked centred, with no wrapper:
             <RenderBlocks blocks={hero} />
             {lead && (<section className="ab-lead">…</section>)} */}
-      {/* COMMENTED OUT 2026-11-19 (Lucas: remove the "Atlas is a Los Angeles
-          real estate practice with three sides." header for now, he has an
-          idea for it). Uncomment to bring it back:
-      <div className="ab-headrow">
-        <RenderBlocks blocks={hero} />
-        {lead && (
-          <section className="ab-lead">
-            <div className="wrap">
-              <RichText data={lead as any} />
-            </div>
-          </section>
-        )}
-      </div>
-      */}
-      {/* David's sign-off opens the left column (2026-10-07) instead of closing
-          the page under both columns: it's why the Brief exists, so it leads
-          the arms rather than trailing the buildings. */}
-      {middle.length > 0 && (
-        // --hand carries the handwritten face to about.css for David's
-        // signature (2026-11-04); the sign-off is CMS text, so CSS styles it.
-        // 2026-11-19 (Lucas): stacked instead of split. David's note, then the
-        // three arms as three columns, then the buildings along the bottom in
-        // a row (about.css .ab-split.is-stacked). Was: the note and the arms in
-        // the left column, the buildings stacked in the right.
-        <div className="ab-split is-stacked" style={{ ['--hand' as string]: hand.style.fontFamily }}>
-          <div className="ab-col">
-            {/* David's note in the cream panel with the navy ribbon, "From
-                David" (Lucas, 2026-11-19). Both moved here from the buildings,
-                which now open with a plain heading (about.css). */}
-            {/* 2026-11-19 (Lucas): the ribbon carries the Atlas Brief wordmark
-                (was "From David"), and the panel holds the Atlas Brief arm's
-                description above David's note. */}
-            <div className="ab-from-david">
-              <h2 className="ab-band ab-band-brand">
-                <span><span className="ab-brand">Atlas <em>Brief</em></span></span>
-              </h2>
-              {armsAsColumns && briefBody.length > 0 && (
-                <section className="ab-body ab-brief-body">
+      {/* "About us" (Lucas, 2026-11-20): the Tape's and Owner's Notes' title —
+          bold navy Times on the left, the one-line description beside it
+          (about.css .ab-title). The CMS hero ("Atlas") is left out, as on
+          Contact; it's still in the CMS.
+          BACKUP — the header it replaced ("Atlas | is a Los Angeles…" as one
+          sentence). Paste back to restore; delete only after Lucas confirms:
+            <div className="ab-headrow">
+              <RenderBlocks blocks={hero} />
+              {lead && (
+                <section className="ab-lead">
                   <div className="wrap">
-                    <div className="prose">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <RichText data={{ ...bodyContent, root: { ...bodyContent.root, children: briefBody } } as any} />
-                    </div>
+                    <RichText data={lead as any} />
                   </div>
                 </section>
               )}
-              <RenderBlocks blocks={tail} />
-            </div>
-            {armsAsColumns ? (
-              <>
-                <section className="ab-body ab-arms-cols">
-                  <div className="wrap">
-                    {otherArms.map((group, i) => (
-                      <div className="prose ab-arm" key={i}>
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        <RichText data={{ ...bodyContent, root: { ...bodyContent.root, children: group } } as any} />
-                      </div>
-                    ))}
+            </div> */}
+      <header className="ab-title">
+        <h1>About us</h1>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {/* Was the CMS paragraph through RichText:
+              {about && <div className="ab-about"><RichText data={about as any} /></div>} */}
+        {aboutText && (
+          <div className="ab-about">
+            <p>
+              {accent ? <>{accent[1]}<em>{accent[2]}</em></> : aboutText}
+            </p>
+          </div>
+        )}
+      </header>
+      {/* The three parts in a cream banner under the title (Lucas, 2026-11-20),
+          set like their headings further down the page (about.css .ab-arms-banner). */}
+      {arms.length > 0 && (
+        <div className="ab-arms-banner">
+          <ul>
+            {/* Was: {arms.map(name => <li key={name}>{name}</li>)} */}
+            {/* Each part links down to its section (2026-11-20). */}
+            {arms.map(name => {
+              const slug = slugOf(name)
+              const inner = (
+                <>
+                  <span className="ab-arm-name">{name}</span>
+                  {/* Role line removed (Lucas, 2026-11-20: "they read AI"). Was:
+                      {role(name) && <span className="ab-arm-role">{role(name)}</span>} */}
+                </>
+              )
+              return <li key={name}>{slug ? <a href={`#${slug}`}>{inner}</a> : inner}</li>
+            })}
+          </ul>
+        </div>
+      )}
+      {/* 2026-11-20 (Lucas): the page as the intro above, then one section per
+          side, then the buildings full width at the bottom. Each side: its name
+          and role on the left, its text on the right. David's note (the CMS
+          sign-off) sits in the Atlas Brief section, since it's about why the
+          Brief exists. about.css .ab-sides / .ab-bottom.
+          BACKUP — the two-column split it replaces is kept below, switched
+          off with `false &&`; delete only after Lucas confirms. */}
+      {sides.length > 0 ? (
+        <div className="ab-sides" style={{ ['--hand' as string]: hand.style.fontFamily }}>
+          {sides.map((s, i) => (
+            <section className="ab-side" id={s.slug} key={s.slug || i}>
+              <header className="ab-side-head">
+                <h2>{s.name}</h2>
+                {/* Role line removed (Lucas, 2026-11-20), as in the banner. Was:
+                    {role(s.name) && <p className="ab-side-role">{role(s.name)}</p>} */}
+              </header>
+              <div className="ab-side-body">
+                <div className="ab-side-text">
+                  <RichText data={s.content} />
+                </div>
+                {i === 0 && tail.length > 0 && (
+                  <div className="ab-side-note">
+                    {tail.map((b, j) =>
+                      b.blockType === 'prose' && b.content
+                        ? <RichText key={j} data={b.content} />
+                        : null
+                    )}
                   </div>
-                </section>
-                <RenderBlocks blocks={middle.filter((b, i) => b.blockType !== 'projects' && i !== bodyIdx)} />
-              </>
-            ) : (
-              <RenderBlocks blocks={middle.filter(b => b.blockType !== 'projects')} />
-            )}
+                )}
+              </div>
+            </section>
+          ))}
+          {otherMiddle.length > 0 && <RenderBlocks blocks={otherMiddle} />}
+        </div>
+      ) : (
+        <RenderBlocks blocks={[...tail, ...middle.filter(b => b.blockType !== 'projects')]} />
+      )}
+      {projects.length > 0 && (
+        <div className="ab-split ab-bottom">
+          <RenderBlocks blocks={projects} />
+        </div>
+      )}
+      {/* David's sign-off opens the left column (2026-10-07) instead of closing
+          the page under both columns: it's why the Brief exists, so it leads
+          the arms rather than trailing the buildings. */}
+      {false && middle.length > 0 && (
+        // --hand carries the handwritten face to about.css for David's
+        // signature (2026-11-04); the sign-off is CMS text, so CSS styles it.
+        <div className="ab-split" style={{ ['--hand' as string]: hand.style.fontFamily }}>
+          <div className="ab-col">
+            <RenderBlocks blocks={tail} />
+            <RenderBlocks blocks={middle.filter(b => b.blockType !== 'projects')} />
           </div>
           <RenderBlocks blocks={middle.filter(b => b.blockType === 'projects')} />
         </div>
       )}
-      {middle.length === 0 && <RenderBlocks blocks={tail} />}
+      {false && middle.length === 0 && <RenderBlocks blocks={tail} />}
       <Footer />
     </>
   )
