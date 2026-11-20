@@ -293,3 +293,7 @@
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
+
+/* Less white space before the footer (Lucas, 2026-11-19), now the note under
+   the sample issue is gone. Was clamp(56px, 7vw, 104px). */
+.sp { padding-bottom: clamp(12px, 1.4vw, 20px); }   /* a bit more (was 24-40px) */
