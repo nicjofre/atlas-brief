@@ -191,6 +191,14 @@ function BlockItem({ block }: { block: Block }) {
               </React.Fragment>
             ))}
           </div>
+          {/* David's photo beside his card (Lucas, 2026-11-19). The file is
+              public/images/david-safai.jpg; not a CMS field yet. contact.css
+              lays the photo and the card out side by side (.c-card-row). */}
+          <div className="c-card-row">
+          <figure className="c-photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/david-safai.jpg" alt={block.name || 'David Safai'} width={637} height={720} loading="lazy" />
+          </figure>
           <aside className="c-side">
             {block.sidebarLabel && <div className="k">{block.sidebarLabel}</div>}
             {block.name && <h3>{block.name}</h3>}
@@ -231,6 +239,7 @@ function BlockItem({ block }: { block: Block }) {
               )}
             </dl>
           </aside>
+          </div>
         </section>
       )
     }

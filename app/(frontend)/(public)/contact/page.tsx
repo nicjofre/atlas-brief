@@ -30,7 +30,15 @@ export default async function ContactPage() {
       {/* --hand carries the handwritten face to contact.css for David's name
           (2026-11-06), the same way About's signature gets it. */}
       <div className="c-page" style={{ ['--hand' as string]: hand.style.fontFamily }}>
-        <RenderBlocks blocks={page.layout} />
+        {/* "Contact us" (Lucas, 2026-11-19): bold navy, set and placed like the
+            Tape's and Owner's Notes' titles (contact.css .c-title). */}
+        <header className="c-title">
+          <h1>Contact us</h1>
+        </header>
+        {/* The header ("Atlas  Los Angeles, California. Operator, Developer,
+            GC", the CMS hero block) left out (Lucas, 2026-11-19). The block is
+            still in the CMS; pass page.layout unfiltered to bring it back. */}
+        <RenderBlocks blocks={(page.layout ?? []).filter(b => b.blockType !== 'hero')} />
       </div>
       <Footer />
     </>
