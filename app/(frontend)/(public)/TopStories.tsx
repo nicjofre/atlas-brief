@@ -34,6 +34,7 @@ export default function TopStories({
   leadLabel,
   stackLabel,
   stackFooter,
+  leadFooter,
 }: {
   lead: ArticleCard
   stack: ArticleCard[]
@@ -48,6 +49,9 @@ export default function TopStories({
   // Optional extra content under the stack (2026-11-04): the Tape's rotating
   // "Others this week" card. Nothing renders when it's left out.
   stackFooter?: ReactNode
+  // Optional extra content under the lead (2026-11-19): the Tape's "From
+  // Owner's Notes" panel. Nothing renders when it's left out.
+  leadFooter?: ReactNode
 }) {
   const hasMostRead = mostRead.length >= 3
   return (
@@ -70,6 +74,7 @@ export default function TopStories({
               <Link href={`/atlas-brief/${lead.slug}`}>{calmHeadline(lead.headline)}</Link>
             </h3>
             {(lead.deck || lead.excerpt) && <p className="ts-lead-dek">{lead.deck ?? lead.excerpt}</p>}
+            {leadFooter}
           </article>
 
           <div className="ts-stack">

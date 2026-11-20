@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo/metadata'
 import Footer from '../../../Footer'
@@ -64,19 +65,6 @@ export async function generateMetadata(
   })
 }
 
-// A paper's flag carries a dateline, not a description of the section. Built
-// per request rather than at module load so it can't freeze at build time —
-// the route renders dynamically (getArticles reads cookies), so this is the
-// date the reader is actually looking at.
-function dateline(): string {
-  return new Date().toLocaleDateString('en-US', {
-    timeZone: 'America/Los_Angeles',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
 // PARKED: the seven-day test "Others this week" used, before it became the five
 // most recent. Module-level so the clock is read outside the component body
 // (react-hooks/purity).
@@ -103,7 +91,13 @@ export default async function SectionPage(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const list = await getArticles({ sectionSlug: slug })
+  const [list, everything] = await Promise.all([
+    getArticles({ sectionSlug: slug }),
+    getArticles(),
+  ])
+  // 2026-11-19 (Lucas): David's two latest essays in a cream panel under the
+  // lead, linking across to Owner's Notes (leadFooter below).
+  const notes = everything.filter(a => a.kind === 'post').slice(0, 2)
 
   // The section opens with the front-page package: newest entry large, the rest
   // of the week stacked beside it, everything older in the feed below. No Most
@@ -141,9 +135,11 @@ export default async function SectionPage(
   const picks = mostRead
     .map(r => bySlug.get(r.slug))
     .filter((a): a is NonNullable<typeof a> => !!a)
-    .slice(0, 2)   // two picks, not three (Lucas, 2026-11-04), to shorten the right column
+    // Three picks again (Lucas, 2026-11-19), to fill the right column now the
+    // left has the Owner's Notes panel. It was cut to two on 2026-11-04.
+    .slice(0, 3)
   for (const a of afterLead) {
-    if (picks.length >= 2) break
+    if (picks.length >= 3) break
     if (!picks.includes(a)) picks.push(a)
   }
   const stack = picks
@@ -218,24 +214,21 @@ export default async function SectionPage(
                 carries the place and the date, and the entries say the rest.
                 `deck` stays on the registry entry: it's the page's meta
                 description, which still wants a sentence. */}
-            <p className="cat-dateline">
-              <span>Los Angeles</span>
-              <time dateTime={new Date().toISOString().slice(0, 10)}>{dateline()}</time>
-            </p>
+            {/* Dateline removed 2026-11-19 (Lucas: redundant, every post carries
+                its own date), as on Owner's Notes. It was:
+                <p className="cat-dateline">
+                  <span>Los Angeles</span>
+                  <time dateTime={…}>{dateline()}</time>
+                </p>
+                dateline() went with it; it's in git at 0d02317. */}
             {/* What the Tape is, in the space right of the title (2026-11-04,
                 Lucas's ask). Same sentence as the meta description, so the
                 two can't drift apart. */}
-            {/* Broken before its last clause (", and what an operator thinks
-                of the number." on its own line). Split here rather than in the
-                registry string, which is also the meta description. Restored
-                2026-11-18 with the Nov 4 header. */}
-            <p className="cat-about">
-              {(() => {
-                const i = section.deck.lastIndexOf(', and ')
-                if (i < 0) return section.deck
-                return <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</>
-              })()}
-            </p>
+            {/* One line (2026-11-19, Lucas). It was broken before its last
+                clause with:
+                  const i = section.deck.lastIndexOf(', and ')
+                  <>{section.deck.slice(0, i + 1)}<br />{section.deck.slice(i + 2)}</> */}
+            <p className="cat-about">{section.deck}</p>
           </div>
           <div className="cat-hero-img">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -279,6 +272,26 @@ export default async function SectionPage(
                 </svg>
               </>
             }
+            leadFooter={notes.length > 0 && (
+              <aside className="cat-notes" aria-label="From Owner's Notes">
+                {/* Copy from Lucas, 2026-11-19. Was "From Owner's Notes". */}
+                <h3 className="cat-notes-hed">Enjoying our point of view?</h3>
+                <p className="cat-notes-dek">
+                  Check out <Link href="/atlas-brief/dispatch">Owner&rsquo;s Notes</Link> for
+                  the perspective of an owner in LA.
+                </p>
+                <ol className="cat-notes-list">
+                  {notes.map(a => (
+                    <li key={a.id}>
+                      <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
+                      <Link href={`/atlas-brief/${a.slug}`}>{calmHeadline(a.headline)}</Link>
+                    </li>
+                  ))}
+                </ol>
+                {/* "Read all of David's essays" removed 2026-11-19 (Lucas): the
+                    line under the heading already links to Owner's Notes. */}
+              </aside>
+            )}
             stackFooter={
               <WeekCarousel
                 items={weekCards}

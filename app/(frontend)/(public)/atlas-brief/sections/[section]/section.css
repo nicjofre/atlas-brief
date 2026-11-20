@@ -812,10 +812,90 @@
    text-decoration: underline, red, 1px, offset 6px, on each line. */
 .cat-masthead .cat-about { text-decoration: none; line-height: 1.55; }
 .cat-masthead .cat-about { font-weight: 700; }   /* bold (Lucas, 2026-11-04); was 500 */
+/* 2026-11-19 (Lucas): upright and set like the rest of the site's text (the
+   same as Owner's Notes' description: regular, 16px, the body ink), on one
+   line. Was bold italic navy clamp(18px, 1.55vw, 22px), two lines. Narrow
+   screens still wrap. Delete to go back. */
+.cat-masthead .cat-about {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;   /* the size of the deal headlines beside it (Lucas); was 16px */
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: none;
+  text-wrap: wrap;
+}
+/* One line (Lucas): the description moves left, closer to the title (gap was
+   clamp(40px, 7vw, 110px), rule below), and holds to one line on wide
+   screens. Below 1360px it wraps rather than run off the page. */
+@media (min-width: 1360px) {
+  .cat-masthead .cat-about { white-space: nowrap; }
+}
 /* TRIAL (2026-11-04): description further right. Gap was
    clamp(24px, 3vw, 44px); delete this rule to put it back. */
 .cat-masthead-inner > div:first-child { column-gap: clamp(40px, 7vw, 110px); }
 @media (max-width: 720px) { .cat-masthead-inner > div:first-child { column-gap: 0; } }
+/* 2026-11-19 (Lucas: one line, "shift it left if needed"): the description
+   closer to the title. Overrides the 40-110px gap just above. */
+@media (min-width: 721px) {
+  .cat-masthead-inner > div:first-child { column-gap: clamp(24px, 2.4vw, 36px); }
+}
+/* Less white space between the header and the deals (Lucas, 2026-11-19).
+   Was the package's clamp(24px, 2.8vw, 40px) top padding, plus the title's
+   10px bottom margin. */
+.cat-masthead h1.cat-hand { margin-bottom: 0; }
+.cat-package .top-stories { padding-top: clamp(12px, 1.4vw, 20px); }
+
+/* ---------------------------------------------------------------------------
+   TRIAL 2026-11-19 (Lucas): "From Owner's Notes" under the lead, in the empty
+   space beside the bottom of the right column, linking across to David's
+   essays. Cream, because it's his voice (the cream rule). Heading in the
+   Tape's bold Times; entries set like Owner's Notes' Most recent list (short
+   date, headline); a plain link at the foot. Delete this block and the
+   leadFooter in page.tsx to remove it.
+   --------------------------------------------------------------------------- */
+.cat-notes {
+  margin-top: clamp(24px, 2.6vw, 36px);
+  padding: 14px clamp(14px, 1.4vw, 18px) 6px;
+  background: #FAF7F1;
+}
+.cat-notes-hed {
+  margin: 0 0 6px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.cat-notes-dek {
+  margin: 4px 0 8px;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.cat-notes-dek a { font-weight: 700; color: var(--brand-blue); }
+.cat-notes-dek a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.cat-notes-list { list-style: none; margin: 0; padding: 0; }
+.cat-notes-list li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule-soft);
+}
+.cat-notes-list li:first-child { border-top: 0; }
+.cat-notes-list time { font-family: var(--sans); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.cat-notes-list a {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.cat-notes-list a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 
 /* ---------------------------------------------------------------------------
    2026-11-04 — the Tape's "Latest" in the front page's hand (front-top.css
