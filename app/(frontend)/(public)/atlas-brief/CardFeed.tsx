@@ -63,13 +63,16 @@ function cardKicker(a: ArticleCard, stream: Stream, fallback: string): string {
 
 export type Stream = 'tape' | 'dispatch'
 
-function FeedCard({ a, stream, fallback, onPreview }: {
+function FeedCard({ a, stream, fallback, onPreview, tapeLayout = false }: {
   a: ArticleCard
   stream: Stream
   fallback: string
   // Tape only (2026-11-04): a plain click opens ArchivePreview instead of the
   // article. Modified and middle clicks fall through to the link as normal.
   onPreview?: (a: ArticleCard) => void
+  // The Tape's card format on another stream (2026-11-19): no description
+  // line, and this year's dates without the year.
+  tapeLayout?: boolean
 }) {
   const p = a.listing?.property ?? null
   const preview = onPreview
@@ -84,7 +87,7 @@ function FeedCard({ a, stream, fallback, onPreview }: {
   const isTape = stream === 'tape'
   // The Tape's units/year/place line moved into the preview (2026-11-04) to
   // slim the archive cards; it was `isTape ? cardMeta(p) : ...`.
-  const meta = isTape ? '' : (a.deck ?? a.excerpt ?? '')
+  const meta = isTape || tapeLayout ? '' : (a.deck ?? a.excerpt ?? '')
   return (
     <article className="tpc-card">
       <Link href={`/atlas-brief/${a.slug}`} className="tpc-thumb" tabIndex={-1} aria-hidden="true" onClick={preview}>
@@ -113,7 +116,7 @@ function FeedCard({ a, stream, fallback, onPreview }: {
 
       <div className="tpc-meta">
         <span className="tpc-kicker">{cardKicker(a, stream, fallback)}</span>
-        <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at, isTape)}</time>
+        <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at, isTape || tapeLayout)}</time>
       </div>
 
       <h3 className="tpc-hed">
@@ -139,14 +142,19 @@ export default function CardFeed({
   stream,
   fallbackLabel,
   pageSize = PAGE_SIZE,
+  tapeLayout = false,
 }: {
   rows: ArticleCard[]
   stream: Stream
   // Kicker text for an entry that carries no category of its own.
   fallbackLabel: string
-  // Cards per page. The Tape passes 13, its mixed-size layout in cards.css;
-  // Owner's Notes passes 9, its big essay and list in dispatch.css.
+  // Cards per page. The Tape passes 13, its mixed-size layout in cards.css.
   pageSize?: number
+  // Owner's Notes in the Tape's archive format (2026-11-19, Nic: the two pages
+  // should be the same): adds .tpc-tape to the wrapper so cards.css's mixed
+  // layout applies, and FeedCard drops the description line. The preview
+  // stays Tape only (essays open straight into the article).
+  tapeLayout?: boolean
 }) {
   const [page, setPage] = useState(0)
   // The deal open in the Tape's preview, if any (ArchivePreview).
@@ -210,7 +218,7 @@ export default function CardFeed({
   // `.tpc-dispatch` on the wrapper is what swaps red for blue; see cards.css.
   return (
     // `.tpc-tape` lets the Tape restyle its cards without touching Owner's Notes.
-    <div className={stream === 'dispatch' ? 'tpc-dispatch' : 'tpc-tape'}>
+    <div className={stream === 'dispatch' ? `tpc-dispatch${tapeLayout ? ' tpc-tape' : ''}` : 'tpc-tape'}>
       {shown.length === 0 ? (
         <p className="sec-empty">Nothing here yet.</p>
       ) : (
@@ -238,6 +246,7 @@ export default function CardFeed({
                 stream={stream}
                 fallback={fallbackLabel}
                 onPreview={stream === 'tape' ? setPreviewing : undefined}
+                tapeLayout={tapeLayout}
               />
             ))}
           </div>

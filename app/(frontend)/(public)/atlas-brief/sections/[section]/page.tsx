@@ -277,13 +277,13 @@ export default async function SectionPage(
                 {/* Copy from Lucas, 2026-11-19. Was "From Owner's Notes". */}
                 <h3 className="cat-notes-hed">Enjoying our point of view?</h3>
                 <p className="cat-notes-dek">
-                  Check out <Link href="/atlas-brief/dispatch">Owner&rsquo;s Notes</Link> for
-                  the perspective of an owner in LA.
+                  Check out <Link href="/atlas-brief/dispatch">Owner&rsquo;s Notes</Link>{' '}
+                  for the perspective of an owner in LA.
                 </p>
                 <ol className="cat-notes-list">
                   {notes.map(a => (
+                    // No date (Lucas, 2026-11-19); it was a <time> before the link.
                     <li key={a.id}>
-                      <time dateTime={a.published_at ?? undefined}>{apDate(a.published_at)}</time>
                       <Link href={`/atlas-brief/${a.slug}`}>{calmHeadline(a.headline)}</Link>
                     </li>
                   ))}

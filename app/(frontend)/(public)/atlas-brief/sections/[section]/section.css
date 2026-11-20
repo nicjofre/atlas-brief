@@ -878,11 +878,10 @@
 .cat-notes-dek a { font-weight: 700; color: var(--brand-blue); }
 .cat-notes-dek a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .cat-notes-list { list-style: none; margin: 0; padding: 0; }
+/* Headlines only, no date column (Lucas, 2026-11-19). Was a grid of
+   64px date | headline. */
 .cat-notes-list li {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 0 12px;
-  align-items: baseline;
+  display: block;
   padding: 10px 0;
   border-top: 1px solid var(--rule-soft);
 }

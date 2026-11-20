@@ -345,6 +345,56 @@
   text-wrap: wrap;
 }
 
+/* ---------------------------------------------------------------------------
+   2026-11-19 feedback round (Nic: Owner's Notes and the Tape should be the
+   same). The Tape's header (section.css, 2026-11-19): title on the left, the
+   description beside it on one line, regular 18px body ink, close to the
+   title, centred on it; one line on wide screens, wrapping below 1360px and
+   stacking on phones. Overrides the stacked block above; delete to go back.
+   --------------------------------------------------------------------------- */
+@media (min-width: 721px) {
+  .dp-masthead-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: clamp(24px, 2.4vw, 36px);
+    align-items: center;
+  }
+  .dp-masthead h1 { grid-column: 1; grid-row: 1; margin-bottom: 0; }
+  /* Centred on the title as on the Tape (Lucas, 2026-11-19: "mirror the
+     Tape's alignment"). The Nov 18 stacked block had pinned it to the top with
+     align-self: start. */
+  .dp-about { grid-column: 2; grid-row: 1; margin: 0; align-self: center; justify-self: start; }
+}
+/* The description set exactly as the Tape's .cat-about (section.css,
+   2026-11-19): sans, regular, upright, 18px, line-height 1.45, body ink, no
+   width cap, no margin; one line from 1360px. Spacing as the Tape's: title to
+   description clamp(24px, 2.4vw, 36px), centred on the title, title margin 0,
+   header padding clamp(28px, 3.4vw, 48px) on top, the package
+   clamp(12px, 1.4vw, 20px) under it (now from section.css's .cat-package). */
+.dp-about {
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  max-width: none;
+  text-wrap: wrap;
+}
+/* The whole title, both words, in the light blue (Lucas, 2026-11-19). Was all
+   navy (2026-11-07). */
+.dp-masthead h1,
+.dp-masthead h1 em { font-style: normal; color: var(--brand-blue); }
+@media (min-width: 1360px) {
+  .dp-about { white-space: nowrap; }
+}
+@media (max-width: 720px) {
+  .dp-about { margin: 6px 0 0; }
+}
+/* Space under the header as on the Tape (it was the description's 30px
+   bottom margin standing in for a dateline). */
+.dp-package .top-stories { padding-top: clamp(24px, 2.6vw, 36px); }
+
 /* ---- The package -------------------------------------------------------
    TopStories ships red kickers (top-stories.css line 18) because the front
    page and the Tape are the red stream. On this page they're blue, like the
@@ -473,6 +523,61 @@
 }
 @media (max-width: 720px) {
   .dp-package .ts-grid { grid-template-columns: minmax(0, 1fr) !important; row-gap: 32px; }
+}
+/* NOTE 2026-11-19: everything scoped .dp-package above is no longer used: the
+   top section now carries the Tape's classes (.cat-package, from
+   ../sections/[section]/section.css) with .dp-tape-format below. Kept as the
+   record of the Nov 18 layout until Lucas confirms. */
+
+/* ---------------------------------------------------------------------------
+   2026-11-19: the Tape's top section in Owner's Notes' colours. Blue where the
+   Tape is red: kickers, the hand-drawn lines. The panel under the lead links
+   to the Tape, so its link keeps the Tape's red.
+   --------------------------------------------------------------------------- */
+/* .cat-package.dp-tape-format (both classes) so these outrank section.css's
+   .cat-package rules whatever order the two stylesheets load in: the line
+   stayed red with the single class (Lucas, 2026-11-19). */
+.cat-package.dp-tape-format .ts-kicker span { color: var(--brand-blue); }
+.cat-package.dp-tape-format .cat-hand-line path { stroke: var(--brand-blue); }
+.cat-package.dp-tape-format .cat-notes-dek a { color: var(--brand-red); }
+/* The Recent essays carousel's current dot in blue (Lucas, 2026-11-19); the
+   Tape's is red (section.css .wk-dot.is-active). */
+.cat-package.dp-tape-format .wk-dot.is-active {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+}
+
+/* 2026-11-19: the Tape's archive (section.css .cat-archive-hed, cards.css
+   .tpc-tape mixed layout) in blue. Selectors carry an extra class so they
+   outrank the Tape's red ones whatever order the stylesheets load in. The
+   .dp-feed rules further down belong to the Nov 18 layout and no longer apply
+   (the section is .archive-feed.dp-archive now). */
+.dp-archive h2.cat-archive-hed .cat-hand-line path { stroke: var(--brand-blue); }
+.tpc-dispatch.tpc-tape .tpc-kicker { color: var(--brand-blue); }
+
+/* Condensed a touch (Lucas, 2026-11-19), Owner's Notes only; the Tape keeps
+   cards.css's sizes. Shorter photos (5:2, the Tape's are 2:1), tighter gaps,
+   headlines a step down. Delete to match the Tape exactly. */
+.tpc-dispatch.tpc-tape .tpc-grid { gap: clamp(16px, 1.6vw, 22px) clamp(14px, 1.5vw, 22px); }
+.tpc-dispatch.tpc-tape .tpc-thumb { margin-bottom: 6px; }
+.tpc-dispatch.tpc-tape .tpc-thumb img,
+.tpc-dispatch.tpc-tape .tpc-plate { aspect-ratio: 5 / 2; }
+.tpc-dispatch.tpc-tape .tpc-hed { font-size: 15px; }
+@media (min-width: 1101px) {
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n) .tpc-thumb { aspect-ratio: 5 / 2; margin-bottom: 8px; }
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 1) .tpc-thumb img,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n) .tpc-thumb img { aspect-ratio: auto; }
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 2) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 3) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 4) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 5) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 9) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 10) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 11) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 12) .tpc-hed { font-size: 14px; }
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n + 1) .tpc-hed,
+  .tpc-dispatch.tpc-tape .tpc-card:nth-child(13n) .tpc-hed { font-size: clamp(20px, 1.7vw, 23px); }
 }
 
 /* ---- Feed band ----------------------------------------------------------
