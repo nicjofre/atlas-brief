@@ -102,7 +102,33 @@ export default async function AboutPage() {
     }
   }
   const slugOf = (name: string) => sides.find(s => s.name === name)?.slug
-  const projects = middleRaw.filter(b => b.blockType === 'projects')
+  // Rewritten building descriptions (Lucas, 2026-11-21), matched by name.
+  // Set here, not in the CMS, so David should see them before they ship;
+  // a building not listed keeps its CMS blurb. CMS text for The Felix was:
+  // "A 43-unit, five-story residential building developed, built, and held by
+  // Atlas. Designed around a single organizing principle: no unit plan exists
+  // that the sponsor wouldn't live in."
+  const BLURBS: Record<string, string> = {
+    'The Felix on Fairfax':
+      'The Felix is a 43-unit residential building developed, built and operated by Atlas. The five-story building was designed with one ideal in mind: every unit should be one the builder would love to live in.',
+    // CMS text was: "Twelve for-sale homes in a mid-Wilshire infill. A
+    // thoughtful building envelope with large units averaging 1,500-1,700
+    // square feet."
+    'Olympic Towers':
+      'A 12-unit building of large, comfortable homes, with units averaging 1,500 to 1,700 square feet.',
+  }
+  const projects = middleRaw
+    .filter(b => b.blockType === 'projects')
+    .map(b =>
+      b.blockType === 'projects'
+        ? {
+            ...b,
+            items: (b.items ?? []).map(it =>
+              it.name && BLURBS[it.name] ? { ...it, blurb: BLURBS[it.name] } : it
+            ),
+          }
+        : b
+    )
   // Any other blocks between the hero and the sign-off besides the body text
   // and the buildings (none today) still render, after the sides.
   const otherMiddle = middleRaw.filter((b, i) => i !== bodyIdx && b.blockType !== 'projects')
