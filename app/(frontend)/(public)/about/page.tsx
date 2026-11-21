@@ -172,7 +172,7 @@ export default async function AboutPage() {
         {/* Two lines (Lucas). Was one line. */}
         <h1>What is Atlas?<br />And what is our business?</h1>
       </header>
-      <section className="ab-intro">
+      <section className="ab-intro ab-reveal-band">
       {/* White up arrow in the navy (Lucas, 2026-11-21); fades as the band
           rises (IntroReveal sets --ab-arrow). Decorative only. */}
       {/* Just the tip, no shaft (Lucas). Was: <path d="M12 20V5M5.5 11.5 12 5l6.5 6.5" /> */}
@@ -255,8 +255,26 @@ export default async function AboutPage() {
         <RenderBlocks blocks={[...tail, ...middle.filter(b => b.blockType !== 'projects')]} />
       )}
       {projects.length > 0 && (
-        <div className="ab-split ab-bottom">
-          <RenderBlocks blocks={projects} />
+        // The buildings get the intro's treatment (Lucas, 2026-11-21): the
+        // heading pinned on white, a full-width CREAM band sliding up over it
+        // (a contrast to the navy footer), the card sliding in once the band
+        // passes mid-screen. IntroReveal handles every .ab-reveal-band.
+        // The heading is not CMS text; David should see it before it ships.
+        // Was: <div className="ab-split ab-bottom"> with the h2 above the card,
+        // fading in with it.
+        <div className="ab-stage">
+          {/* The heading moved INTO the cream band, on two lines (Lucas,
+              2026-11-21). It was pinned on white above the band:
+                <header className="ab-bldgs-title"><h2>We&rsquo;re a part of the
+                market, and this is our read of it.</h2></header> */}
+          <section className="ab-cream ab-reveal-band">
+            <div className="ab-split ab-bottom">
+              <h2 className="ab-cream-head">
+                We&rsquo;re a part of the market,<br />and this is our read of it.
+              </h2>
+              <RenderBlocks blocks={projects} />
+            </div>
+          </section>
         </div>
       )}
       {/* David's sign-off opens the left column (2026-10-07) instead of closing

@@ -14,15 +14,17 @@ export default function IntroReveal() {
   useEffect(() => {
     const band = document.querySelector<HTMLElement>('.ab-intro')
     if (!band) return
+    // Every reveal band — the navy intro and, since 2026-11-21, the cream
+    // buildings band — gets .is-in once its top edge is above mid-screen.
     const io = new IntersectionObserver(
-      ([entry]) => {
-        // The root is the top half of the viewport, so the band "intersects"
+      entries => {
+        // The root is the top half of the viewport, so a band "intersects"
         // once its top edge is above the centre line.
-        band.classList.toggle('is-in', entry.isIntersecting)
+        for (const e of entries) e.target.classList.toggle('is-in', e.isIntersecting)
       },
       { rootMargin: '0px 0px -50% 0px', threshold: 0 }
     )
-    io.observe(band)
+    document.querySelectorAll('.ab-reveal-band').forEach(b => io.observe(b))
 
     // Banner links scroll to their section without putting "#atlas-home-pro"
     // etc. in the address bar (2026-11-21 bug: after clicking one, every
@@ -43,13 +45,45 @@ export default function IntroReveal() {
       window.scrollTo(0, 0)
     }
 
+    // Atlas Brief fades in once the band is halfway past the toolbar (Lucas,
+    // 2026-11-21, second try): measured live against the nav's bottom edge,
+    // which puts the section mid-screen. Hidden only once this script runs
+    // (.ab-anim on <html>), so the text still shows if it never loads. Runs
+    // once per visit. about.css .ab-anim .ab-side:first-child.
+    const brief = sides[0]
+    const root = document.documentElement
+    if (brief) root.classList.add('ab-anim')
+    // Reloads start at the top of this page. Safari otherwise puts you back
+    // where you were, already past the trigger, so the section was shown
+    // instantly and (being once-only then) never faded.
+    const prevRestore = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+
     // The arrow goes as soon as the band has risen a few pixels.
     let frame = 0
     const check = () => {
       frame = 0
-      const top = band.getBoundingClientRect().top
-      const start = top + window.scrollY // its top at scroll 0
-      band.classList.toggle('arrow-gone', top < start - 8)
+      const r = band.getBoundingClientRect()
+      const start = r.top + window.scrollY // its top at scroll 0
+      band.classList.toggle('arrow-gone', r.top < start - 8)
+      // Both ways, not once: scrolling back up above the point hides it
+      // again, so it fades in every time you scroll down past it.
+      // All three sections now (Lucas, 2026-11-21, after Atlas Brief worked):
+      // each fades in once the block above it is halfway past the toolbar —
+      // the band for Atlas Brief, the previous section for the other two.
+      if (brief) {
+        const navBottom = document.querySelector('.nav')?.getBoundingClientRect().bottom ?? 68
+        // Sooner (Lucas: "too late", all three): a quarter of the block above
+        // past the toolbar, not half. One number for all three.
+        const PAST = 0.25 // was 0.5
+        // The buildings card briefly faded in here too; it now slides in on
+        // its cream band instead (the .ab-reveal-band observer above).
+        const seq = sides
+        seq.forEach((s, i) => {
+          const above = i === 0 ? r : seq[i - 1].getBoundingClientRect()
+          s.classList.toggle('is-in', above.top + above.height * PAST <= navBottom)
+        })
+      }
     }
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(check)
@@ -59,6 +93,8 @@ export default function IntroReveal() {
     window.addEventListener('resize', onScroll)
     return () => {
       io.disconnect()
+      root.classList.remove('ab-anim')
+      history.scrollRestoration = prevRestore
       document.removeEventListener('click', onBannerClick)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)

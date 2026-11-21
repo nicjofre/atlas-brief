@@ -1554,7 +1554,173 @@ body:has(.ab-stage) { overflow-x: clip; }
   grid-auto-rows: 1fr;
 }
 .ab-intro .ab-arms-banner li { justify-content: center; }
-/* The sections' scroll fade-in was scrapped 2026-11-21 (Lucas). The three
-   sides' sections are simply on the page. */
+/* The sections' scroll fade-in was scrapped 2026-11-21 (Lucas). Second try,
+   Atlas Brief only: it fades and rises in once the navy band is halfway past
+   the toolbar (IntroReveal.tsx adds .is-in). The other two sections are
+   simply on the page. Targeted as the first section so a rename can't break
+   it. No motion for readers who ask for reduced motion. */
+/* 2026-11-21: now all three sections (Lucas: "perfect, now the other 2"),
+   each once the block above it is halfway past the toolbar. Was
+   .ab-side:first-child only. */
+/* The heading above the buildings card (Lucas, 2026-11-21), set like the
+   sides' names (.ab-side-head h2), with room before the card's ribbon. */
+.ab-bottom-head {
+  margin: 0 0 clamp(36px, 4vw, 56px);
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+/* The buildings card briefly faded in with the sections; it now has the
+   intro's treatment on a cream band (block below). */
+.ab-anim .ab-side {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 1.2s ease,
+    transform 1.3s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.ab-anim .ab-side.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ab-anim .ab-side { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   2026-11-21 — the buildings get the intro's treatment, in CREAM (Lucas: a
+   contrast to the navy footer). The heading sits centred on white, set like
+   the page title, and stays pinned under the nav while a full-width cream
+   band slides up over it; once the band's top passes mid-screen the card
+   slides up into place (.is-in from IntroReveal, same as the navy band).
+   The card's own cream panel goes transparent on the cream band; its navy
+   ribbon stays. Remove this block and the second .ab-stage in page.tsx to
+   go back.
+   --------------------------------------------------------------------------- */
+.ab-bldgs-title {
+  position: sticky;
+  top: 68px;
+  z-index: 0;
+  min-height: calc(60svh - 68px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(48px, 6vw, 88px) var(--pad-x);
+  text-align: center;
+}
+.ab-bldgs-title h2 {
+  margin: 0;
+  max-width: 22ch;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+  text-wrap: balance;
+}
+.ab-cream {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: #FAF7F1;
+  padding: clamp(48px, 6vw, 88px) 0;
+}
+.ab-cream .ab-split.ab-bottom { padding-top: clamp(16px, 2vw, 28px); padding-bottom: 0; }
+.ab-cream .ab-split .ab-portfolio { background: none; }
+.ab-cream .ab-split.ab-bottom {
+  transform: translateY(70px);
+  opacity: 0;
+  transition:
+    transform 0.9s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.6s ease;
+}
+.ab-cream.is-in .ab-split.ab-bottom { transform: none; opacity: 1; }
+/* The heading inside the cream band, two lines, centred over the card
+   (Lucas, 2026-11-21); it slides in with the card. The pinned white
+   .ab-bldgs-title above is no longer in the markup. */
+.ab-cream-head {
+  margin: 0 auto clamp(36px, 4.4vw, 60px);
+  text-align: center;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(32px, 3.6vw, 50px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+/* The "Our buildings" ribbon and the handwritten "Two buildings, still held
+   by the builder." line taken off (Lucas, 2026-11-21); the heading above
+   does that job now. Hidden here; the markup is in RenderBlocks
+   (.ab-bldg-head) and the line is CMS text. Delete to bring them back. */
+.ab-cream .ab-bldg-head { display: none; }
+
+/* The buildings one per row (Lucas, 2026-11-21): The Felix on top, Olympic
+   Towers under it (the CMS order), each with its photo on the left and its
+   name and text to the right. Stacks photo-then-text on phones. Was the two
+   cards side by side (.ab-bottom .projects, two columns). */
+.ab-cream .projects {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(44px, 5vw, 76px);
+}
+.ab-cream .project {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  column-gap: clamp(28px, 3.4vw, 56px);
+  align-content: start;
+  align-items: start;
+}
+.ab-cream .project > .p-photo {
+  grid-column: 1;
+  grid-row: 1 / span 6;
+  margin: 0;
+}
+.ab-cream .project > :not(.p-photo) { grid-column: 2; }
+.ab-cream .project > .p-head { margin-top: 0; }
+/* The stats row (Units, Stories/Type, Delivered, Held by/Sold) and the rule
+   above it taken off both buildings (Lucas, 2026-11-21: "a bit extra").
+   Hidden here; the numbers stay in the CMS. */
+.ab-cream .project dl { display: none; }
+/* The category line ("Multifamily, Ground-up" / "Condominium, Twelve Homes")
+   off too (Lucas, 2026-11-21: redundant next to the description). CMS text,
+   hidden here. */
+.ab-cream .project .p-head .cat { display: none; }
+.ab-cream .project .p-head { border-bottom: 0; padding-bottom: 0; }
+.ab-cream .project > p { margin-top: clamp(14px, 1.6vw, 20px); }
+/* The building descriptions bigger (Lucas, 2026-11-21: "it's the
+   description"), set like the three sections' body text: same size, full
+   ink colour, no width cap. Was about 14-16px in the muted grey. */
+.ab-cream .project > p {
+  font-family: var(--sans);
+  font-size: clamp(18px, 1.45vw, 21px);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: none;
+}
+/* Alternating (Lucas): The Felix photo left / text right; Olympic Towers
+   the other way round, text left / photo right. Every second building
+   flips. */
+.ab-cream .project:nth-child(even) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+}
+.ab-cream .project:nth-child(even) > .p-photo { grid-column: 2; }
+.ab-cream .project:nth-child(even) > :not(.p-photo) { grid-column: 1; }
+@media (max-width: 760px) {
+  .ab-cream .project { grid-template-columns: minmax(0, 1fr); row-gap: 16px; }
+  .ab-cream .project > .p-photo { grid-row: auto; order: -1; }
+  .ab-cream .project:nth-child(even) { grid-template-columns: minmax(0, 1fr); }
+  .ab-cream .project:nth-child(even) > .p-photo,
+  .ab-cream .project:nth-child(even) > :not(.p-photo) { grid-column: 1; }
+  .ab-cream .project > :not(.p-photo) { grid-column: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab-bldgs-title { position: static; min-height: 0; }
+  .ab-cream .ab-split.ab-bottom { transform: none; opacity: 1; transition: none; }
+}
 /* Room between the band and the first side's section. */
 .ab-sides { padding-top: clamp(48px, 6vw, 88px); }
