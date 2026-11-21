@@ -196,7 +196,9 @@ export default async function DispatchPage() {
                 </svg>
               </>
             }
-            leadFooter={deals.length > 0 && (
+            // REMOVED 2026-11-21 (Lucas: Nic didn't like it), as on the Tape.
+            // Switched off with `false &&`; drop that to bring it back.
+            leadFooter={false && deals.length > 0 && (
               <aside className="cat-notes" aria-label="From The Tape">
                 <h3 className="cat-notes-hed">Enjoying our point of view?</h3>
                 <p className="cat-notes-dek">

@@ -272,7 +272,10 @@ export default async function SectionPage(
                 </svg>
               </>
             }
-            leadFooter={notes.length > 0 && (
+            // REMOVED 2026-11-21 (Lucas: Nic didn't like it): the "Enjoying our
+            // point of view?" panel under the lead. Switched off with `false &&`;
+            // drop that to bring it back.
+            leadFooter={false && notes.length > 0 && (
               <aside className="cat-notes" aria-label="From Owner's Notes">
                 {/* Copy from Lucas, 2026-11-19. Was "From Owner's Notes". */}
                 <h3 className="cat-notes-hed">Enjoying our point of view?</h3>

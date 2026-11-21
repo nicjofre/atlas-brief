@@ -245,7 +245,10 @@ export default function CardFeed({
                 a={a}
                 stream={stream}
                 fallback={fallbackLabel}
-                onPreview={stream === 'tape' ? setPreviewing : undefined}
+                // No preview pop-up on the Tape any more (Lucas, 2026-11-21:
+                // just link to the article). Was:
+                //   onPreview={stream === 'tape' ? setPreviewing : undefined}
+                onPreview={undefined}
                 tapeLayout={tapeLayout}
               />
             ))}
@@ -294,7 +297,10 @@ export default function CardFeed({
           )}
         </>
       )}
-      {stream === 'tape' && (
+      {/* ArchivePreview switched off with the previews (2026-11-21); the
+          component and its state are kept so it's one line to restore:
+          change `false &&` back to `stream === 'tape' &&` and restore onPreview. */}
+      {false && stream === 'tape' && (
         <ArchivePreview
           article={previewing}
           list={rows}
