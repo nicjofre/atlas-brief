@@ -10,6 +10,7 @@ import ArticleSubscribeBar from '../ArticleSubscribeBar'
 import ArticleSubscribeModal from '../ArticleSubscribeModal'
 import { createClient } from '@/lib/supabase/server'
 import { hand } from '../hand-font'
+import IntroReveal from './IntroReveal'
 import './about.css'
 
 export const dynamic = 'force-dynamic'
@@ -155,8 +156,33 @@ export default async function AboutPage() {
                 </section>
               )}
             </div> */}
+      {/* 2026-11-21 (Lucas): the sentence and the names are their own section
+          now, on a full-width navy band with white space above it; the page's
+          real title section will go in that space later. about.css .ab-intro. */}
+      {/* The title section (Lucas, 2026-11-21): "About us at Atlas" in navy,
+          centred in the white space above the navy band. about.css .ab-page-title. */}
+      {/* .ab-stage (2026-11-21): the title and the navy band share one box so
+          the title can stay pinned while the band scrolls up over it.
+          IntroReveal slides the band's text in once it's past mid-screen. */}
+      <IntroReveal />
+      <div className="ab-stage">
+      <header className="ab-page-title">
+        {/* Lucas, 2026-11-21: framed as a question. Was, in turn: About us at
+            Atlas / …and what we do / About us at Atlas and our business */}
+        {/* Two lines (Lucas). Was one line. */}
+        <h1>What is Atlas?<br />And what is our business?</h1>
+      </header>
+      <section className="ab-intro">
+      {/* White up arrow in the navy (Lucas, 2026-11-21); fades as the band
+          rises (IntroReveal sets --ab-arrow). Decorative only. */}
+      {/* Just the tip, no shaft (Lucas). Was: <path d="M12 20V5M5.5 11.5 12 5l6.5 6.5" /> */}
+      <svg className="ab-arrow" viewBox="0 0 24 14" aria-hidden="true">
+        <path d="M3 11.5 12 3l9 8.5" />
+      </svg>
       <header className="ab-title">
-        <h1>About us</h1>
+        {/* "About us" off the page (Lucas: "looks out of place"); the page's h1
+            is "About us at Atlas" above now. Was: <h1>About us</h1>, then
+            briefly a visually hidden <h1 className="ab-sr">About us</h1>. */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {/* Was the CMS paragraph through RichText:
               {about && <div className="ab-about"><RichText data={about as any} /></div>} */}
@@ -189,6 +215,8 @@ export default async function AboutPage() {
           </ul>
         </div>
       )}
+      </section>
+      </div>
       {/* 2026-11-20 (Lucas): the page as the intro above, then one section per
           side, then the buildings full width at the bottom. Each side: its name
           and role on the left, its text on the right. David's note (the CMS

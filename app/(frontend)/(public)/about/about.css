@@ -1371,3 +1371,190 @@ html { scroll-behavior: smooth; }
   grid-template-columns: minmax(0, 1fr);
   row-gap: clamp(16px, 1.8vw, 24px);
 }
+
+/* ===========================================================================
+   2026-11-21 — the intro as its own section on a full-width navy band
+   (Lucas): white space above it (where the title section will go), the
+   sentence in white with "three sides." still red, the cream names banner on
+   the navy. "About us" hidden (.ab-sr). Remove this block and the
+   <section className="ab-intro"> wrapper in page.tsx to go back.
+   =========================================================================== */
+.ab-sr {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.ab-intro {
+  margin-top: clamp(56px, 7vw, 104px);   /* the white spacer above */
+  background: var(--brand-navy);
+  padding: clamp(48px, 6vw, 88px) 0;
+}
+/* The title no longer shares its cell with the label: one centred line. */
+.ab-intro .ab-title {
+  padding: 0 var(--pad-x) clamp(36px, 4.4vw, 60px);
+}
+.ab-intro .ab-title .ab-about {
+  padding: 0;
+}
+.ab-intro .ab-title .ab-about p { color: #FFFFFF; }
+/* The banner's navy top rule disappears on navy; no gap under it now that
+   the band closes the section. */
+.ab-intro .ab-arms-banner { margin-bottom: 0; }
+.ab-intro .ab-arms-banner ul { border-top: 0; border-bottom: 0; }
+/* The title section above the band (Lucas, 2026-11-21): "About us at Atlas"
+   centred in navy, in the titles' bold Times, the white space a bit bigger
+   than the 56-104px spacer it replaces (now padding here, not a margin). */
+.ab-intro { margin-top: 0; }
+.ab-page-title {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(72px, 9vw, 132px) var(--pad-x);
+  text-align: center;
+}
+.ab-page-title h1 {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+/* The title slides down into place on load (Lucas, 2026-11-21, after the
+   Toll Brothers page): it starts tucked up under the navy nav bar and drops
+   into position. The section clips it, so it seems to come out from behind
+   the bar rather than fade in mid-air. Off for readers who ask for reduced
+   motion. Delete these rules to stop it. */
+/* SWITCHED OFF the same day (Lucas: on scroll, not on load; see the scroll
+   block below). Was:
+   .ab-page-title { overflow: hidden; }
+   .ab-page-title h1 {
+     animation: ab-title-drop 1.1s cubic-bezier(0.22, 0.8, 0.24, 1) 0.15s both;
+   }
+   @keyframes ab-title-drop {
+     from { transform: translateY(calc(-100% - clamp(72px, 9vw, 132px))); }
+     to   { transform: translateY(0); }
+   }
+   @media (prefers-reduced-motion: reduce) {
+     .ab-page-title h1 { animation: none; }
+   } */
+
+/* ---------------------------------------------------------------------------
+   2026-11-21 — the scroll moment (Lucas, after the Toll Brothers page):
+   1. The title fills the first screen, with just the top of the navy band
+      showing at the bottom, empty.
+   2. Scrolling, the band rises and slides OVER the title, which stays pinned
+      under the nav (sticky; the nav is 68px and sticky too), so the title
+      disappears behind the band.
+   3. Once the band's top passes mid-screen, IntroReveal.tsx adds .is-in and
+      the band's text slides up into place from the bottom.
+   No motion for readers who ask for reduced motion: the title doesn't pin
+   and the text is simply there. To remove: delete this block, the
+   .ab-stage wrapper and <IntroReveal /> in page.tsx.
+   --------------------------------------------------------------------------- */
+.ab-page-title {
+  position: sticky;
+  top: 68px;
+  z-index: 0;
+  min-height: calc(100svh - 68px - 56px);   /* 56px of navy peeks below */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.ab-intro {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;   /* the text slides up from below the band's edge */
+}
+.ab-intro .ab-title,
+.ab-intro .ab-arms-banner {
+  transform: translateY(70px);
+  opacity: 0;
+  transition:
+    transform 0.9s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.6s ease;
+}
+.ab-intro .ab-arms-banner { transition-delay: 0.12s; }
+.ab-intro.is-in .ab-title,
+.ab-intro.is-in .ab-arms-banner {
+  transform: none;
+  opacity: 1;
+}
+/* atlas-v2.css sets overflow-x: hidden on html and body (the mobile safety
+   net), which can make body the scroll box and stop sticky from pinning.
+   `clip` stops sideways overflow the same way without that side effect.
+   Scoped with :has() to this page only, since route CSS lingers after
+   client-side navigation. */
+/* Less white space around the title (Lucas, 2026-11-21): the title section is
+   about two-thirds of the screen instead of nearly all of it, so more of the
+   navy band shows on arrival. Was min-height: calc(100svh - 68px - 56px). */
+.ab-page-title { min-height: calc(68svh - 68px); }
+/* The white up arrow at the top of the navy band (Lucas, 2026-11-21). Sits in
+   the strip of navy that shows on arrival and fades out as the band rises
+   (--ab-arrow, 1 to 0, set by IntroReveal.tsx). Remove the rule and the
+   <svg className="ab-arrow"> in page.tsx to take it out. */
+.ab-arrow {
+  position: absolute;
+  top: clamp(18px, 2.4vw, 30px);
+  left: 50%;
+  width: clamp(40px, 3.6vw, 52px);   /* bigger (Lucas); was clamp(26px, 2.4vw, 34px) */
+  height: auto;
+  transform: translateX(-50%);
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 2.4;   /* thicker (Lucas); was 1.6 */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: var(--ab-arrow, 1);
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+/* Gone as soon as the band starts to move (Lucas): IntroReveal adds
+   .arrow-gone once it has risen a few pixels. */
+.ab-intro.arrow-gone .ab-arrow { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .ab-arrow { display: none; }
+}
+/* A little more room between the title's two lines (was line-height 1). */
+.ab-page-title h1 { line-height: 1.1; }
+html:has(.ab-stage),
+body:has(.ab-stage) { overflow-x: clip; }
+@media (prefers-reduced-motion: reduce) {
+  .ab-page-title { position: static; min-height: 0; padding: clamp(72px, 9vw, 132px) var(--pad-x); }
+  .ab-intro .ab-title,
+  .ab-intro .ab-arms-banner { transform: none; opacity: 1; transition: none; }
+}
+/* Three separate cream blocks instead of one banner split by grey lines
+   (Lucas, 2026-11-21: less jarring on a smaller screen). The navy shows
+   between them; on phones they stack as three blocks with the same gap.
+   Was: the cream on the <ul>, 1px #E8E1D3 dividers between the items. */
+.ab-intro .ab-arms-banner ul {
+  background: none;
+  gap: clamp(14px, 1.6vw, 24px);
+}
+.ab-intro .ab-arms-banner li {
+  background: #FAF7F1;
+}
+.ab-intro .ab-arms-banner li + li { border-left: 0; border-top: 0; }
+/* All three the same size (Lucas): the list's older align-items (baseline,
+   and center on phones) let each block shrink to its own name, so a name that
+   wrapped made a taller block and short ones were narrower on phones. Now
+   every block stretches to the row (or full width when stacked), its name
+   centred inside. */
+.ab-intro .ab-arms-banner ul {
+  align-items: stretch;
+  justify-items: stretch;
+  grid-auto-rows: 1fr;
+}
+.ab-intro .ab-arms-banner li { justify-content: center; }
+/* The sections' scroll fade-in was scrapped 2026-11-21 (Lucas). The three
+   sides' sections are simply on the page. */
+/* Room between the band and the first side's section. */
+.ab-sides { padding-top: clamp(48px, 6vw, 88px); }
