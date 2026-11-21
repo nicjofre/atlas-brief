@@ -294,9 +294,18 @@ export default async function AboutPage() {
                 <header className="ab-bldgs-title"><h2>We&rsquo;re a part of the
                 market, and this is our read of it.</h2></header> */}
           <section className="ab-cream ab-reveal-band">
+            {/* The intro band's chevron, in navy on the cream (Lucas,
+                2026-11-21). It shows while the band is empty and fades as the
+                heading and buildings slide in (.is-in). */}
+            <svg className="ab-arrow ab-arrow-navy" viewBox="0 0 24 14" aria-hidden="true">
+              <path d="M3 11.5 12 3l9 8.5" />
+            </svg>
             <div className="ab-split ab-bottom">
+              {/* One line (Lucas, 2026-11-21). Was two, with a <br /> after "market,".
+                  Then "…and these are our buildings" (Lucas). Was "…and this is
+                  our read of it." */}
               <h2 className="ab-cream-head">
-                We&rsquo;re a part of the market,<br />and this is our read of it.
+                We&rsquo;re a part of the market, and these are our buildings.
               </h2>
               <RenderBlocks blocks={projects} />
             </div>

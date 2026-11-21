@@ -1574,6 +1574,21 @@ body:has(.ab-stage) { overflow-x: clip; }
   letter-spacing: -0.01em;
   color: var(--brand-navy);
 }
+/* Cream cards for the sections instead of grey dividing lines (Lucas,
+   2026-11-21). Trying it on Atlas Brief first; once it's right the same
+   rules go on all three (swap :first-child for every .ab-side).
+   Applied to all three (Lucas), with a white gap between the cards where the
+   grey lines were. */
+.ab-side,
+.ab-side:first-child {
+  background: #FAF7F1;
+  border-top: 0;
+  padding: clamp(32px, 3.6vw, 52px) clamp(28px, 3.4vw, 52px);
+}
+.ab-side + .ab-side { margin-top: clamp(20px, 2.4vw, 32px); }
+/* White space under the last card, so it doesn't run into the cream
+   buildings band below (same colour). */
+.ab-sides { padding-bottom: clamp(48px, 6vw, 88px); }
 /* The buildings card briefly faded in with the sections; it now has the
    intro's treatment on a cream band (block below). */
 .ab-anim .ab-side {
@@ -1653,6 +1668,59 @@ body:has(.ab-stage) { overflow-x: clip; }
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--brand-navy);
+}
+/* The heading on one line (Lucas, 2026-11-21): a size smaller so the whole
+   sentence fits across the page, held to one line on wide screens and
+   wrapping on narrow ones rather than running off. Was clamp(32px, 3.6vw,
+   50px) on two lines. */
+.ab-cream-head { font-size: clamp(26px, 2.8vw, 42px); }
+@media (min-width: 1100px) {
+  .ab-cream-head { white-space: nowrap; }
+}
+/* The chevron at the top of the cream band, navy instead of white (the
+   intro band's is white on navy). It fades out as the band's content
+   slides in. */
+.ab-arrow-navy { stroke: var(--brand-navy); }   /* navy (Lucas tried brand blue, went back) */
+.ab-cream.is-in .ab-arrow-navy { opacity: 0; }
+/* The bottom band in NAVY now, heading in white, each building (photo and
+   text) on its own cream card (Lucas, 2026-11-21). The band was cream. The
+   arrow goes white again, as on the intro band. Delete this block to go
+   back to cream. */
+.ab-cream { background: var(--brand-navy); }
+.ab-cream .ab-cream-head { color: #FFFFFF; }
+.ab-cream .ab-arrow-navy { stroke: #FFFFFF; }
+.ab-cream .project {
+  background: #FAF7F1;
+  padding: clamp(22px, 2.6vw, 36px);
+}
+/* The name and description centred top-to-bottom beside the photo (Lucas),
+   not sitting at the top of the card: two flexible rows above and below
+   them, the photo spanning all four. */
+/* Then (Lucas): the name back up at the top of the card, the description
+   staying in the middle, the gap between them left as is. Rows: name, flex,
+   description, flex. Was 1fr auto auto 1fr with the name in row 2. */
+.ab-cream .project { grid-template-rows: auto 1fr auto 1fr; }
+.ab-cream .project > .p-photo { grid-row: 1 / -1; }
+.ab-cream .project > .p-head { grid-row: 1; }
+.ab-cream .project > p { grid-row: 3; }
+/* Both names centred left-to-right in the space beside their photo (Lucas:
+   "think of the space next to the images as a square"), still at the top.
+   Briefly right-aligned for Olympic Towers before this. */
+.ab-cream .project > .p-head { text-align: center; }
+/* Underlined names (Lucas, 2026-11-21): a red line under each, the brand
+   red used for rules elsewhere. */
+.ab-cream .project .p-head h3 {
+  text-decoration: underline;
+  text-decoration-color: var(--brand-red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+@media (max-width: 760px) {
+  .ab-cream .project > .p-head { text-align: left; }
+  .ab-cream .project { grid-template-rows: none; }
+  .ab-cream .project > .p-photo,
+  .ab-cream .project > .p-head,
+  .ab-cream .project > p { grid-row: auto; }
 }
 /* The "Our buildings" ribbon and the handwritten "Two buildings, still held
    by the builder." line taken off (Lucas, 2026-11-21); the heading above
