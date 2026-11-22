@@ -3,6 +3,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Page, Media } from '@/payload-types'
 import AtlasMark from '../AtlasMark'
 import { hand } from '../hand-font'
+import ContactForm from '../contact/ContactForm'
 
 type Block = NonNullable<Page['layout']>[number]
 
@@ -179,18 +180,58 @@ function BlockItem({ block }: { block: Block }) {
     case 'contactDetails': {
       const telHref = `tel:${(block.phone || '').replace(/[^\d+]/g, '')}`
       return (
+        <>
         <section className="c-main">
-          <div className="c-form">
-            {block.inquiriesLabel && <div className="k">{block.inquiriesLabel}</div>}
+          {/* Just the inquiry titles, each in a beige card with navy writing,
+              stacked (Lucas, 2026-11-22). The paragraphs are left out; the
+              text is still in the CMS. Tried before this and dropped: the
+              same cards on a wheel with arrows. Was, to put back (contact.css
+              still styles it):
+                <div className="c-form">
+                  {block.inquiriesLabel && <div className="k">{block.inquiriesLabel}</div>}
+                  {(block.inquiries || []).map((inq, i) => (
+                    <React.Fragment key={inq.id || i}>
+                      <h2 style={i > 0 ? { marginTop: 36 } : undefined}>
+                        <strong>{inq.heading}</strong>
+                      </h2>
+                      <p>{inq.body}</p>
+                    </React.Fragment>
+                  ))}
+                </div> */}
+          <ul className="c-titles">
             {(block.inquiries || []).map((inq, i) => (
-              <React.Fragment key={inq.id || i}>
-                <h2 style={i > 0 ? { marginTop: 36 } : undefined}>
-                  <strong>{inq.heading}</strong>
-                </h2>
-                <p>{inq.body}</p>
-              </React.Fragment>
+              // Each title opens to show its paragraph (Lucas, 2026-11-22).
+              // A native <details>, so it works without JavaScript.
+              <li key={inq.id || i}>
+                <details>
+                  <summary>
+                    <h2>{inq.heading}</h2>
+                    <svg className="c-titles-chev" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </summary>
+                  <p>{inq.body}</p>
+                </details>
+              </li>
             ))}
-          </div>
+          </ul>
+          {/* "Drop us a line" form beside the inquiry cards: cards left, form
+              right (Lucas, 2026-11-22). Not connected yet; see ContactForm.tsx. */}
+          <ContactForm />
+        </section>
+        {/* David's details on a navy band that scrolls up over the titles and
+            form (pinned), the About page's treatment (Lucas, 2026-11-22). Once
+            the band's top passes mid-screen, contact/ContactReveal.tsx adds
+            .is-in and the photo and card slide up into place. Was: the
+            .c-card-row inside .c-main above, after the form. */}
+        <section className="c-band">
+          <svg className="c-band-arrow" viewBox="0 0 24 14" aria-hidden="true">
+            <path d="M3 11.5 12 3l9 8.5" />
+          </svg>
+          {/* A question at the top of the band, to call the reader to slide it
+              up (Lucas, 2026-11-22). Not CMS text; David should see it before
+              it ships. */}
+          <h2 className="c-band-q">Rather talk to David directly?</h2>
           {/* David's photo beside his card (Lucas, 2026-11-19). The file is
               public/images/david-safai.jpg; not a CMS field yet. contact.css
               lays the photo and the card out side by side (.c-card-row). */}
@@ -241,6 +282,7 @@ function BlockItem({ block }: { block: Block }) {
           </aside>
           </div>
         </section>
+        </>
       )
     }
 

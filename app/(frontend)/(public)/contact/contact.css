@@ -615,3 +615,306 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
 .c-page .c-card-row .c-side { margin: 0; }
 .c-page .c-side dd a { border-bottom: 0; padding-bottom: 0; }
 .c-page .c-side dd a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* ---------------------------------------------------------------------------
+   Each inquiry in its own navy card (Lucas, 2026-11-22; was one card around
+   all three). The markup is flat (h2, p from the CMS), so each card is its
+   heading and paragraph sharing a navy fill: the heading carries the top of
+   the card, the paragraph the bottom, and the grid's column gap splits them.
+   The heading stretches to fill row 1 so the card has no hole above a
+   one-line heading. Headings start at the top of their cards, all with the
+   same space above (Lucas, 2026-11-22, from a screenshot); the paragraphs
+   still start level, so a one-line heading has extra room under it.
+   Was: heading text pushed to the bottom, onto its paragraph.
+   To undo: delete this block.
+   --------------------------------------------------------------------------- */
+.c-page .c-form h2,
+.c-page .c-form p {
+  background: var(--brand-navy);
+  color: #FAF7F1;
+  padding-left: clamp(18px, 2vw, 28px);
+  padding-right: clamp(18px, 2vw, 28px);
+}
+.c-page .c-form h2 {
+  margin: 0 !important;   /* beats the inline marginTop: 36 in RenderBlocks */
+  padding-top: clamp(18px, 2vw, 28px);
+  padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.c-page .c-form p { padding-bottom: clamp(18px, 2vw, 28px); }
+@media (min-width: 821px) {
+  .c-page .c-form h2 { align-self: stretch; }
+}
+
+/* ---------------------------------------------------------------------------
+   "Drop us a line" (Lucas, 2026-11-22): the form under the title, set like
+   the /subscribe form (subscribe.css .sp-field / .sp-submit, copied here as
+   that file only loads on /subscribe). Heading in the site's bold Times navy.
+   Left in the page measure at the subscribe pitch's 620px.
+   To undo: delete this block and <ContactForm /> in page.tsx.
+   --------------------------------------------------------------------------- */
+.c-line {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(24px, 3vw, 40px) var(--pad-x) 0;
+}
+.c-line-hed,
+.c-line-form { max-width: 620px; }
+.c-line-hed {
+  margin: 0 0 18px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+.c-line-form { display: flex; flex-direction: column; gap: 14px; }
+/* On the right of the page measure (Lucas, 2026-11-22). Was left, under the
+   title; delete this rule to put it back. */
+.c-line-form { margin-left: auto; }
+.c-line-field { display: flex; flex-direction: column; gap: 6px; }
+.c-line-field span {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.c-line-field input,
+.c-line-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  font-family: var(--sans);
+  font-size: 16px; /* 16px stops iOS zooming the page on focus */
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+.c-line-field textarea { resize: vertical; min-height: 140px; }
+.c-line-field input::placeholder,
+.c-line-field textarea::placeholder { color: var(--muted-2); }
+.c-line-field input:focus,
+.c-line-field textarea:focus { outline: none; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(56, 127, 244, 0.15); }
+.c-line-err { margin: 0; font-family: var(--sans); font-size: 14px; color: var(--danger); }
+.c-line-submit {
+  margin-top: 4px;
+  padding: 14px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #FFFFFF;
+  background: var(--brand-blue);
+  border: 1px solid var(--brand-blue);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.c-line-submit:hover { background: var(--brand-red); border-color: var(--brand-red); }
+
+/* ---------------------------------------------------------------------------
+   Inquiry cards on the left, the form on the right (Lucas, 2026-11-22). The
+   form now renders inside .c-main (RenderBlocks), after the cards. The cards
+   stack in one column; David's photo and card stay full width underneath.
+   On phones the form comes first, then the cards.
+   Was: form in its own band above, three cards side by side. To undo: delete
+   this block and move <ContactForm /> from RenderBlocks back into page.tsx
+   under the title.
+   --------------------------------------------------------------------------- */
+.c-page .c-main .c-line { max-width: none; margin: 0; padding: 0; }
+.c-page .c-main .c-line-form { max-width: none; margin-left: 0; }
+/* The cards stacked, a gap between each paragraph and the next heading. */
+.c-page .c-main .c-form { grid-template-columns: minmax(0, 1fr); }
+.c-page .c-main .c-form h2,
+.c-page .c-main .c-form p { grid-column: 1 / -1; grid-row: auto; }
+.c-page .c-main .c-form p { margin-bottom: clamp(16px, 1.8vw, 24px); }
+.c-page .c-main .c-form p:last-child { margin-bottom: 0; }
+@media (min-width: 821px) {
+  .c-page .c-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
+    column-gap: clamp(24px, 3vw, 48px);
+    align-items: start;
+  }
+  .c-page .c-main .c-card-row { grid-column: 1 / -1; }
+}
+@media (max-width: 820px) {
+  .c-page .c-main { display: flex; flex-direction: column; }
+  .c-page .c-main .c-line { order: -1; margin-bottom: 32px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Just the inquiry titles, left of the form (Lucas, 2026-11-22): each in a
+   beige card (the cream of David's card) with navy writing, one on top of
+   the other. No paragraphs. Replaces the stacked navy cards (.c-form, kept
+   as a comment in RenderBlocks); a wheel was tried in between and dropped.
+   To undo: delete this block and put the .c-form markup back.
+   --------------------------------------------------------------------------- */
+.c-page .c-titles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.4vw, 18px);
+}
+.c-page .c-titles li {
+  padding: clamp(18px, 2vw, 28px);
+  background: #FAF7F1;
+}
+.c-page .c-titles h2 {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+
+/* Stretched to the form's height (Lucas, 2026-11-22): the column fills its
+   grid row and the three cards share it equally while closed. An opened card
+   takes the room it needs; if that's more than the form, the row grows. */
+@media (min-width: 821px) {
+  .c-page .c-main .c-titles { align-self: stretch; }
+  .c-page .c-titles li { flex: 1 1 auto; }
+}
+
+/* Each card is a dropdown (Lucas, 2026-11-22): click the title, the
+   paragraph appears under it; a chevron on the right turns over when open. */
+.c-page .c-titles summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  list-style: none;
+  cursor: pointer;
+}
+.c-page .c-titles summary::-webkit-details-marker { display: none; }
+.c-page .c-titles summary:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
+.c-page .c-titles-chev {
+  flex: 0 0 auto;
+  margin-top: 0.15em;
+  color: var(--brand-navy);
+  transition: transform 0.2s ease, color 0.15s;
+}
+.c-page .c-titles summary:hover .c-titles-chev { color: var(--brand-red); }
+.c-page .c-titles details[open] .c-titles-chev { transform: rotate(180deg); }
+/* Titles in the middle of their cards, across and down (Lucas, 2026-11-22).
+   The chevron is pinned to the card's right edge so it doesn't pull the title
+   off centre; the summary keeps room for it on both sides. An opened card
+   centres its title and paragraph together. Was: title top-left, chevron
+   beside it in the row. */
+.c-page .c-titles li {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.c-page .c-titles summary {
+  position: relative;
+  justify-content: center;
+  padding: 0 34px;
+  text-align: center;
+}
+.c-page .c-titles-chev {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+.c-page .c-titles details[open] .c-titles-chev { transform: translateY(-50%) rotate(180deg); }
+.c-page .c-titles p {
+  margin: 12px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(17px, 1.3vw, 19px);
+  line-height: 1.6;
+  color: var(--brand-navy);
+}
+
+/* ---------------------------------------------------------------------------
+   David's details on a sliding navy band, the About page's treatment (Lucas,
+   2026-11-22; about.css .ab-intro / .ab-cream):
+   1. The titles and form (.c-main) stay pinned while the full-width navy band
+      (.c-band) scrolls up over them. They pin under the nav, or higher when
+      they're taller than the screen (--c-stick, set by ContactReveal.tsx), so
+      the Submit button can be reached before the band covers it.
+   2. The white arrow at the top of the band goes once the band moves.
+   3. Once the band's top passes mid-screen (.is-in) the photo and card slide
+      up into place.
+   No motion for readers who ask for reduced motion. To undo: delete this
+   block, <ContactReveal /> in page.tsx, and in RenderBlocks move .c-card-row
+   back inside .c-main and drop the .c-band section.
+   --------------------------------------------------------------------------- */
+.c-page .c-main {
+  position: sticky;
+  top: var(--c-stick, 68px);
+  z-index: 0;
+}
+.c-band {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;   /* the photo and card slide up from below its edge */
+  background: var(--brand-navy);
+  padding: clamp(72px, 8vw, 112px) var(--pad-x) clamp(48px, 6vw, 88px);
+}
+.c-page .c-band .c-card-row {
+  margin-top: 0;
+  transform: translateY(70px);
+  opacity: 0;
+  transition:
+    transform 0.9s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.6s ease;
+}
+.c-page .c-band.is-in .c-card-row { transform: none; opacity: 1; }
+.c-band-arrow {
+  position: absolute;
+  top: clamp(18px, 2.4vw, 30px);
+  left: 50%;
+  width: clamp(40px, 3.6vw, 52px);
+  height: auto;
+  transform: translateX(-50%);
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+.c-band.arrow-gone .c-band-arrow { opacity: 0; }
+/* Smaller arrow, question nearer the top (Lucas, 2026-11-22, from a
+   screenshot). Were: arrow width clamp(40px, 3.6vw, 52px); band top padding
+   clamp(72px, 8vw, 112px). */
+.c-band-arrow { width: clamp(26px, 2.2vw, 34px); }
+.c-band { padding-top: clamp(50px, 5vw, 72px); }
+/* The question under the arrow (Lucas, 2026-11-22): white bold Times, centred,
+   set like About's band heading (.ab-cream-head). It's there on arrival, in
+   the strip of navy that shows, and doesn't slide; the card slides in under it. */
+.c-band-q {
+  margin: 0 auto clamp(28px, 3.4vw, 48px);
+  text-align: center;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(26px, 2.8vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  text-wrap: balance;
+}
+/* atlas-v2.css's overflow-x: hidden on html/body can stop sticky pinning;
+   clip does the same job without that (as About does). This page only. */
+html:has(.c-band),
+body:has(.c-band) { overflow-x: clip; }
+@media (prefers-reduced-motion: reduce) {
+  .c-page .c-main { position: static; }
+  .c-page .c-band .c-card-row { transform: none; opacity: 1; transition: none; }
+  .c-band-arrow { display: none; }
+}
