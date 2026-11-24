@@ -969,6 +969,20 @@
 }
 .ap-note a:hover { color: var(--brand-red); }
 
+/* Red in the titles, like the logo (Lucas, 2026-11-23): what follows
+   "Atlas" ("Brief", "Home Pro"...), and "note" in "Author note". page.tsx
+   TwoTone. */
+.ap-red { color: var(--brand-red); }
+/* "Author note" all navy, underlined to draw the eye (Lucas, 2026-11-23).
+   Red underline, 2px, unbroken under descenders. */
+.aq-note-hed {
+  text-decoration: underline;
+  text-decoration-color: var(--brand-red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  text-decoration-skip-ink: none;
+}
+
 /* Less space before the footer, as on Contact. This page only. */
 body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
 

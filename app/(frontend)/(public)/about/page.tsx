@@ -48,6 +48,27 @@ const ABOUT_TAKE: number = 2
 type Lexical = { root: { children: any[] } & Record<string, any> } & Record<string, any>
 const withChildren = (doc: Lexical, children: any[]): Lexical => ({ ...doc, root: { ...doc.root, children } })
 
+// Red in the titles, like the logo (Lucas, 2026-11-23): "Atlas" stays dark,
+// everything after it is red ("Atlas Brief", "Atlas Home Pro"). A title
+// without "Atlas" goes first word dark, the rest red ("Author note").
+function TwoTone({ text }: { text: string }) {
+  const m = text.match(/^(Atlas)\s+(.+)$/) || text.match(/^(\S+)\s+(.+)$/)
+  if (!m) return <>{text}</>
+  return <>{m[1]} <span className="ap-red">{m[2]}</span></>
+}
+// One side: its h2 drawn here (so it can be two-toned), the rest via RichText.
+function Side({ doc, nodes }: { doc: Lexical; nodes: any[] }) {
+  const [first, ...rest] = nodes
+  const isHeading = first?.type === 'heading'
+  const title = isHeading ? (first.children ?? []).map((c: any) => c.text ?? '').join('') : ''
+  return (
+    <>
+      {isHeading && <h2><TwoTone text={title} /></h2>}
+      <RichText data={withChildren(doc, isHeading ? rest : nodes) as any} />
+    </>
+  )
+}
+
 export default async function AboutPage() {
   const page = await getPageBySlug('about')
   if (!page) notFound()
@@ -140,6 +161,7 @@ export default async function AboutPage() {
             {leadText && <h2 className="aq-lead-hed">{leadText}</h2>}
             <article className="aq-lead">
               {/* Lucas's title (2026-11-23), set as a Times section head. */}
+              {/* All navy with an underline (Lucas, 2026-11-23); was "note" in red. */}
               {tail?.content && <h2 className="ap-build-hed aq-note-hed">Author note</h2>}
               {tail?.content && (
                 <div className="aq-dek">
@@ -151,8 +173,7 @@ export default async function AboutPage() {
               <section className="aq-news" aria-label="The three sides of Atlas">
                 {sides.map((nodes, i) => (
                   <article key={i} className="aq-item">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <RichText data={withChildren(doc, nodes) as any} />
+                    <Side doc={doc} nodes={nodes} />
                   </article>
                 ))}
               </section>
@@ -183,8 +204,7 @@ export default async function AboutPage() {
           <section className="ap-sides" aria-label="The three sides of Atlas">
             {sides.map((nodes, i) => (
               <article key={i} className="ap-side">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <RichText data={withChildren(doc, nodes) as any} />
+                <Side doc={doc} nodes={nodes} />
               </article>
             ))}
           </section>
