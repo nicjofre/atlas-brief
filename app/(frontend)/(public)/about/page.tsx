@@ -20,29 +20,15 @@ export const metadata: Metadata = pageMetadata({
   path: '/about',
 })
 
-// About, fresh start (Lucas, 2026-11-23): the Contact brief again, "simple
-// yet elegant, like a publication; coherent with the home page and the other
-// pages; only the site's colours, fonts and sizes". Built from the same parts
-// as Contact take 2, so the two pages read as one paper:
-//   1. the Tape's header: "About us" in bold Times, and beside it the CMS lead
-//      sentence ("Atlas is a Los Angeles real estate practice with three
-//      sides.") as the description; no new copy;
-//   2. the three sides side by side under the home page's 2px section rule,
-//      hairlines between (the body prose, split at each h2);
-//   3. the two buildings under a Times section head, set like the home page's
-//      Tape cards, their stats as ruled cells;
-//   4. David's note in a staff box along the bottom, his photo beside it.
-// All content comes from the CMS as before; only the layout changed. Main's
-// layout (ab-* in RenderBlocks) is on main and backup/contact-about-2026-11-23.
-// Styles: about.css .ap-*.
-
-// Which take shows (Lucas, 2026-11-23: "try again"). Change the number.
-//   1. Built like Contact take 2: three sides in a row, buildings, David's
-//      note in a staff box. Styles .ap-*.
-//   2. Built like the home page's front: the lead sentence as a lead story
-//      with David's note as its dek, the three sides as the news column
-//      beside it, the buildings as a card row. Styles .aq-*.
-const ABOUT_TAKE: number = 2
+// About, rebuilt "like the paper" (Lucas, 2026-11-23; approved as is). The
+// home page's front (front-top.css .ft-grid): the Tape's header with the CMS
+// subtitle, the lead sentence as a headline across both columns, the three
+// sides in the wide left column, David's note right as "Author note", then
+// the buildings as a card row. All content from the CMS except the building
+// BLURBS below. Styles: about.css .ap-* (header, buildings) and .aq-*.
+// Take 1 (three sides in a row, David in a staff box) was removed once
+// Lucas chose; it's in commit c4b76e8. Main's layout is on main and
+// backup/contact-about-2026-11-23.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Lexical = { root: { children: any[] } & Record<string, any> } & Record<string, any>
@@ -111,10 +97,10 @@ export default async function AboutPage() {
       'A 12-unit building of large, comfortable homes, with units averaging 1,500 to 1,700 square feet.',
   }
 
-  // The buildings, shared by both takes. Stats (Units, Stories, ...) taken
-  // off (Lucas, 2026-11-23); they're still in the CMS.
+  // The buildings. Stats (Units, Stories, ...) taken off (Lucas,
+  // 2026-11-23); they're still in the CMS.
   const buildings = projects?.items?.length > 0 && (
-    <section className={ABOUT_TAKE === 2 ? 'aq-build' : 'ap-build'}>
+    <section className="aq-build">
       {projects.heading && <h2 className="ap-build-hed">{projects.heading}</h2>}
       <div className="ap-projects">
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -140,52 +126,9 @@ export default async function AboutPage() {
     </section>
   )
 
-  if (ABOUT_TAKE === 2) {
-    // Take 2: the home page's front (front-top.css .ft-grid). The header's
-    // description is the CMS subtitle; the lead sentence becomes the lead
-    // story's headline, David's note its dek; the sides are the news column.
-    const hero = layout.find(b => b.blockType === 'hero') as { subtitle?: string | null } | undefined
-    return (
-      <>
-        {!user && <ArticleSubscribeBar />}
-        {!user && <ArticleSubscribeModal enabled slug="about" />}
-        <RefreshRouteOnSave />
-        <header className="ap-head">
-          <h1>About us</h1>
-          {hero?.subtitle && <p className="ap-about">{hero.subtitle}</p>}
-        </header>
-        <main className="ap-main aq-main">
-          <div className="aq-grid">
-            {/* The headline spans both columns so it holds to one line (Lucas,
-                2026-11-23); it sat in the lead column and wrapped. */}
-            {leadText && <h2 className="aq-lead-hed">{leadText}</h2>}
-            <article className="aq-lead">
-              {/* Lucas's title (2026-11-23), set as a Times section head. */}
-              {/* All navy with an underline (Lucas, 2026-11-23); was "note" in red. */}
-              {tail?.content && <h2 className="ap-build-hed aq-note-hed">Author note</h2>}
-              {tail?.content && (
-                <div className="aq-dek">
-                  <RichText data={tail.content} />
-                </div>
-              )}
-            </article>
-            {doc && sides.length > 0 && (
-              <section className="aq-news" aria-label="The three sides of Atlas">
-                {sides.map((nodes, i) => (
-                  <article key={i} className="aq-item">
-                    <Side doc={doc} nodes={nodes} />
-                  </article>
-                ))}
-              </section>
-            )}
-          </div>
-          {buildings}
-        </main>
-        <Footer />
-      </>
-    )
-  }
-
+  // The header's description is the CMS subtitle; the lead sentence is the
+  // headline, the sides the left column, David's note the right.
+  const hero = layout.find(b => b.blockType === 'hero') as { subtitle?: string | null } | undefined
   return (
     <>
       {!user && <ArticleSubscribeBar />}
@@ -193,34 +136,36 @@ export default async function AboutPage() {
           reader-facing page without it. */}
       {!user && <ArticleSubscribeModal enabled slug="about" />}
       <RefreshRouteOnSave />
-
       <header className="ap-head">
         <h1>About us</h1>
-        {leadText && <p className="ap-about">{leadText}</p>}
+        {hero?.subtitle && <p className="ap-about">{hero.subtitle}</p>}
       </header>
-
-      <main className="ap-main">
-        {doc && sides.length > 0 && (
-          <section className="ap-sides" aria-label="The three sides of Atlas">
-            {sides.map((nodes, i) => (
-              <article key={i} className="ap-side">
-                <Side doc={doc} nodes={nodes} />
-              </article>
-            ))}
-          </section>
-        )}
-
+      <main className="ap-main aq-main">
+        <div className="aq-grid">
+          {/* The headline spans both columns so it holds to one line (Lucas,
+              2026-11-23); it sat in the lead column and wrapped. */}
+          {leadText && <h2 className="aq-lead-hed">{leadText}</h2>}
+          <article className="aq-lead">
+            {/* Lucas's title (2026-11-23), set as a Times section head. */}
+            {/* All navy with an underline (Lucas, 2026-11-23); was "note" in red. */}
+            {tail?.content && <h2 className="ap-build-hed aq-note-hed">Author note</h2>}
+            {tail?.content && (
+              <div className="aq-dek">
+                <RichText data={tail.content} />
+              </div>
+            )}
+          </article>
+          {doc && sides.length > 0 && (
+            <section className="aq-news" aria-label="The three sides of Atlas">
+              {sides.map((nodes, i) => (
+                <article key={i} className="aq-item">
+                  <Side doc={doc} nodes={nodes} />
+                </article>
+              ))}
+            </section>
+          )}
+        </div>
         {buildings}
-
-        {tail?.content && (
-          <aside className="ap-staff" aria-label="A note from David Safai">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/david-safai.jpg" alt="David Safai" width={637} height={720} loading="lazy" />
-            <div className="ap-note">
-              <RichText data={tail.content} />
-            </div>
-          </aside>
-        )}
       </main>
       <Footer />
     </>

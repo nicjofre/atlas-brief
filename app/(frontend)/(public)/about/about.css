@@ -879,35 +879,8 @@
   padding: clamp(12px, 1.4vw, 20px) var(--pad-x) 0;      /* .cat-package .top-stories */
 }
 
-/* The three sides side by side under the section rule (Contact's inquiries). */
-.ap-sides {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));      /* .ft-tape-row */
-  padding-top: 20px;
-  border-top: 2px solid var(--ink);                       /* .ft-tape-head */
-}
-.ap-side { padding: 0 clamp(16px, 2vw, 28px); border-left: 1px solid var(--rule); } /* .ft-quad */
-.ap-side:first-child { padding-left: 0; border-left: 0; }
-.ap-side:last-child { padding-right: 0; }
-.ap-side h2 {
-  margin: 0 0 8px;                                        /* .ft-entry h3 */
-  font-family: var(--sans);
-  font-style: normal;
-  font-size: 21px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-.ap-side p { margin: 0 0 10px; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
-.ap-side p:last-child { margin-bottom: 0; }
-
-/* The buildings: a Times section head, then two cards side by side. */
-.ap-build {
-  margin-top: clamp(28px, 3vw, 40px);                     /* .ft-tape */
-  padding-top: 20px;
-  border-top: 2px solid var(--ink);
-}
+/* The buildings: a Times section head (.aq-build, below), then two cards
+   side by side. */
 .ap-build-hed {
   margin: 0 0 16px;                                       /* "Most read deals" on the Tape */
   font-family: 'Times New Roman', Times, serif;
@@ -947,28 +920,6 @@
 .ap-stats dd { margin: 0; font-family: var(--sans); font-size: 16px; font-weight: 700; line-height: 1.28; color: var(--ink); } /* .ft-earlier a */
 .ap-blurb { margin: 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); }
 
-/* David's note: the staff box, as on Contact. */
-.ap-staff {
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  column-gap: 20px;
-  align-items: start;
-  margin-top: clamp(28px, 3vw, 40px);
-  padding-top: 20px;
-  border-top: 2px solid var(--ink);
-}
-.ap-staff img { width: 90px; height: 90px; object-fit: cover; object-position: center 40%; } /* .cy-who img */
-.ap-note p { margin: 0 0 10px; max-width: 70ch; font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink); } /* .ft-lead-dek */
-.ap-note p:last-child { margin-bottom: 0; }
-.ap-note a {
-  font-weight: 700;                                       /* .ft-read */
-  color: var(--brand-navy);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-.ap-note a:hover { color: var(--brand-red); }
-
 /* Red in the titles, like the logo (Lucas, 2026-11-23): what follows
    "Atlas" ("Brief", "Home Pro"...), and "note" in "Author note". page.tsx
    TwoTone. */
@@ -987,11 +938,8 @@
 body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
 
 @media (max-width: 760px) {
-  .ap-sides,
   .ap-projects { grid-template-columns: 1fr; }
-  .ap-side,
   .ap-project { padding: 20px 0 0; margin-top: 20px; border-left: 0; border-top: 1px solid var(--rule); }
-  .ap-side:first-child,
   .ap-project:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
 }
 @media (max-width: 480px) {
@@ -1000,11 +948,12 @@ body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
 }
 
 /* ===========================================================================
-   ABOUT, TAKE 2 (Lucas, 2026-11-23: "try again"; ABOUT_TAKE in page.tsx).
-   The home page's front (front-top.css, as it renders now): a lead story
-   (the lead sentence as its headline, David's note as the dek) and, past a
-   hairline, a news column (the three sides, hairlines between). Then the
-   buildings as a card row. Header and buildings reuse take 1's rules.
+   ABOUT, THE LAYOUT (Lucas, 2026-11-23: "try again"; approved as is).
+   The home page's front (front-top.css, as it renders now): the lead
+   sentence as a headline, the three sides and David's note side by side
+   past a hairline, then the buildings as a card row. Header and buildings
+   use the .ap-* rules above. Take 1 (sides in a row, David in a staff box)
+   was removed once Lucas chose; it's in commit c4b76e8.
    =========================================================================== */
 .aq-grid {
   display: grid;
@@ -1040,9 +989,8 @@ body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
 .aq-dek a:hover { color: var(--brand-red); }
 /* David's email line hidden (Lucas, 2026-11-23: "we have a contact page, so
    we don't need this"). It's the note's last paragraph in the CMS, which is
-   left as is; both takes. Delete to show it again. */
-.aq-dek p:has(a[href^="mailto:"]),
-.ap-note p:has(a[href^="mailto:"]) { display: none; }
+   left as is. Delete to show it again. */
+.aq-dek p:has(a[href^="mailto:"]) { display: none; }
 .aq-dek p:has(+ p a[href^="mailto:"]) { margin-bottom: 0; }
 .aq-news { border-left: 1px solid var(--rule); padding-left: clamp(20px, 2.4vw, 36px); } /* .ft-quad */
 .aq-item { padding: 16px 0; border-top: 1px solid var(--rule); }                       /* .ft-item */

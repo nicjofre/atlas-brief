@@ -35,18 +35,16 @@ function withBriefMark(title?: string | null) {
   return title
 }
 
-// Which take on the Contact page shows (Lucas, 2026-11-23). Change the number.
-//   1. Tape-style: description beside the title, inquiries as a news column,
-//      David in a right column (committed c8d2982). Styles .cx-*.
-//   2. Three inquiries side by side under a section rule, David in a
-//      newspaper staff box along the bottom. Styles .cy-*.
-const CONTACT_TAKE: number = 2
+// The Contact page (Lucas, 2026-11-23; approved as is): three inquiries side
+// by side under a section rule, David in a newspaper staff box along the
+// bottom. Styles .cy-*. Take 1 (inquiries as a news column, David in a
+// right column, .cx-*) was removed once Lucas chose; it's in commit c4b76e8.
 
 function BlockItem({ block }: { block: Block }) {
   switch (block.blockType) {
     case 'hero':
-      if (block.style === 'contact' && CONTACT_TAKE === 2) {
-        // Take 2: the Tape's header AS IT IS NOW (checked on the live page,
+      if (block.style === 'contact') {
+        // The Tape's header AS IT IS NOW (checked on the live page,
         // 2026-11-23): title, then a one-line description beside it, no
         // dateline. (A dateline was copied from stale Tape CSS first; the
         // Tape dropped it.) The description is NEW COPY; David should see it.
@@ -60,24 +58,6 @@ function BlockItem({ block }: { block: Block }) {
             <p className="cy-about">
               To highlight any interesting trades in the market, your projects, and/or any acquisitions. We’ll do our best to follow through as quickly as possible.
             </p>
-          </header>
-        )
-      }
-      if (block.style === 'contact') {
-        // Contact, fresh start (Lucas, 2026-11-23): set like the Tape's and
-        // Owner's Notes' headers so the page reads as part of the paper.
-        // Title left in bold Times navy, a one-line description in the right
-        // column. The description is NEW COPY (not CMS); David should see it.
-        // Was main's c-hero header (on main and backup/contact-about-2026-11-23).
-        // Styles: contact.css .cx-head.
-        return (
-          <header className="cx-head">
-            <div className="cx-head-in">
-              <h1>Contact us</h1>
-              <p className="cx-about">
-                Deals for The Tape, projects to build, businesses for sale. Every message goes to David.
-              </p>
-            </div>
           </header>
         )
       }
@@ -193,75 +173,23 @@ function BlockItem({ block }: { block: Block }) {
         if (s.includes('acquisition')) return 'Tell us about the business'
         return 'Email David'
       }
-      // Contact, fresh start (Lucas, 2026-11-23): laid out like the Tape's
-      // package grid (7fr | 4fr) with the home page's story type. Left: the
-      // three inquiries as a news column (red kicker, bold headline, dek,
-      // hairline between), each with an "Email David" link that opens a
-      // message with the subject filled in. Right, past a hairline: David as
-      // a section head (Times, like "Most read deals"), his photo, then his
-      // details as ruled rows. Every size and colour is an existing site
-      // rule; see contact.css .cx-*. Was main's c-main / c-form / c-side
-      // markup (on main and backup/contact-about-2026-11-23).
-      if (CONTACT_TAKE === 2) {
-        // Take 2 (Lucas, 2026-11-23): the three inquiries side by side under
-        // the home page's 2px section rule, hairlines between them (the Tape
-        // row / .ft-quad), then David in a staff box along the bottom: photo,
-        // name in the Owner's Notes Times, and his details side by side.
-        return (
-          <section className="cy-main">
-            <div className="cy-desks">
-              {(block.inquiries || []).map((inq, i) => {
-                const topic = topicOf(inq.heading)
-                return (
-                  <article key={inq.id || i} className="cy-desk">
-                    <h2>{inq.heading}</h2>
-                    <p>{inq.body}</p>
-                    {block.email && (
-                      <a className="cy-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
-                        {linkFor(inq.heading)}
-                      </a>
-                    )}
-                  </article>
-                )
-              })}
-            </div>
-            <aside className="cy-staff" aria-label="Contact David directly">
-              <div className="cy-who">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/david-safai.jpg" alt="" width={637} height={720} loading="lazy" />
-                <div>
-                  <h2>{block.name || 'David Safai'}</h2>
-                  {/* Lucas's line (2026-11-23), not CMS. Was the CMS role,
-                      "Operator, Developer, GC", which is still there. */}
-                  <p>Head of Atlas</p>
-                </div>
-              </div>
-              <dl className="cy-rows">
-                {block.email && (<div><dt>Email</dt><dd><a href={`mailto:${block.email}`}>{block.email}</a></dd></div>)}
-                {block.phone && (<div><dt>Phone</dt><dd><a href={telHref}>{block.phone}</a></dd></div>)}
-                {block.office && (<div><dt>Office</dt><dd>{block.office}</dd></div>)}
-                {/* "CSLB #" as the label, just the number under it (Lucas,
-                    2026-11-23). Was: License / CA Class B General Contractor,
-                    CSLB # 1160484. The CMS field reads "CSLB # 1160484". */}
-                {block.licenseStatus && (<div><dt>CSLB #</dt><dd>{block.licenseStatus.replace(/^\s*CSLB\s*#\s*/i, '')}</dd></div>)}
-              </dl>
-            </aside>
-          </section>
-        )
-      }
+      // The three inquiries side by side under the home page's 2px section
+      // rule, hairlines between them (the Tape row / .ft-quad), each with a
+      // link that opens a message with the subject filled in; then David in
+      // a staff box along the bottom: photo, name in the Owner's Notes
+      // Times, and his details side by side. Was main's c-main / c-form /
+      // c-side markup (on main and backup/contact-about-2026-11-23).
       return (
-        <section className="cx-main">
-          <div className="cx-desks">
+        <section className="cy-main">
+          <div className="cy-desks">
             {(block.inquiries || []).map((inq, i) => {
               const topic = topicOf(inq.heading)
               return (
-                <article key={inq.id || i} className="cx-desk">
-                  {/* Red kicker removed (Lucas, 2026-11-23: redundant with the
-                      headline). Was: <p className="cx-kicker">{topic}</p> */}
+                <article key={inq.id || i} className="cy-desk">
                   <h2>{inq.heading}</h2>
-                  <p className="cx-dek">{inq.body}</p>
+                  <p>{inq.body}</p>
                   {block.email && (
-                    <a className="cx-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
+                    <a className="cy-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
                       {linkFor(inq.heading)}
                     </a>
                   )}
@@ -269,15 +197,24 @@ function BlockItem({ block }: { block: Block }) {
               )
             })}
           </div>
-          <aside className="cx-side" aria-label="Contact David directly">
-            <h2 className="cx-side-hed">{block.name || 'David Safai'}</h2>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="cx-photo" src="/images/david-safai.jpg" alt="" width={637} height={720} loading="lazy" />
-            {block.role && <p className="cx-role">{block.role.replace(/ · /g, ', ')}</p>}
-            <dl className="cx-rows">
+          <aside className="cy-staff" aria-label="Contact David directly">
+            <div className="cy-who">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/david-safai.jpg" alt="" width={637} height={720} loading="lazy" />
+              <div>
+                <h2>{block.name || 'David Safai'}</h2>
+                {/* Lucas's line (2026-11-23), not CMS. Was the CMS role,
+                    "Operator, Developer, GC", which is still there. */}
+                <p>Head of Atlas</p>
+              </div>
+            </div>
+            <dl className="cy-rows">
               {block.email && (<div><dt>Email</dt><dd><a href={`mailto:${block.email}`}>{block.email}</a></dd></div>)}
               {block.phone && (<div><dt>Phone</dt><dd><a href={telHref}>{block.phone}</a></dd></div>)}
               {block.office && (<div><dt>Office</dt><dd>{block.office}</dd></div>)}
+              {/* "CSLB #" as the label, just the number under it (Lucas,
+                  2026-11-23). Was: License / CA Class B General Contractor,
+                  CSLB # 1160484. The CMS field reads "CSLB # 1160484". */}
               {block.licenseStatus && (<div><dt>CSLB #</dt><dd>{block.licenseStatus.replace(/^\s*CSLB\s*#\s*/i, '')}</dd></div>)}
             </dl>
           </aside>
