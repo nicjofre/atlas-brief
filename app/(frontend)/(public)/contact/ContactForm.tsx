@@ -13,7 +13,10 @@ import { EMAIL_RE } from '@/lib/email-address'
 // message goes, and how bots are kept out, is Lucas's call. Until then a valid
 // submit just says so; nothing is sent or stored.
 
-export default function ContactForm() {
+// topic: the inquiry picked on the left in contact layout 1 (ContactDesk.tsx),
+// e.g. "acquisition". The message box asks about it. Once the form is
+// connected, send it along as the subject.
+export default function ContactForm({ topic = '' }: { topic?: string }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
@@ -59,11 +62,11 @@ export default function ContactForm() {
           />
         </label>
         <label className="c-line-field">
-          <span>Message</span>
+          <span>Message{topic && <em className="c-line-topic"> about {topic}</em>}</span>
           <textarea
             value={message}
             onChange={e => { setMessage(e.target.value); clear() }}
-            placeholder="Write your message for the team here"
+            placeholder={topic ? `Tell us about your ${topic} inquiry` : 'Write your message for the team here'}
             rows={5}
             maxLength={4000}
           />

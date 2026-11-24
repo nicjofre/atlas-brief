@@ -4,6 +4,12 @@ import type { Page, Media } from '@/payload-types'
 import AtlasMark from '../AtlasMark'
 import { hand } from '../hand-font'
 import ContactForm from '../contact/ContactForm'
+import InquiryCards from '../contact/InquiryCards'
+import DavidPopup from '../contact/DavidPopup'
+import ContactDesk from '../contact/ContactDesk'
+import ContactSentence from '../contact/ContactSentence'
+import ContactDirectory from '../contact/ContactDirectory'
+import { CONTACT_VARIANT } from '../contact/variant'
 
 type Block = NonNullable<Page['layout']>[number]
 
@@ -179,9 +185,20 @@ function BlockItem({ block }: { block: Block }) {
 
     case 'contactDetails': {
       const telHref = `tel:${(block.phone || '').replace(/[^\d+]/g, '')}`
+      // The navy band with David's details, parked 2026-11-23 for the pop-up.
+      const showBand = false as boolean
       return (
         <>
-        <section className="c-main">
+        <section className={`c-main c-v${CONTACT_VARIANT}`}>
+          {/* Layouts being compared (Lucas, 2026-11-23); see contact/variant.ts. */}
+          {CONTACT_VARIANT === 1 ? (
+            <ContactDesk inquiries={block.inquiries || []} />
+          ) : CONTACT_VARIANT === 2 ? (
+            <ContactSentence inquiries={block.inquiries || []} />
+          ) : CONTACT_VARIANT === 3 ? (
+            <ContactDirectory inquiries={block.inquiries || []} />
+          ) : (
+          <>
           {/* Just the inquiry titles, each in a beige card with navy writing,
               stacked (Lucas, 2026-11-22). The paragraphs are left out; the
               text is still in the CMS. Tried before this and dropped: the
@@ -198,32 +215,34 @@ function BlockItem({ block }: { block: Block }) {
                     </React.Fragment>
                   ))}
                 </div> */}
-          <ul className="c-titles">
-            {(block.inquiries || []).map((inq, i) => (
-              // Each title opens to show its paragraph (Lucas, 2026-11-22).
-              // A native <details>, so it works without JavaScript.
-              <li key={inq.id || i}>
-                <details>
-                  <summary>
-                    <h2>{inq.heading}</h2>
-                    <svg className="c-titles-chev" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </summary>
-                  <p>{inq.body}</p>
-                </details>
-              </li>
-            ))}
-          </ul>
+          {/* Each title opens to show its paragraph (Lucas, 2026-11-22), now
+              with a slide-and-fade (2026-11-23). Was native <details> per
+              card, which snapped open; see contact/InquiryCards.tsx. */}
+          <InquiryCards inquiries={block.inquiries || []} />
           {/* "Drop us a line" form beside the inquiry cards: cards left, form
               right (Lucas, 2026-11-22). Not connected yet; see ContactForm.tsx. */}
           <ContactForm />
+          </>
+          )}
         </section>
-        {/* David's details on a navy band that scrolls up over the titles and
-            form (pinned), the About page's treatment (Lucas, 2026-11-22). Once
-            the band's top passes mid-screen, contact/ContactReveal.tsx adds
-            .is-in and the photo and card slide up into place. Was: the
-            .c-card-row inside .c-main above, after the form. */}
+        {/* "Rather message us?" as a button that opens David's details in a
+            pop-up (Lucas, 2026-11-23); see contact/DavidPopup.tsx. */}
+        <DavidPopup
+          david={{
+            name: block.name,
+            role: block.role,
+            email: block.email,
+            phone: block.phone,
+            office: block.office,
+            licenseStatus: block.licenseStatus,
+          }}
+        />
+        {/* PARKED 2026-11-23 (was live at 36fddd8): David's details on a navy
+            band that scrolled up over the titles and form, with
+            contact/ContactReveal.tsx. To restore: delete <DavidPopup> above,
+            set showBand to true (or drop the wrapper), and put <ContactReveal />
+            back in contact/page.tsx and the .c-main sticky rule in contact.css. */}
+        {showBand && (
         <section className="c-band">
           <svg className="c-band-arrow" viewBox="0 0 24 14" aria-hidden="true">
             <path d="M3 11.5 12 3l9 8.5" />
@@ -231,7 +250,7 @@ function BlockItem({ block }: { block: Block }) {
           {/* A question at the top of the band, to call the reader to slide it
               up (Lucas, 2026-11-22). Not CMS text; David should see it before
               it ships. */}
-          <h2 className="c-band-q">Rather talk to David directly?</h2>
+          <h2 className="c-band-q">Rather message us?</h2>
           {/* David's photo beside his card (Lucas, 2026-11-19). The file is
               public/images/david-safai.jpg; not a CMS field yet. contact.css
               lays the photo and the card out side by side (.c-card-row). */}
@@ -282,6 +301,7 @@ function BlockItem({ block }: { block: Block }) {
           </aside>
           </div>
         </section>
+        )}
         </>
       )
     }

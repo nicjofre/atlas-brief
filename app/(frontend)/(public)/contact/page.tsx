@@ -8,7 +8,6 @@ import { getPageBySlug } from '@/lib/getPage'
 import ArticleSubscribeBar from '../ArticleSubscribeBar'
 import { createClient } from '@/lib/supabase/server'
 import { hand } from '../hand-font'
-import ContactReveal from './ContactReveal'
 import './contact.css'
 
 export const dynamic = 'force-dynamic'
@@ -28,9 +27,9 @@ export default async function ContactPage() {
     <>
       {!user && <ArticleSubscribeBar />}
       <RefreshRouteOnSave />
-      {/* Pins the titles and form while David's navy band slides up over
-          them (Lucas, 2026-11-22). Renders nothing. */}
-      <ContactReveal />
+      {/* PARKED 2026-11-23: <ContactReveal /> pinned the titles and form while
+          David's navy band slid up over them. The band is now a pop-up
+          (DavidPopup.tsx); put this back to restore the band. */}
       {/* --hand carries the handwritten face to contact.css for David's name
           (2026-11-06), the same way About's signature gets it. */}
       <div className="c-page" style={{ ['--hand' as string]: hand.style.fontFamily }}>
