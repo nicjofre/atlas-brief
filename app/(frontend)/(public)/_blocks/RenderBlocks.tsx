@@ -231,14 +231,19 @@ function BlockItem({ block }: { block: Block }) {
                 <img src="/images/david-safai.jpg" alt="" width={637} height={720} loading="lazy" />
                 <div>
                   <h2>{block.name || 'David Safai'}</h2>
-                  {block.role && <p>{block.role.replace(/ · /g, ', ')}</p>}
+                  {/* Lucas's line (2026-11-23), not CMS. Was the CMS role,
+                      "Operator, Developer, GC", which is still there. */}
+                  <p>Head of Atlas</p>
                 </div>
               </div>
               <dl className="cy-rows">
                 {block.email && (<div><dt>Email</dt><dd><a href={`mailto:${block.email}`}>{block.email}</a></dd></div>)}
                 {block.phone && (<div><dt>Phone</dt><dd><a href={telHref}>{block.phone}</a></dd></div>)}
                 {block.office && (<div><dt>Office</dt><dd>{block.office}</dd></div>)}
-                {block.licenseStatus && (<div><dt>License</dt><dd>CA Class B General Contractor, {block.licenseStatus}</dd></div>)}
+                {/* "CSLB #" as the label, just the number under it (Lucas,
+                    2026-11-23). Was: License / CA Class B General Contractor,
+                    CSLB # 1160484. The CMS field reads "CSLB # 1160484". */}
+                {block.licenseStatus && (<div><dt>CSLB #</dt><dd>{block.licenseStatus.replace(/^\s*CSLB\s*#\s*/i, '')}</dd></div>)}
               </dl>
             </aside>
           </section>
@@ -273,7 +278,7 @@ function BlockItem({ block }: { block: Block }) {
               {block.email && (<div><dt>Email</dt><dd><a href={`mailto:${block.email}`}>{block.email}</a></dd></div>)}
               {block.phone && (<div><dt>Phone</dt><dd><a href={telHref}>{block.phone}</a></dd></div>)}
               {block.office && (<div><dt>Office</dt><dd>{block.office}</dd></div>)}
-              {block.licenseStatus && (<div><dt>License</dt><dd>CA Class B General Contractor, {block.licenseStatus}</dd></div>)}
+              {block.licenseStatus && (<div><dt>CSLB #</dt><dd>{block.licenseStatus.replace(/^\s*CSLB\s*#\s*/i, '')}</dd></div>)}
             </dl>
           </aside>
         </section>
