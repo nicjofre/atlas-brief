@@ -834,3 +834,236 @@
 }
 /* No rule under the header's lede (2026-10-07). */
 .ab-lead { border-bottom: 0; }
+
+/* ===========================================================================
+   ABOUT, FRESH START (Lucas, 2026-11-23): the Contact brief, "simple yet
+   elegant, like a publication; coherent with the home page and the other
+   pages; only the site's colours, fonts and sizes". The same parts as
+   Contact take 2 (contact.css .cy-*), so the two pages match; each value
+   names the live rule it comes from. Everything above this block is main's
+   old About styling, now unused (page.tsx renders .ap-* only).
+   =========================================================================== */
+
+/* Header: the Tape's, as it renders today. */
+.ap-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);             /* .cat-masthead-inner > div */
+  column-gap: clamp(24px, 2.4vw, 36px);
+  align-items: center;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;      /* .cat-masthead-inner */
+}
+.ap-head h1 {
+  margin: 0;                                              /* .cat-masthead h1.cat-hand */
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+.ap-about {
+  margin: 0;                                              /* .cat-masthead .cat-about */
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+@media (max-width: 720px) { .ap-head { grid-template-columns: 1fr; row-gap: 14px; } }
+
+.ap-main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(12px, 1.4vw, 20px) var(--pad-x) 0;      /* .cat-package .top-stories */
+}
+
+/* The three sides side by side under the section rule (Contact's inquiries). */
+.ap-sides {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));      /* .ft-tape-row */
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);                       /* .ft-tape-head */
+}
+.ap-side { padding: 0 clamp(16px, 2vw, 28px); border-left: 1px solid var(--rule); } /* .ft-quad */
+.ap-side:first-child { padding-left: 0; border-left: 0; }
+.ap-side:last-child { padding-right: 0; }
+.ap-side h2 {
+  margin: 0 0 8px;                                        /* .ft-entry h3 */
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.ap-side p { margin: 0 0 10px; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
+.ap-side p:last-child { margin-bottom: 0; }
+
+/* The buildings: a Times section head, then two cards side by side. */
+.ap-build {
+  margin-top: clamp(28px, 3vw, 40px);                     /* .ft-tape */
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);
+}
+.ap-build-hed {
+  margin: 0 0 16px;                                       /* "Most read deals" on the Tape */
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.ap-projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ap-project { padding: 0 clamp(16px, 2vw, 28px); border-left: 1px solid var(--rule); }
+.ap-project:first-child { padding-left: 0; border-left: 0; }
+.ap-project:last-child { padding-right: 0; }
+.ap-project img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;                                   /* .ft-card-img */
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+.ap-project h3 {
+  margin: 0 0 8px;                                        /* .ft-entry h3; was 4px over the category line */
+  font-family: var(--sans);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.ap-cat { margin: 0 0 12px; font-family: var(--sans); font-size: 13px; color: var(--muted); } /* .cy-who p */
+/* Stats as ruled cells, like Contact's staff-box details. */
+.ap-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 12px; }
+.ap-stats > div { padding: 0 clamp(10px, 1.2vw, 16px); border-left: 1px solid var(--rule); }
+.ap-stats > div:first-child { padding-left: 0; border-left: 0; }
+.ap-stats dt { margin: 0 0 4px; font-family: var(--sans); font-size: 12px; color: var(--muted); }
+.ap-stats dd { margin: 0; font-family: var(--sans); font-size: 16px; font-weight: 700; line-height: 1.28; color: var(--ink); } /* .ft-earlier a */
+.ap-blurb { margin: 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); }
+
+/* David's note: the staff box, as on Contact. */
+.ap-staff {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: start;
+  margin-top: clamp(28px, 3vw, 40px);
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);
+}
+.ap-staff img { width: 90px; height: 90px; object-fit: cover; object-position: center 40%; } /* .cy-who img */
+.ap-note p { margin: 0 0 10px; max-width: 70ch; font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink); } /* .ft-lead-dek */
+.ap-note p:last-child { margin-bottom: 0; }
+.ap-note a {
+  font-weight: 700;                                       /* .ft-read */
+  color: var(--brand-navy);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.ap-note a:hover { color: var(--brand-red); }
+
+/* Less space before the footer, as on Contact. This page only. */
+body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
+
+@media (max-width: 760px) {
+  .ap-sides,
+  .ap-projects { grid-template-columns: 1fr; }
+  .ap-side,
+  .ap-project { padding: 20px 0 0; margin-top: 20px; border-left: 0; border-top: 1px solid var(--rule); }
+  .ap-side:first-child,
+  .ap-project:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
+}
+@media (max-width: 480px) {
+  .ap-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+  .ap-stats > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+}
+
+/* ===========================================================================
+   ABOUT, TAKE 2 (Lucas, 2026-11-23: "try again"; ABOUT_TAKE in page.tsx).
+   The home page's front (front-top.css, as it renders now): a lead story
+   (the lead sentence as its headline, David's note as the dek) and, past a
+   hairline, a news column (the three sides, hairlines between). Then the
+   buildings as a card row. Header and buildings reuse take 1's rules.
+   =========================================================================== */
+.aq-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);  /* .ft-grid / .ts-grid */
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: start;
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);                       /* .ft-tape-head */
+}
+.aq-lead-hed {
+  margin: 0 0 10px;                                       /* .ft-lead-hed */
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: clamp(24px, 2.3vw, 32px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+/* Across both columns, one line where there's room (Lucas, 2026-11-23). Was
+   inside the lead column, where it wrapped to two lines. */
+.aq-lead-hed { grid-column: 1 / -1; margin-bottom: 18px; }
+@media (min-width: 1000px) { .aq-lead-hed { white-space: nowrap; } }
+.aq-dek p { margin: 0 0 10px; max-width: 62ch; font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink); } /* .ft-lead-dek */
+.aq-dek p:last-child { margin-bottom: 0; }
+.aq-dek a {
+  font-weight: 700;                                       /* .ft-read */
+  color: var(--brand-navy);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.aq-dek a:hover { color: var(--brand-red); }
+/* David's email line hidden (Lucas, 2026-11-23: "we have a contact page, so
+   we don't need this"). It's the note's last paragraph in the CMS, which is
+   left as is; both takes. Delete to show it again. */
+.aq-dek p:has(a[href^="mailto:"]),
+.ap-note p:has(a[href^="mailto:"]) { display: none; }
+.aq-dek p:has(+ p a[href^="mailto:"]) { margin-bottom: 0; }
+.aq-news { border-left: 1px solid var(--rule); padding-left: clamp(20px, 2.4vw, 36px); } /* .ft-quad */
+.aq-item { padding: 16px 0; border-top: 1px solid var(--rule); }                       /* .ft-item */
+.aq-item:first-child { padding-top: 0; border-top: 0; }
+.aq-item h2 {
+  margin: 0 0 6px;                                        /* .ft-item h3 */
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.28;
+  color: var(--ink);
+}
+.aq-item p { margin: 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
+.aq-build {
+  margin-top: clamp(28px, 3vw, 40px);                     /* .ft-tape */
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);
+}
+@media (max-width: 1100px) {
+  .aq-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+/* Swapped (Lucas, 2026-11-23): the three sides in the wide left column,
+   David's note in the narrow right one, past the hairline. Was the note
+   left as the lead's dek and the sides right as the news column. */
+.aq-news { grid-column: 1; grid-row: 2; border-left: 0; padding-left: 0; }
+.aq-lead { grid-column: 2; grid-row: 2; border-left: 1px solid var(--rule); padding-left: clamp(20px, 2.4vw, 36px); } /* .ft-quad */
+/* The note centred top to bottom beside the three sides (Lucas, 2026-11-23);
+   the column still runs the full height, so the hairline does too. Was
+   sitting at the top. */
+@media (min-width: 761px) {
+  .aq-lead { align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+}
+@media (max-width: 760px) {
+  .aq-grid { grid-template-columns: 1fr; }
+  .aq-news { grid-column: 1; grid-row: auto; }
+  .aq-lead { grid-column: 1; grid-row: auto; border-left: 0; padding-left: 0; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); }
+}

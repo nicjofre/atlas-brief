@@ -184,6 +184,15 @@ function BlockItem({ block }: { block: Block }) {
         const t = (h || '').replace(/^for\s+/i, '').replace(/\s+inquir(y|ies)\s*$/i, '').trim()
         return t.charAt(0).toUpperCase() + t.slice(1)
       }
+      // The link under each inquiry, its own line (Lucas, 2026-11-23; was
+      // "Email David" on all three). Matched on the heading's wording.
+      const linkFor = (h?: string | null) => {
+        const s = (h || '').toLowerCase()
+        if (s.includes('editorial')) return 'Pitch us a deal'
+        if (s.includes('construction') || s.includes('development')) return 'Tell us about the project'
+        if (s.includes('acquisition')) return 'Tell us about the business'
+        return 'Email David'
+      }
       // Contact, fresh start (Lucas, 2026-11-23): laid out like the Tape's
       // package grid (7fr | 4fr) with the home page's story type. Left: the
       // three inquiries as a news column (red kicker, bold headline, dek,
@@ -209,7 +218,7 @@ function BlockItem({ block }: { block: Block }) {
                     <p>{inq.body}</p>
                     {block.email && (
                       <a className="cy-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
-                        Email David
+                        {linkFor(inq.heading)}
                       </a>
                     )}
                   </article>
@@ -248,7 +257,7 @@ function BlockItem({ block }: { block: Block }) {
                   <p className="cx-dek">{inq.body}</p>
                   {block.email && (
                     <a className="cx-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
-                      Email David
+                      {linkFor(inq.heading)}
                     </a>
                   )}
                 </article>
