@@ -449,3 +449,146 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
   .cx-about { padding-left: 0; margin-top: 14px; }
   .cx-side { border-left: 0; padding-left: 0; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--rule); }
 }
+
+/* ===========================================================================
+   CONTACT, TAKE 2 (Lucas, 2026-11-23; CONTACT_TAKE in RenderBlocks). Same
+   brief, different arrangement: the Tape's title and dateline; the three
+   inquiries side by side under the home page's 2px section rule with
+   hairlines between (the home page's Tape row / .ft-quad); David in a staff
+   box along the bottom. Only site colours, fonts and sizes; sources noted.
+   =========================================================================== */
+/* The Tape's header as it renders today (section.css, final rules): title,
+   description beside it, centred, no dateline. Was a dateline under the
+   title, copied from stale CSS the Tape no longer shows. */
+.cy-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);             /* .cat-masthead-inner > div */
+  column-gap: clamp(24px, 2.4vw, 36px);
+  align-items: center;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;      /* .cat-masthead-inner */
+}
+.cy-head h1 {
+  margin: 0;                                              /* .cat-masthead h1.cat-hand */
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+.cy-about {
+  margin: 0;                                              /* .cat-masthead .cat-about */
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+/* The Tape holds its description to one line on wide screens (nowrap from
+   1360px). Lucas's longer line (2026-11-23) would run off the page held that
+   way, so this one wraps instead. Was:
+     @media (min-width: 1360px) { .cy-about { white-space: nowrap; } } */
+@media (max-width: 720px) {
+  .cy-head { grid-template-columns: 1fr; row-gap: 14px; }
+}
+
+.cy-main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  /* Top: the Tape's gap under its header (.cat-package .top-stories, tightened
+     2026-11-19); bottom: .ft. */
+  padding: clamp(12px, 1.4vw, 20px) var(--pad-x) 0;    /* bottom was clamp(36px, 4.4vw, 60px) */
+}
+.cy-desks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));      /* .ft-tape-row */
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);                       /* .ft-tape-head */
+}
+.cy-desk { padding: 0 clamp(16px, 2vw, 28px); border-left: 1px solid var(--rule); } /* .ft-quad */
+.cy-desk:first-child { padding-left: 0; border-left: 0; }
+.cy-desk:last-child { padding-right: 0; }
+.cy-desk h2 {
+  margin: 0 0 8px;                                        /* .ft-entry h3 */
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.cy-desk p { margin: 0 0 10px; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
+.cy-read {
+  font-family: var(--sans);                               /* .ft-read */
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-navy);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.cy-read:hover { color: var(--brand-red); }
+
+/* The staff box: who on the left, the details side by side on the right. */
+.cy-staff {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: start;
+  margin-top: clamp(28px, 3vw, 40px);                     /* .ft-tape */
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);                       /* .ft-tape-head */
+}
+.cy-who { display: flex; align-items: center; gap: 14px; }
+.cy-who img { width: 90px; height: 90px; object-fit: cover; object-position: center 40%; } /* .ft-thumb height */
+.cy-who h2 {
+  margin: 0;                                              /* .ft-diary-name */
+  font-family: 'Times New Roman', Times, serif;
+  font-style: normal;
+  font-size: clamp(28px, 2.6vw, 36px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.cy-who p { margin: 6px 0 0; font-family: var(--sans); font-size: 13px; color: var(--muted); }
+.cy-rows {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+.cy-rows > div { padding: 0 clamp(16px, 2vw, 28px); border-left: 1px solid var(--rule); }
+.cy-rows dt { margin: 0 0 4px; font-family: var(--sans); font-size: 12px; color: var(--muted); }
+.cy-rows dd {
+  margin: 0;
+  font-family: var(--sans);                               /* .ft-earlier a */
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.28;
+  color: var(--ink);
+}
+.cy-rows a { color: var(--ink); }
+.cy-rows a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Less space between the staff box and the footer (Lucas, 2026-11-23). It
+   was this section's bottom padding (36-60px) plus the footer's 80px top
+   margin (atlas-v2.css .footer). The footer change is this page only. */
+body:has(.cy-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
+
+@media (max-width: 1100px) {
+  .cy-staff { grid-template-columns: 1fr; row-gap: 20px; }
+  .cy-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }
+  .cy-rows > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+}
+@media (max-width: 760px) {
+  .cy-desks { grid-template-columns: 1fr; }
+  .cy-desk { padding: 20px 0 0; margin-top: 20px; border-left: 0; border-top: 1px solid var(--rule); }
+  .cy-desk:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
+}
+@media (max-width: 480px) {
+  .cy-rows { grid-template-columns: 1fr; }
+  .cy-rows > div { padding-left: 0; border-left: 0; }
+}

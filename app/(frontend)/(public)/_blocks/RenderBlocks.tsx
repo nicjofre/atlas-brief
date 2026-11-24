@@ -35,9 +35,34 @@ function withBriefMark(title?: string | null) {
   return title
 }
 
+// Which take on the Contact page shows (Lucas, 2026-11-23). Change the number.
+//   1. Tape-style: description beside the title, inquiries as a news column,
+//      David in a right column (committed c8d2982). Styles .cx-*.
+//   2. Three inquiries side by side under a section rule, David in a
+//      newspaper staff box along the bottom. Styles .cy-*.
+const CONTACT_TAKE: number = 2
+
 function BlockItem({ block }: { block: Block }) {
   switch (block.blockType) {
     case 'hero':
+      if (block.style === 'contact' && CONTACT_TAKE === 2) {
+        // Take 2: the Tape's header AS IT IS NOW (checked on the live page,
+        // 2026-11-23): title, then a one-line description beside it, no
+        // dateline. (A dateline was copied from stale Tape CSS first; the
+        // Tape dropped it.) The description is NEW COPY; David should see it.
+        // Styles: contact.css .cy-head.
+        return (
+          <header className="cy-head">
+            <h1>Contact us</h1>
+            {/* Lucas's wording (2026-11-23), spelling tidied. Was: "Deals for
+                The Tape, projects to build, businesses for sale. Every message
+                goes to David." */}
+            <p className="cy-about">
+              To highlight any interesting trades in the market, your projects, and/or any acquisitions. We’ll do our best to follow through as quickly as possible.
+            </p>
+          </header>
+        )
+      }
       if (block.style === 'contact') {
         // Contact, fresh start (Lucas, 2026-11-23): set like the Tape's and
         // Owner's Notes' headers so the page reads as part of the paper.
@@ -168,6 +193,48 @@ function BlockItem({ block }: { block: Block }) {
       // details as ruled rows. Every size and colour is an existing site
       // rule; see contact.css .cx-*. Was main's c-main / c-form / c-side
       // markup (on main and backup/contact-about-2026-11-23).
+      if (CONTACT_TAKE === 2) {
+        // Take 2 (Lucas, 2026-11-23): the three inquiries side by side under
+        // the home page's 2px section rule, hairlines between them (the Tape
+        // row / .ft-quad), then David in a staff box along the bottom: photo,
+        // name in the Owner's Notes Times, and his details side by side.
+        return (
+          <section className="cy-main">
+            <div className="cy-desks">
+              {(block.inquiries || []).map((inq, i) => {
+                const topic = topicOf(inq.heading)
+                return (
+                  <article key={inq.id || i} className="cy-desk">
+                    <h2>{inq.heading}</h2>
+                    <p>{inq.body}</p>
+                    {block.email && (
+                      <a className="cy-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
+                        Email David
+                      </a>
+                    )}
+                  </article>
+                )
+              })}
+            </div>
+            <aside className="cy-staff" aria-label="Contact David directly">
+              <div className="cy-who">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/david-safai.jpg" alt="" width={637} height={720} loading="lazy" />
+                <div>
+                  <h2>{block.name || 'David Safai'}</h2>
+                  {block.role && <p>{block.role.replace(/ · /g, ', ')}</p>}
+                </div>
+              </div>
+              <dl className="cy-rows">
+                {block.email && (<div><dt>Email</dt><dd><a href={`mailto:${block.email}`}>{block.email}</a></dd></div>)}
+                {block.phone && (<div><dt>Phone</dt><dd><a href={telHref}>{block.phone}</a></dd></div>)}
+                {block.office && (<div><dt>Office</dt><dd>{block.office}</dd></div>)}
+                {block.licenseStatus && (<div><dt>License</dt><dd>CA Class B General Contractor, {block.licenseStatus}</dd></div>)}
+              </dl>
+            </aside>
+          </section>
+        )
+      }
       return (
         <section className="cx-main">
           <div className="cx-desks">
