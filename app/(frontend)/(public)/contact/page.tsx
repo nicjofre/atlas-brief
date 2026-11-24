@@ -7,7 +7,6 @@ import { RefreshRouteOnSave } from '../_blocks/RefreshRouteOnSave'
 import { getPageBySlug } from '@/lib/getPage'
 import ArticleSubscribeBar from '../ArticleSubscribeBar'
 import { createClient } from '@/lib/supabase/server'
-import { hand } from '../hand-font'
 import './contact.css'
 
 export const dynamic = 'force-dynamic'
@@ -27,22 +26,7 @@ export default async function ContactPage() {
     <>
       {!user && <ArticleSubscribeBar />}
       <RefreshRouteOnSave />
-      {/* PARKED 2026-11-23: <ContactReveal /> pinned the titles and form while
-          David's navy band slid up over them. The band is now a pop-up
-          (DavidPopup.tsx); put this back to restore the band. */}
-      {/* --hand carries the handwritten face to contact.css for David's name
-          (2026-11-06), the same way About's signature gets it. */}
-      <div className="c-page" style={{ ['--hand' as string]: hand.style.fontFamily }}>
-        {/* "Contact us" (Lucas, 2026-11-19): bold navy, set and placed like the
-            Tape's and Owner's Notes' titles (contact.css .c-title). */}
-        <header className="c-title">
-          <h1>Contact us</h1>
-        </header>
-        {/* The header ("Atlas  Los Angeles, California. Operator, Developer,
-            GC", the CMS hero block) left out (Lucas, 2026-11-19). The block is
-            still in the CMS; pass page.layout unfiltered to bring it back. */}
-        <RenderBlocks blocks={(page.layout ?? []).filter(b => b.blockType !== 'hero')} />
-      </div>
+      <RenderBlocks blocks={page.layout} />
       <Footer />
     </>
   )

@@ -310,1242 +310,142 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
 }
 
 /* ===========================================================================
-   2026-11-06 — Contact brought in line with About (design/touch-up).
-
-   BACKUP — the page as it was before this block (design/touch-up @ 603a980).
-   Everything ABOVE this line is that page, untouched. To restore it exactly:
-   delete from here to the end of the file, and undo the marked spots in markup:
-     - contact/page.tsx: the .c-page wrapper and the hand import
-     - _blocks/RenderBlocks.tsx: the .replace() calls on the contact hero's
-       subtitle and on the role under David's name
-   Delete this note only after Lucas confirms.
+   CONTACT, FRESH START (Lucas, 2026-11-23): "simple yet elegant, like a
+   publication", coherent with the home page and the Tape. Only the site's
+   colours, fonts and sizes; each value below names the rule it comes from.
+   Everything above this block is main's old styling, now unused (the markup
+   uses .cx-* only). The previous attempts are on backup/contact-about-2026-11-23.
    =========================================================================== */
 
-/* 1. Header: About's. Title left in bold Times, the line beside it in bold
-   italic. Not one sentence as on About, so a wider gap between them. */
-.c-hero {
-  padding: clamp(28px, 3.4vw, 48px) 0 clamp(8px, 1vw, 16px);
-  border-bottom: 0;
+/* Header: the Tape / Owner's Notes masthead (section.css .cat-masthead):
+   title left, description in the right column of the 7fr | 4fr grid. */
+.cx-head {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;      /* .cat-masthead-inner */
 }
-.c-hero .wrap {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px clamp(14px, 1.6vw, 24px);
+.cx-head-in {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);  /* .ts-grid */
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: end;
 }
-.c-hero h1 {
+.cx-head h1 {
   margin: 0;
-  text-align: left;
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
+  font-family: 'Times New Roman', Times, serif;          /* .cat-masthead h1.cat-hand */
   font-weight: 700;
   font-size: clamp(40px, 4.4vw, 60px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--brand-navy);
 }
-.c-hero .c-kicker { margin: 0; justify-content: flex-start; }
-.c-hero .c-standfirst {
+.cx-about {
   margin: 0;
-  text-align: left;
+  padding-left: clamp(24px, 2.6vw, 40px);                /* .cat-masthead .cat-about */
   font-family: var(--sans);
-  font-style: italic;
-  font-weight: 700;
-  font-size: clamp(18px, 1.55vw, 22px);
-  line-height: 1.4;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--brand-navy);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--ink-soft);
 }
 
-/* 2. Body: About's two equal columns inside the page measure, no rules. */
-.c-main {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(22px, 2.6vw, 48px);
+/* Body: the same 7fr | 4fr grid. Left, the inquiries as a news column. */
+.cx-main {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: start;
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: clamp(20px, 2.4vw, 36px) var(--pad-x);
-  align-items: start;
-  border-bottom: 0;
+  padding: clamp(24px, 2.8vw, 40px) var(--pad-x) clamp(36px, 4.4vw, 60px); /* .cat-package .top-stories, .ft */
 }
-.c-form { padding: 0; border: 0; }
-
-/* HIDDEN — the red "Inquiries" label. The three headings say it. It's CMS text,
-   so delete this rule to bring it back. */
-.c-form .k { display: none; }
-
-/* 3. Inquiries: About's arms. Bold Times headings, serif copy, no rules. */
-.c-form h2 {
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
+.cx-desk { padding: 20px 0; border-top: 1px solid var(--rule); }           /* .ft-item */
+.cx-desk:first-child { padding-top: 0; border-top: 0; }
+.cx-kicker {
+  margin: 0 0 8px;                                        /* .ft-kicker, Tape sentence case */
+  font-family: var(--sans);
+  font-size: 12px;
   font-weight: 700;
-  font-size: clamp(24px, 2.4vw, 34px) !important;
-  line-height: 1.1 !important;
-  letter-spacing: -0.01em;
-  margin: 0 0 0.4em !important;
+  color: var(--brand-red);
 }
-.c-form h2 strong { font-weight: 700; }
-.c-form h2:not(:first-of-type) {
-  padding-top: 0;
-  border-top: 0;
-  margin-top: 1.3em !important;
-}
-.c-form p {
-  max-width: none;
-  font-family: var(--serif);
-  font-size: clamp(18px, 1.4vw, 21px);
-  line-height: 1.6;
+.cx-desk h2 {
+  margin: 0 0 8px;                                        /* .ft-entry h3 */
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
   color: var(--ink);
 }
-
-/* 4. David's details: the cream of About's buildings panel, without the ribbon
-   (Lucas keeps that to the front page and About). His name in the hand, like
-   his signature there. The !importants beat inline styles in RenderBlocks. */
-.c-side {
-  padding: clamp(20px, 2.2vw, 30px) clamp(18px, 2vw, 26px);
-  background: #FAF7F1;
-  border: 0;
-}
-.c-side h3 {
-  margin: 0 0 4px;
-  font-family: var(--hand), cursive;
-  font-style: normal;
-  font-weight: 600;
-  font-size: clamp(32px, 2.8vw, 40px);
-  line-height: 1.1;
-  letter-spacing: 0;
-  color: var(--brand-navy);
-  transform: rotate(-2deg);
-  transform-origin: left center;
-}
-/* HIDDEN — the role under his name, which repeats the line in the header
-   (Lucas, 2026-11-06). It's CMS text, so delete this rule to bring it back. */
-.c-side h3 + p { display: none; }
-.c-side dl { padding-top: 10px; border-top: 0; }
-.c-side dl > div {
-  grid-template-columns: 70px 1fr;
-  padding: 10px 0;
-  border-bottom: 0;
-}
-.c-side dt {
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--muted);
-}
-.c-side dd {
+.cx-dek {
+  margin: 0 0 10px;                                       /* .ft-lead-dek */
+  max-width: 62ch;
   font-family: var(--sans);
   font-size: 16px;
-  font-weight: 600;
-  color: var(--brand-navy);
-}
-.c-side dd span {
-  font-family: var(--sans) !important;
-  font-size: 13px !important;
-  font-weight: 400;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-}
-
-/* The footer's sitewide 120px margin, halved as on About. */
-.c-page + .footer { margin-top: clamp(28px, 3.4vw, 44px); }
-
-@media (max-width: 900px) {
-  .c-main { grid-template-columns: 1fr; gap: 28px; }
-}
-@media (max-width: 720px) {
-  .c-hero .wrap { flex-direction: column; gap: 10px; }
-}
-
-/* ===========================================================================
-   2026-11-19 feedback round (Lucas): "Contact us" as the page title, placed
-   and set like the Tape's and Owner's Notes' (section.css .cat-masthead-inner
-   and h1.cat-hand): the page's max width and side padding, the same top
-   padding, bold Times navy at clamp(40px, 4.4vw, 60px).
-   =========================================================================== */
-.c-title {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(28px, 3.4vw, 48px) var(--pad-x) 0;
-}
-.c-title h1 {
-  margin: 0;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  /* Smaller than the inquiry titles under it, and centred over them (Lucas,
-     2026-11-23). Was clamp(40px, 4.4vw, 60px), left-aligned: the Tape's and
-     Owner's Notes' title size and place. */
-  font-size: clamp(20px, 1.8vw, 26px);
-  text-align: center;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--brand-navy);
-}
-
-/* ---------------------------------------------------------------------------
-   Lucas's layout sketch (2026-11-19): the three inquiries staggered, two on
-   top (left and right, a gap between) and the third centred below between
-   them, each its heading over its paragraph, no boxes. David's details in the
-   cream box underneath. The markup is flat (h2, p, h2, p, h2, p from the CMS
-   in RenderBlocks), so each pair is placed on a six-column grid:
-     editorial     columns 1-2, rows 1-2
-     construction  columns 5-6, rows 1-2
-     acquisitions  columns 3-4, rows 3-4
-   .c-page prefixes everything so it outranks the page's older rules. One
-   column on phones.
-   --------------------------------------------------------------------------- */
-.c-page .c-main {
-  display: block;
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(24px, 3vw, 40px) var(--pad-x) clamp(40px, 5vw, 72px);
-  border: 0;
-}
-.c-page .c-form {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: clamp(20px, 2.6vw, 40px);
-  padding: 0;
-  border: 0;
-}
-.c-page .c-form .k { display: none; }
-.c-page .c-form h2 {
-  margin: 0 0 10px !important;   /* beats the inline marginTop: 36 in RenderBlocks */
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--brand-navy);
-}
-.c-page .c-form h2 strong { font-weight: inherit; }
-.c-page .c-form p {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(17px, 1.3vw, 19px);
-  line-height: 1.6;
-  color: var(--ink);
-}
-@media (min-width: 821px) {
-  .c-page .c-form h2:nth-of-type(1), .c-page .c-form p:nth-of-type(1) { grid-column: 1 / 3; }
-  /* Construction (2nd, the two-line heading) in the middle and acquisitions
-     on the right (Lucas, 2026-11-19), so the gap under the shorter headings
-     is less noticeable. Was construction right, acquisitions middle. */
-  .c-page .c-form h2:nth-of-type(2), .c-page .c-form p:nth-of-type(2) { grid-column: 3 / 5; }
-  .c-page .c-form h2:nth-of-type(3), .c-page .c-form p:nth-of-type(3) { grid-column: 5 / 7; }
-  /* All three in one line (Lucas, 2026-11-19: move the middle one up, in
-     line): acquisitions stays in the middle columns, now on the same rows.
-     Was rows 3-4 for it, under the other two. Headings share row 1, so the
-     paragraphs start level even when a heading wraps to two lines. */
-  /* Each heading sits on the bottom of the row, right on its paragraph; the
-     extra height of the two-line heading shows above the shorter ones instead
-     (Lucas, 2026-11-19). */
-  .c-page .c-form h2 { grid-row: 1; align-self: end; }
-  .c-page .c-form p  { grid-row: 2; }
-}
-@media (max-width: 820px) {
-  .c-page .c-form { grid-template-columns: minmax(0, 1fr); }
-  .c-page .c-form h2 + p { margin-bottom: 28px; }
-}
-
-/* David's details: the cream box, centred under the three. */
-/* David's photo and his card side by side, centred under the inquiries
-   (Lucas, 2026-11-19). The photo matches the card's height; on phones it
-   stacks above the card. */
-.c-page .c-card-row {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: clamp(16px, 2vw, 28px);
-  margin-top: clamp(36px, 4vw, 56px);
-}
-.c-page .c-photo {
-  flex: 0 0 auto;
-  width: clamp(200px, 22vw, 300px);
-  margin: 0;
-}
-.c-page .c-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-}
-@media (max-width: 720px) {
-  .c-page .c-card-row { flex-direction: column; align-items: center; }
-  .c-page .c-photo { width: min(100%, 320px); }
-  .c-page .c-photo img { height: auto; aspect-ratio: 637 / 720; }
-}
-.c-page .c-side {
-  flex: 0 1 560px;
-  max-width: 560px;
-  margin: clamp(36px, 4vw, 56px) auto 0;
-  padding: clamp(18px, 2vw, 26px);
-  background: #FAF7F1;
-  border: 0;
-}
-/* The text inside set like the inquiries above it (Lucas, 2026-11-19): the
-   name as their headings (bold Times navy, upright, not the handwriting), the
-   details as their paragraphs (serif, regular, body ink). Labels stay small
-   and grey. Was: name in Caveat, details bold with blue underlines. */
-.c-page .c-side h3 {
-  margin: 0 0 14px;
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  transform: none;
-  color: var(--brand-navy);
-}
-/* The labels (Email, Phone, Office, License) set the same way too (Lucas,
-   2026-11-19). Were small grey. */
-.c-page .c-side dt,
-.c-page .c-side dd,
-.c-page .c-side dd a {
-  font-family: var(--serif);
-  font-size: clamp(17px, 1.3vw, 19px);
-  font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0;
-  color: var(--ink);
-}
-.c-page .c-side dt { text-transform: none; }
-/* In the row with the photo, the row carries the top margin. */
-.c-page .c-card-row .c-side { margin: 0; }
-.c-page .c-side dd a { border-bottom: 0; padding-bottom: 0; }
-.c-page .c-side dd a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-
-/* ---------------------------------------------------------------------------
-   Each inquiry in its own navy card (Lucas, 2026-11-22; was one card around
-   all three). The markup is flat (h2, p from the CMS), so each card is its
-   heading and paragraph sharing a navy fill: the heading carries the top of
-   the card, the paragraph the bottom, and the grid's column gap splits them.
-   The heading stretches to fill row 1 so the card has no hole above a
-   one-line heading. Headings start at the top of their cards, all with the
-   same space above (Lucas, 2026-11-22, from a screenshot); the paragraphs
-   still start level, so a one-line heading has extra room under it.
-   Was: heading text pushed to the bottom, onto its paragraph.
-   To undo: delete this block.
-   --------------------------------------------------------------------------- */
-.c-page .c-form h2,
-.c-page .c-form p {
-  background: var(--brand-navy);
-  color: #FAF7F1;
-  padding-left: clamp(18px, 2vw, 28px);
-  padding-right: clamp(18px, 2vw, 28px);
-}
-.c-page .c-form h2 {
-  margin: 0 !important;   /* beats the inline marginTop: 36 in RenderBlocks */
-  padding-top: clamp(18px, 2vw, 28px);
-  padding-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-.c-page .c-form p { padding-bottom: clamp(18px, 2vw, 28px); }
-@media (min-width: 821px) {
-  .c-page .c-form h2 { align-self: stretch; }
-}
-
-/* ---------------------------------------------------------------------------
-   "Drop us a line" (Lucas, 2026-11-22): the form under the title, set like
-   the /subscribe form (subscribe.css .sp-field / .sp-submit, copied here as
-   that file only loads on /subscribe). Heading in the site's bold Times navy.
-   Left in the page measure at the subscribe pitch's 620px.
-   To undo: delete this block and <ContactForm /> in page.tsx.
-   --------------------------------------------------------------------------- */
-.c-line {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(24px, 3vw, 40px) var(--pad-x) 0;
-}
-.c-line-hed,
-.c-line-form { max-width: 620px; }
-.c-line-hed {
-  margin: 0 0 18px;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: clamp(28px, 3vw, 40px);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: var(--brand-navy);
-}
-.c-line-form { display: flex; flex-direction: column; gap: 14px; }
-/* On the right of the page measure (Lucas, 2026-11-22). Was left, under the
-   title; delete this rule to put it back. */
-.c-line-form { margin-left: auto; }
-.c-line-field { display: flex; flex-direction: column; gap: 6px; }
-.c-line-field span {
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.c-line-field input,
-.c-line-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  font-family: var(--sans);
-  font-size: 16px; /* 16px stops iOS zooming the page on focus */
   line-height: 1.5;
   color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--rule);
-  border-radius: 3px;
 }
-.c-line-field textarea { resize: vertical; min-height: 140px; }
-.c-line-field input::placeholder,
-.c-line-field textarea::placeholder { color: var(--muted-2); }
-.c-line-field input:focus,
-.c-line-field textarea:focus { outline: none; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(56, 127, 244, 0.15); }
-.c-line-err { margin: 0; font-family: var(--sans); font-size: 14px; color: var(--danger); }
-.c-line-submit {
-  margin-top: 4px;
-  padding: 14px;
-  font-family: var(--sans);
-  font-size: 15px;
+.cx-read {
+  font-family: var(--sans);                               /* .ft-read */
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0;
-  color: #FFFFFF;
-  background: var(--brand-blue);
-  border: 1px solid var(--brand-blue);
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  color: var(--brand-navy);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
-.c-line-submit:hover { background: var(--brand-red); border-color: var(--brand-red); }
+.cx-read:hover { color: var(--brand-red); }
 
-/* ---------------------------------------------------------------------------
-   Inquiry cards on the left, the form on the right (Lucas, 2026-11-22). The
-   form now renders inside .c-main (RenderBlocks), after the cards. The cards
-   stack in one column; David's photo and card stay full width underneath.
-   On phones the form comes first, then the cards.
-   Was: form in its own band above, three cards side by side. To undo: delete
-   this block and move <ContactForm /> from RenderBlocks back into page.tsx
-   under the title.
-   --------------------------------------------------------------------------- */
-.c-page .c-main .c-line { max-width: none; margin: 0; padding: 0; }
-.c-page .c-main .c-line-form { max-width: none; margin-left: 0; }
-/* The cards stacked, a gap between each paragraph and the next heading. */
-.c-page .c-main .c-form { grid-template-columns: minmax(0, 1fr); }
-.c-page .c-main .c-form h2,
-.c-page .c-main .c-form p { grid-column: 1 / -1; grid-row: auto; }
-.c-page .c-main .c-form p { margin-bottom: clamp(16px, 1.8vw, 24px); }
-.c-page .c-main .c-form p:last-child { margin-bottom: 0; }
-@media (min-width: 821px) {
-  .c-page .c-main {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
-    column-gap: clamp(24px, 3vw, 48px);
-    align-items: start;
-  }
-  .c-page .c-main .c-card-row { grid-column: 1 / -1; }
+/* Right: David, past a hairline, like the home page's second column. */
+.cx-side {
+  border-left: 1px solid var(--rule);                     /* .ft-quad */
+  padding-left: clamp(24px, 2.6vw, 40px);
 }
-@media (max-width: 820px) {
-  .c-page .c-main { display: flex; flex-direction: column; }
-  .c-page .c-main .c-line { order: -1; margin-bottom: 32px; }
-}
-
-/* ---------------------------------------------------------------------------
-   Just the inquiry titles, left of the form (Lucas, 2026-11-22): each in a
-   beige card (the cream of David's card) with navy writing, one on top of
-   the other. No paragraphs. Replaces the stacked navy cards (.c-form, kept
-   as a comment in RenderBlocks); a wheel was tried in between and dropped.
-   To undo: delete this block and put the .c-form markup back.
-   --------------------------------------------------------------------------- */
-.c-page .c-titles {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(12px, 1.4vw, 18px);
-}
-.c-page .c-titles li {
-  padding: clamp(18px, 2vw, 28px);
-  background: #FAF7F1;
-}
-.c-page .c-titles h2 {
-  margin: 0;
+.cx-side-hed {
+  margin: 0 0 14px;                                       /* "Most read deals" on the Tape */
   font-family: 'Times New Roman', Times, serif;
   font-style: normal;
   font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--brand-navy);
-}
-
-/* Stretched to the form's height (Lucas, 2026-11-22): the column fills its
-   grid row and the three cards share it equally while closed. An opened card
-   takes the room it needs; if that's more than the form, the row grows. */
-@media (min-width: 821px) {
-  .c-page .c-main .c-titles { align-self: stretch; }
-  .c-page .c-titles li { flex: 1 1 auto; }
-}
-
-/* Each card is a dropdown (Lucas, 2026-11-22): click the title, the
-   paragraph appears under it; a chevron on the right turns over when open. */
-/* The title is a <button> now (InquiryCards.tsx, 2026-11-23); was <summary>
-   in a native <details>, which snapped open. Button defaults reset here. */
-.c-page .c-titles-btn {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  margin: 0;
-  background: none;
-  border: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-.c-page .c-titles-btn:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
-.c-page .c-titles-chev {
-  flex: 0 0 auto;
-  margin-top: 0.15em;
-  color: var(--brand-navy);
-  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1), color 0.15s;
-}
-.c-page .c-titles-btn:hover .c-titles-chev { color: var(--brand-red); }
-/* Titles in the middle of their cards, across and down (Lucas, 2026-11-22).
-   The chevron is pinned to the card's right edge so it doesn't pull the title
-   off centre; the summary keeps room for it on both sides. An opened card
-   centres its title and paragraph together. Was: title top-left, chevron
-   beside it in the row. */
-.c-page .c-titles li {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.c-page .c-titles-btn {
-  position: relative;
-  justify-content: center;
-  padding: 0 34px;
-  text-align: center;
-}
-.c-page .c-titles-chev {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  margin-top: 0;
-  transform: translateY(-50%);
-}
-.c-page .c-titles .is-open .c-titles-chev { transform: translateY(-50%) rotate(180deg); }
-
-/* The paragraph slides open and fades in (Lucas, 2026-11-23: the snap was
-   "jarring"). The row grows from 0fr to 1fr, so the height animates without
-   a fixed max-height, and the other cards ease to fit around it. Opacity
-   trails slightly on open and leads on close, so text never shows clipped. */
-.c-page .c-titles-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.25s ease;
-}
-.c-page .c-titles-body > div { overflow: hidden; min-height: 0; }
-.c-page .c-titles .is-open .c-titles-body {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.35s ease 0.12s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .c-page .c-titles-body,
-  .c-page .c-titles-chev { transition: none; }
-}
-.c-page .c-titles p {
-  margin: 12px 0 0;
-  font-family: var(--serif);
-  font-size: clamp(17px, 1.3vw, 19px);
-  line-height: 1.6;
-  color: var(--brand-navy);
-}
-
-/* BACKUP 2026-11-23 (approved look at 36fddd8): beige cards, Times titles.
-   Paste these back to restore (and delete the block under this one):
-     .c-page .c-titles li { background: #FAF7F1; }
-     .c-page .c-titles h2 { font-family: 'Times New Roman', Times, serif; font-weight: 700;
-       font-size: clamp(22px, 2vw, 28px); line-height: 1.15; letter-spacing: -0.01em; }
-     .c-page .c-titles p { color: var(--brand-navy); }
-   Also remove the .c-titles-rule <svg> in InquiryCards.tsx. */
-
-/* The pop-up's treatment, the Friday Dispatch look (Lucas, 2026-11-23): the
-   three as entries in ONE white panel with a thin grey border, a single
-   hand-drawn red line across its top, and grey hairlines between them, like
-   the email's rows. Bold sans navy titles, grey copy. (Tried first the same
-   day and dropped: each card its own bordered box with its own red line.) */
-/* Panel and red line taken off (Lucas, 2026-11-23): just the underlined
-   titles and their chevrons on the page. The panel was, to restore:
-     .c-page .c-titles { position: relative; background: #FFFFFF;
-       border: 1px solid var(--rule); border-top: 0; }
-   and set showRule to true in InquiryCards.tsx for the red line. */
-.c-page .c-titles { gap: 0; }
-.c-page .c-titles li { background: transparent; }
-/* No dividers between the three; the titles are underlined instead (Lucas,
-   2026-11-23), red like "Rather message us?" below. Was:
-     .c-page .c-titles li + li { border-top: 1px solid var(--rule); } */
-/* No chevron (Lucas, 2026-11-23): the room kept for it on both sides goes,
-   and the title highlights when the mouse is over it, like a marker pen.
-   The highlight sits on the span so a two-line title gets one per line. */
-.c-page .c-titles-btn { padding: 0; }
-/* On hover the title turns red, like "Rather message us?" (Lucas, 2026-11-23).
-   Was a light red marker highlight behind the text:
-     .c-titles-hl { padding: 0.04em 0.18em; border-radius: 2px;
-       box-decoration-break: clone; transition: background-color 0.2s ease; }
-     :hover .c-titles-hl { background-color: rgba(231, 55, 54, 0.16); } */
-.c-page .c-titles h2 { transition: color 0.15s; }
-.c-page .c-titles-btn:hover h2,
-.c-page .c-titles-btn:focus-visible h2 { color: var(--brand-red); }
-.c-page .c-titles h2 {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.18em;
-  text-decoration-color: currentColor;   /* navy, trial 2026-11-23; was var(--brand-red) */
-  text-decoration-skip-ink: none;
-}
-/* Run over the panel's top edge, its ends on the two top corners. */
-.c-page .c-titles-rule {
-  position: absolute;
-  top: -5px;
-  left: -1px;
-  width: calc(100% + 2px);
-  height: 10px;
-  overflow: visible;
-  pointer-events: none;
-}
-.c-page .c-titles-rule path {
-  fill: none;
-  stroke: var(--brand-red);
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-.c-page .c-titles h2 {
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 28px);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--brand-navy);
-}
-.c-page .c-titles p { color: var(--muted); }
-
-/* ---------------------------------------------------------------------------
-   David's details on a sliding navy band, the About page's treatment (Lucas,
-   2026-11-22; about.css .ab-intro / .ab-cream):
-   1. The titles and form (.c-main) stay pinned while the full-width navy band
-      (.c-band) scrolls up over them. They pin under the nav, or higher when
-      they're taller than the screen (--c-stick, set by ContactReveal.tsx), so
-      the Submit button can be reached before the band covers it.
-   2. The white arrow at the top of the band goes once the band moves.
-   3. Once the band's top passes mid-screen (.is-in) the photo and card slide
-      up into place.
-   No motion for readers who ask for reduced motion. To undo: delete this
-   block, <ContactReveal /> in page.tsx, and in RenderBlocks move .c-card-row
-   back inside .c-main and drop the .c-band section.
-
-   PARKED 2026-11-23 (was live at 36fddd8): the band became a pop-up (.c-pop,
-   below). The rules here are inert without the .c-band markup, apart from
-   the pin, which is commented out. Paste it back to restore:
-     .c-page .c-main { position: sticky; top: var(--c-stick, 68px); z-index: 0; }
-   --------------------------------------------------------------------------- */
-.c-band {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;   /* the photo and card slide up from below its edge */
-  background: var(--brand-navy);
-  padding: clamp(72px, 8vw, 112px) var(--pad-x) clamp(48px, 6vw, 88px);
-}
-.c-page .c-band .c-card-row {
-  margin-top: 0;
-  transform: translateY(70px);
-  opacity: 0;
-  transition:
-    transform 0.9s cubic-bezier(0.22, 0.8, 0.24, 1),
-    opacity 0.6s ease;
-}
-.c-page .c-band.is-in .c-card-row { transform: none; opacity: 1; }
-.c-band-arrow {
-  position: absolute;
-  top: clamp(18px, 2.4vw, 30px);
-  left: 50%;
-  width: clamp(40px, 3.6vw, 52px);
-  height: auto;
-  transform: translateX(-50%);
-  fill: none;
-  stroke: #FFFFFF;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  pointer-events: none;
-  transition: opacity 0.45s ease;
-}
-.c-band.arrow-gone .c-band-arrow { opacity: 0; }
-/* Smaller arrow, question nearer the top (Lucas, 2026-11-22, from a
-   screenshot). Were: arrow width clamp(40px, 3.6vw, 52px); band top padding
-   clamp(72px, 8vw, 112px). */
-.c-band-arrow { width: clamp(26px, 2.2vw, 34px); }
-.c-band { padding-top: clamp(50px, 5vw, 72px); }
-/* The question under the arrow (Lucas, 2026-11-22): white bold Times, centred,
-   set like About's band heading (.ab-cream-head). It's there on arrival, in
-   the strip of navy that shows, and doesn't slide; the card slides in under it. */
-.c-band-q {
-  margin: 0 auto clamp(28px, 3.4vw, 48px);
-  text-align: center;
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: clamp(26px, 2.8vw, 42px);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #FFFFFF;
-  text-wrap: balance;
-}
-/* atlas-v2.css's overflow-x: hidden on html/body can stop sticky pinning;
-   clip does the same job without that (as About does). This page only. */
-html:has(.c-band),
-body:has(.c-band) { overflow-x: clip; }
-@media (prefers-reduced-motion: reduce) {
-  .c-page .c-main { position: static; }
-  .c-page .c-band .c-card-row { transform: none; opacity: 1; transition: none; }
-  .c-band-arrow { display: none; }
-}
-
-/* ---------------------------------------------------------------------------
-   "Rather message us?" button and David's pop-up (Lucas, 2026-11-23; replaces
-   the navy band above). DavidPopup.tsx. The pop-up copies the Friday Dispatch
-   email from Lucas's screenshot: white panel, thin grey border, red rule on
-   top, wordmark over a grey line, hairline, then David's entry with a red
-   place kicker, bold name, grey copy, and his photo on the right.
-   --------------------------------------------------------------------------- */
-.c-page .c-ask {
-  display: flex;
-  justify-content: center;
-  padding: clamp(40px, 5vw, 72px) var(--pad-x) clamp(56px, 7vw, 96px);
-}
-.c-page .c-ask-btn {
-  background: none;
-  border: 0;
-  padding: 4px 0;
-  cursor: pointer;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: clamp(26px, 2.8vw, 42px);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--brand-navy);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.18em;
-  text-decoration-color: var(--brand-red);
-  text-decoration-skip-ink: none;   /* unbroken under the g */
-  transition: color 0.15s;
-}
-.c-page .c-ask-btn:hover { color: var(--brand-red); }
-.c-page .c-ask-btn:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 6px; }
-
-/* The dialog fills the screen and centres the panel; the dialog's own box is
-   the click-to-close area around it. */
-.c-pop {
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  max-height: none;
-  margin: 0;
-  padding: 16px;
-  border: 0;
-  background: transparent;
-  overflow-y: auto;
-}
-.c-pop[open] { display: flex; align-items: center; justify-content: center; }
-.c-pop::backdrop { background: rgba(6, 24, 50, 0.55); }
-
-.c-pop-panel {
-  position: relative;
-  width: min(680px, 100%);
-  margin: auto;
-  padding: clamp(28px, 4.5vw, 56px);
-  background: #FFFFFF;
-  border: 1px solid var(--rule);
-  border-top: 4px solid var(--brand-red);
-  color: var(--brand-navy);
-  font-family: var(--serif);
-}
-.c-pop-x {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  color: var(--muted);
-  transition: color 0.15s;
-}
-.c-pop-x:hover { color: var(--brand-red); }
-
-.c-pop-head {
-  padding-bottom: clamp(20px, 2.4vw, 28px);
-  border-bottom: 1px solid var(--rule);
-}
-.c-pop-mark {
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: clamp(30px, 3vw, 38px);
+  font-size: 24px;
   line-height: 1;
   letter-spacing: -0.01em;
   color: var(--brand-navy);
 }
-.c-pop-mark span { color: var(--brand-red); }
-.c-pop-sub {
-  margin-top: 14px;
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--muted);
-}
-
-.c-pop-entry {
-  display: grid;
-  grid-template-columns: 1fr 34%;
-  gap: clamp(20px, 3vw, 36px);
-  align-items: start;
-  padding-top: clamp(28px, 3.4vw, 44px);
-}
-.c-pop-kicker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  font-size: 15px;
-}
-.c-pop-place { font-weight: 700; color: var(--brand-red); }
-.c-pop-tag { color: var(--muted); }
-.c-pop-text h2 {
-  margin: 10px 0 12px;
-  font-family: var(--serif);
-  font-style: normal;
-  font-weight: 700;
-  font-size: clamp(26px, 2.6vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--brand-navy);
-}
-.c-pop-text p {
-  margin: 0 0 10px;
-  font-size: 18px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-.c-pop-text a {
-  color: var(--muted);
-  text-decoration: underline;
-  text-decoration-color: var(--rule);
-  text-underline-offset: 3px;
-  transition: color 0.15s, text-decoration-color 0.15s;
-}
-.c-pop-text a:hover { color: var(--brand-red); text-decoration-color: var(--brand-red); }
-.c-pop-photo {
+.cx-photo {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
+  /* Square, whole head and shoulders (Lucas, 2026-11-23: badly cropped).
+     The source is 637x720, nearly square; 16:9 (.ft-card-img) cut off his
+     chin and the top of his head. Was aspect-ratio 16 / 9, center 22%. */
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 40%;
+  /* Smaller (Lucas, 2026-11-23). Was the full column width. */
+  max-width: 200px;
+  margin-bottom: 10px;
 }
-@media (max-width: 560px) {
-  .c-pop-entry { grid-template-columns: 1fr; }
-  .c-pop-photo { order: -1; }
-}
-
-/* A short fade and rise on open. */
-.c-pop[open] .c-pop-panel { animation: c-pop-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1); }
-.c-pop[open]::backdrop { animation: c-pop-fade 0.3s ease; }
-@keyframes c-pop-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-@keyframes c-pop-fade { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .c-pop[open] .c-pop-panel,
-  .c-pop[open]::backdrop { animation: none; }
-}
-
-/* ---------------------------------------------------------------------------
-   Contact layout 1 (Lucas, 2026-11-23; ContactDesk.tsx, switch in variant.ts):
-   the inquiry titles are the form's first question. Left-aligned Times titles,
-   top-aligned with the form (no stretching). The picked one gets a short red
-   bar on its left and its paragraph opens under it; the other two go grey.
-   Hover turns a title red, as on "Rather message us?".
-   --------------------------------------------------------------------------- */
-.c-page .c-v1 .c-pick {
-  list-style: none;
+.cx-role { margin: 0 0 10px; font-family: var(--sans); font-size: 13px; color: var(--muted); } /* .cat-dateline */
+.cx-rows { margin: 0; }
+.cx-rows > div { padding: 13px 0; border-top: 1px solid var(--rule); }     /* .ft-earlier li */
+.cx-rows dt { margin: 0 0 2px; font-family: var(--sans); font-size: 12px; color: var(--muted); }
+.cx-rows dd {
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(22px, 2.4vw, 34px);
-  align-self: start;
-  /* Lines the first title up with the form's first label. */
-  padding-top: 4px;
-}
-.c-page .c-v1 .c-pick li {
-  position: relative;
-  max-width: 34em;
-}
-/* The red bar: the height of the title, grown in when picked. It hangs in
-   the margin so the titles line up with "Contact us" above. */
-.c-page .c-v1 .c-pick li::before {
-  content: '';
-  position: absolute;
-  left: -0.62em;
-  top: 0.2em;
-  width: 4px;
-  height: 1.1em;
-  font-size: clamp(26px, 2.4vw, 34px);   /* same em as the title */
-  background: var(--brand-red);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-.c-page .c-v1 .c-pick li.is-on::before { transform: scaleY(1); }
-.c-page .c-v1 .c-pick-btn {
-  display: block;
-  margin: 0;
-  padding: 0;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-align: left;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: clamp(26px, 2.4vw, 34px);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: var(--brand-navy);
-  text-wrap: balance;
-  transition: color 0.2s;
-}
-.c-page .c-v1 .has-pick li:not(.is-on) .c-pick-btn { color: var(--muted-2); }
-.c-page .c-v1 .c-pick-btn:hover,
-.c-page .c-v1 .has-pick li:not(.is-on) .c-pick-btn:hover { color: var(--brand-red); }
-.c-page .c-v1 .c-pick-btn:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
-/* The paragraph slides open, as the dropdowns did. */
-.c-page .c-v1 .c-pick-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.25s ease;
-}
-.c-page .c-v1 .c-pick-body > div { overflow: hidden; min-height: 0; }
-.c-page .c-v1 .is-on .c-pick-body {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.35s ease 0.12s;
-}
-.c-page .c-v1 .c-pick-body p {
-  margin: 12px 0 0;
-  font-family: var(--serif);
-  font-size: clamp(17px, 1.3vw, 19px);
-  line-height: 1.6;
-  color: var(--muted);
-}
-/* The message label names the picked topic, quieter than "Message". */
-.c-page .c-v1 .c-line-topic { font-style: normal; font-weight: 400; color: var(--muted); }
-/* The vertical line between the question and the form, from the sketch. */
-@media (min-width: 821px) {
-  .c-page .c-v1 .c-line {
-    align-self: stretch;
-    border-left: 1px solid var(--rule);
-    padding-left: clamp(24px, 3vw, 48px);
-  }
-}
-/* Phones: the question comes before the form here, since it feeds it. */
-@media (max-width: 820px) {
-  .c-page .c-v1 .c-line { order: 0; margin: 36px 0 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .c-page .c-v1 .c-pick li::before,
-  .c-page .c-v1 .c-pick-body { transition: none; }
-}
-
-/* ---------------------------------------------------------------------------
-   Contact layout 2 (Lucas, 2026-11-23; ContactSentence.tsx, switch in
-   variant.ts): the form as one sentence in large Times, single column. The
-   blanks are underlined in the line itself; the inquiry dropdown is navy with
-   a red underline and a small caret, so it reads as the thing to change.
-   --------------------------------------------------------------------------- */
-.c-page .c-main.c-v2 { display: block; }
-.c-page .c-v2 .c-say {
-  max-width: 920px;
-  font-family: 'Times New Roman', Times, serif;
-  color: var(--brand-navy);
-}
-.c-page .c-v2 .c-say-line {
-  margin: 0 0 clamp(14px, 1.6vw, 22px);
-  font-size: clamp(28px, 3.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.45;
-  letter-spacing: -0.015em;
-}
-.c-page .c-v2 .c-say-line input,
-.c-page .c-v2 .c-say-pick select {
-  font: inherit;
-  letter-spacing: inherit;
-  color: var(--brand-navy);
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid var(--rule);
-  border-radius: 0;
-  padding: 0 0.1em;
-  margin: 0;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.c-page .c-v2 .c-say-line input::placeholder { color: var(--muted-2); font-weight: 400; }
-.c-page .c-v2 .c-say-line input:focus,
-.c-page .c-v2 .c-say-pick select:focus-visible { border-bottom-color: var(--brand-blue); }
-.c-page .c-v2 .c-say-name { width: 7.5em; }
-.c-page .c-v2 .c-say-email { width: 9.5em; }
-.c-page .c-v2 .c-say-pick { position: relative; display: inline-block; }
-.c-page .c-v2 .c-say-mirror {
-  display: inline-block;
-  visibility: hidden;
-  white-space: pre;
-  padding: 0 1em 0 0.1em;   /* the select's padding, caret included */
-  border-bottom: 2px solid transparent;
-}
-.c-page .c-v2 .c-say-pick select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-  border-bottom-color: var(--brand-red);
-  padding-right: 1em;
-  cursor: pointer;
-}
-.c-page .c-v2 .c-say-pick select:hover { color: var(--brand-red); }
-.c-page .c-v2 .c-say-pick::after {
-  content: '';
-  position: absolute;
-  right: 0.15em;
-  top: 50%;
-  width: 0.28em;
-  height: 0.28em;
-  border-right: 3px solid var(--brand-red);
-  border-bottom: 3px solid var(--brand-red);
-  transform: translateY(-70%) rotate(45deg);
-  pointer-events: none;
-}
-.c-page .c-v2 .c-say-note {
-  max-width: 40em;
-  margin: -4px 0 clamp(22px, 2.6vw, 36px);
-  font-family: var(--serif);
-  font-size: clamp(16px, 1.2vw, 18px);
-  line-height: 1.6;
-  color: var(--muted);
-}
-.c-page .c-v2 .c-say-msg {
-  display: block;
-  width: 100%;
-  min-height: 160px;
-  margin-top: clamp(14px, 1.6vw, 22px);
-  padding: 14px 16px;
-  font-family: var(--serif);
-  font-size: 19px;
-  line-height: 1.55;
-  color: var(--ink);
-  background: #FFFFFF;
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  resize: vertical;
-  outline: none;
-}
-.c-page .c-v2 .c-say-msg::placeholder { color: var(--muted-2); }
-.c-page .c-v2 .c-say-msg:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(56, 127, 244, 0.15); }
-.c-page .c-v2 .c-line-err { margin-top: 12px; }
-.c-page .c-v2 .c-line-submit { width: auto; padding-left: 40px; padding-right: 40px; }
-
-/* ---------------------------------------------------------------------------
-   Contact layout 3 (Lucas, 2026-11-23; ContactDirectory.tsx, switch in
-   variant.ts): a quiet directory beside the form. Left-aligned Times titles,
-   paragraphs always shown, a small "Write about this" link under each that
-   sets the form's topic. Top-aligned with the form, no stretching.
-   --------------------------------------------------------------------------- */
-.c-page .c-v3 .c-dir {
-  list-style: none;
-  margin: 0;
-  padding: 4px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(30px, 3.4vw, 48px);
-  align-self: start;
-}
-.c-page .c-v3 .c-dir li { max-width: 34em; }
-.c-page .c-v3 .c-dir h2 {
-  margin: 0 0 10px;
-  font-family: 'Times New Roman', Times, serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: clamp(26px, 2.4vw, 34px);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: var(--brand-navy);
-  text-wrap: balance;
-}
-.c-page .c-v3 .c-dir p {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(17px, 1.3vw, 19px);
-  line-height: 1.6;
-  color: var(--muted);
-}
-.c-page .c-v3 .c-dir-write {
-  margin: 12px 0 0;
-  padding: 2px 0;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  font-family: var(--serif);
-  font-weight: 700;
+  font-family: var(--sans);                               /* .ft-earlier a */
   font-size: 16px;
-  color: var(--brand-navy);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.25em;
-  text-decoration-color: var(--brand-red);
-  text-decoration-skip-ink: none;
-  transition: color 0.15s;
+  font-weight: 700;
+  line-height: 1.28;
+  color: var(--ink);
 }
-.c-page .c-v3 .c-dir-write:hover,
-.c-page .c-v3 .c-dir-write[aria-pressed="true"] { color: var(--brand-red); }
-.c-page .c-v3 .c-dir-write:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 4px; }
-.c-page .c-v3 .c-line-topic { font-style: normal; font-weight: 400; color: var(--muted); }
-/* Centred (Lucas, 2026-11-23): title, paragraph and link centred, each entry
-   in the middle of its column. Was left-aligned; delete this to go back. */
-.c-page .c-v3 .c-dir li { margin: 0 auto; text-align: center; }
-/* The form under the text instead of beside it (Lucas, 2026-11-23): one
-   centred column, the directory then the form. Delete this to put the form
-   back on the right. */
-.c-page .c-main.c-v3 { display: flex; flex-direction: column; align-items: stretch; }
-/* The list spans the page so each entry centres on the page, not in what
-   was the left column (Lucas, 2026-11-23). */
-.c-page .c-v3 .c-dir { align-self: stretch; }
-.c-page .c-v3 .c-line {
-  order: 0;
-  width: 100%;
-  max-width: 620px;
-  margin: clamp(48px, 6vw, 80px) auto 0;
-  padding: 0;
-}
-/* Phones: the directory first, its links lead down to the form. */
-@media (max-width: 820px) {
-  .c-page .c-v3 .c-line { order: 0; margin: 40px 0 0; }
-}
+.cx-rows a { color: var(--ink); }
+.cx-rows a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---------------------------------------------------------------------------
-   Contact layout 4 (Lucas, 2026-11-23; switch in variant.ts): the left column
-   as a solid navy block, the nav bar's navy, with white Times titles that open
-   to their paragraph (the same InquiryCards dropdowns as layout 0). The form
-   stays on white. Left-aligned, grouped at the top of the block, which
-   stretches to the form's height. Hover turns a title red.
-   --------------------------------------------------------------------------- */
-.c-page .c-v4 .c-titles {
-  align-self: stretch;
-  justify-content: flex-start;
-  gap: clamp(26px, 3vw, 40px);
-  padding: clamp(32px, 4vw, 56px);
-  background: var(--brand-navy);
-  border: 0;
+@media (max-width: 1100px) {
+  .cx-head-in,
+  .cx-main { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }   /* .ts-grid at 1100 */
 }
-.c-page .c-v4 .c-titles li {
-  flex: 0 0 auto;
-  padding: 0;
-  justify-content: flex-start;
-}
-.c-page .c-v4 .c-titles-btn {
-  justify-content: flex-start;
-  text-align: left;
-}
-.c-page .c-v4 .c-titles h2 {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: clamp(26px, 2.4vw, 34px);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: #FFFFFF;
-  text-decoration: none;
-  text-wrap: balance;
-}
-.c-page .c-v4 .c-titles-btn:hover h2 { color: var(--brand-red); }
-.c-page .c-v4 .c-titles-btn:focus-visible { outline-color: #FFFFFF; }
-.c-page .c-v4 .c-titles p {
-  text-align: left;
-  color: rgba(255, 255, 255, 0.78);
-}
-@media (max-width: 820px) {
-  .c-page .c-v4 .c-titles { margin-top: 8px; }
-}
-
-/* ---------------------------------------------------------------------------
-   The whole page condensed (Lucas, 2026-11-23), on layout 3: less space above
-   and between everything, a size down on the inquiries, a shorter message
-   box, and a smaller "Rather message us?". Delete this block to undo; the
-   values it replaces are noted on each line.
-   --------------------------------------------------------------------------- */
-.c-title { padding-top: clamp(18px, 2.2vw, 30px); }                 /* was clamp(28px, 3.4vw, 48px) */
-.c-page .c-main.c-v3 {
-  padding-top: clamp(14px, 1.8vw, 22px);                            /* was clamp(24px, 3vw, 40px) */
-  padding-bottom: clamp(24px, 3vw, 40px);                           /* was clamp(40px, 5vw, 72px) */
-}
-.c-page .c-v3 .c-dir { gap: clamp(20px, 2.2vw, 30px); }             /* was clamp(30px, 3.4vw, 48px) */
-.c-page .c-v3 .c-dir li { max-width: 38em; }                        /* was 34em: fewer lines */
-.c-page .c-v3 .c-dir h2 {
-  margin-bottom: 6px;                                               /* was 10px */
-  font-size: clamp(22px, 2vw, 28px);                                /* was clamp(26px, 2.4vw, 34px) */
-}
-.c-page .c-v3 .c-dir p { font-size: 16px; line-height: 1.55; }      /* was clamp(17px, 1.3vw, 19px), 1.6 */
-.c-page .c-v3 .c-dir-write { margin-top: 8px; font-size: 15px; }    /* was 12px, 16px */
-.c-page .c-v3 .c-line { margin-top: clamp(32px, 4vw, 48px); }       /* was clamp(48px, 6vw, 80px) */
-.c-page .c-v3 .c-line-form { gap: 10px; }                           /* was 14px */
-.c-page .c-v3 .c-line-field textarea { min-height: 110px; height: 110px; } /* was min 140px, 5 rows */
-.c-page .c-ask { padding: clamp(20px, 2.6vw, 36px) var(--pad-x) clamp(32px, 4vw, 56px); } /* was clamp(40px, 5vw, 72px) … clamp(56px, 7vw, 96px) */
-.c-page .c-ask-btn { font-size: clamp(22px, 2.2vw, 32px); }         /* was clamp(26px, 2.8vw, 42px) */
-
-/* Layout 3: the form stays hidden until an option is clicked, then slides
-   open under the inquiries (Lucas, 2026-11-23). ContactDirectory.tsx wraps
-   it in .c-reveal. */
-.c-page .c-v3 .c-reveal {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.25s ease;
-}
-.c-page .c-v3 .c-reveal > div { overflow: hidden; min-height: 0; }
-.c-page .c-v3 .c-reveal.is-open {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition:
-    grid-template-rows 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.35s ease 0.12s;
-}
-/* The form's focus ring needs room inside the clipping box. */
-.c-page .c-v3 .c-reveal .c-line { padding: 4px; }
-@media (prefers-reduced-motion: reduce) {
-  .c-page .c-v3 .c-reveal { transition: none; }
+@media (max-width: 760px) {
+  .cx-head-in,
+  .cx-main { grid-template-columns: 1fr; }
+  .cx-about { padding-left: 0; margin-top: 14px; }
+  .cx-side { border-left: 0; padding-left: 0; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--rule); }
 }
