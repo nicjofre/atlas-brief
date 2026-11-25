@@ -39,8 +39,11 @@ export const SECTION_REGISTRY: Record<string, {
     name: 'The',
     emName: 'Tape',
     eyebrow: 'Atlas Brief',
+    // Lucas's wording, 2026-11-25. Was: "A running listings board for LA
+    // multifamily: what's for sale, what just sold, and what an operator
+    // thinks of the number."
     deck:
-      "A running listings board for LA multifamily: what's for sale, what just sold, and what an operator thinks of the number.",
+      "A running log of notable trades across the Los Angeles real estate market. You'll find the listing details, a breakdown of each, and an operator's take on the deal.",
     // Carol M. Highsmith, Library of Congress — public domain, no attribution
     // required. Replaces the olympic-towers placeholder the sheet's LA skyline
     // was standing in for.

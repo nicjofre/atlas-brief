@@ -173,6 +173,53 @@ function BlockItem({ block }: { block: Block }) {
         if (s.includes('acquisition')) return 'Tell us about the business'
         return 'Email David'
       }
+      // Inquiry text rewritten in code (Lucas, 2026-11-25), matched on the
+      // heading like linkFor; the CMS keeps David's text until he approves.
+      // null = use the CMS body; an array = one paragraph each.
+      const bodyFor = (h?: string | null): React.ReactNode | React.ReactNode[] | null => {
+        const s = (h || '').toLowerCase()
+        // Editorial. CMS text was: "If you have a listing, a comp, a trade,
+        // or a deal worth covering in The Tape: send it over. We read every
+        // submission. Interesting deals run in the next issue of the Brief.
+        // Uninteresting ones get a straight answer back the same day."
+        if (s.includes('editorial')) return (
+          <>
+            Have a trade, listing or comp you think belongs in{' '}
+            <span className="cy-red">The Tape</span>? Send us the address and
+            what you know about the deal. We read every submission, and the
+            ones we pick will have their own articles in{' '}
+            <span className="cy-red">The Tape</span>.
+          </>
+        )
+        // Construction or development. CMS text was: "If you have a project
+        // that needs a general contractor, reviewing the numbers or a site
+        // that needs a walk: describe it in a few sentences. If it is a fit,
+        // we schedule a walk within the week. If it is not, we tell you why."
+        if (s.includes('construction') || s.includes('development')) return (
+          <>
+            We take on select construction and development work in Los
+            Angeles, from building a project to reviewing its numbers. Tell us
+            what you&rsquo;re working on in a few sentences and we&rsquo;ll let
+            you know if we can help.
+          </>
+        )
+        // Acquisition. CMS text was: "If you own a Los Angeles home service
+        // business and are thinking about a sale, or a broker representing
+        // one: we are a buyer. Plumbing, HVAC, electrical, restoration.
+        // Conversations are confidential. Preferred size $500K to $5M in
+        // revenue, but we will read anything that fits the thesis."
+        // The confidentiality line on its own, between asterisks, as on About.
+        if (s.includes('acquisition')) return [
+          <>
+            We buy home service businesses in Los Angeles, such as plumbing,
+            HVAC, electrical and restoration companies, usually with $500K to
+            $5M in revenue. If you own one and are thinking about selling, or
+            you&rsquo;re a broker representing one, tell us a little about it.
+          </>,
+          '*All conversations are kept confidential.*',
+        ]
+        return null
+      }
       // The three inquiries side by side under the home page's 2px section
       // rule, hairlines between them (the Tape row / .ft-quad), each with a
       // link that opens a message with the subject filled in; then David in
@@ -187,7 +234,11 @@ function BlockItem({ block }: { block: Block }) {
               return (
                 <article key={inq.id || i} className="cy-desk">
                   <h2>{inq.heading}</h2>
-                  <p>{inq.body}</p>
+                  {(() => {
+                    const b = bodyFor(inq.heading)
+                    if (Array.isArray(b)) return b.map((p, j) => <p key={j}>{p}</p>)
+                    return <p>{b ?? inq.body}</p>
+                  })()}
                   {block.email && (
                     <a className="cy-read" href={`mailto:${block.email}?subject=${encodeURIComponent(`${topic} inquiry`)}`}>
                       {linkFor(inq.heading)}

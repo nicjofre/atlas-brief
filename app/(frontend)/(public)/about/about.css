@@ -934,6 +934,115 @@
   text-decoration-skip-ink: none;
 }
 
+/* David's bio, its own band between the sides and the buildings
+   (2026-11-25). Same rule, spacing and head as .aq-build so the two bands
+   read as a pair; the portrait is the one strong thing in it. */
+.aq-bio {
+  margin-top: clamp(28px, 3vw, 40px);
+  padding-top: 20px;
+  border-top: 2px solid var(--ink);
+}
+.aq-bio-row img { display: block; width: 100%; height: auto; object-fit: cover; }
+.aq-bio .aq-dek p { max-width: 62ch; }
+
+/* Take 1: small portrait left of the text. */
+.aq-bio-t1 .aq-bio-row {
+  display: grid;
+  grid-template-columns: clamp(150px, 16vw, 220px) minmax(0, 1fr);
+  column-gap: clamp(20px, 2.4vw, 36px);
+  align-items: start;
+}
+.aq-bio-t1 .aq-bio-row img { aspect-ratio: 637 / 720; }
+@media (max-width: 560px) {
+  .aq-bio-t1 .aq-bio-row { grid-template-columns: 1fr; row-gap: 14px; }
+  .aq-bio-t1 .aq-bio-row img { width: 160px; }
+}
+
+/* Take 3 (Lucas, 2026-11-25: "a newspaper look... an editorial spin"): an
+   op-ed columnist's profile. Black-and-white mug like newsprint, the name
+   and an italic title as a byline, the bio in Times with a three-line drop
+   cap in navy. All Times in this band. */
+.aq-bio-t3 .aq-bio-row {
+  display: grid;
+  grid-template-columns: clamp(140px, 14vw, 200px) minmax(0, 1fr);
+  column-gap: clamp(20px, 2.4vw, 36px);
+  align-items: start;
+}
+.aq-bio-t3 .aq-bio-row img {
+  aspect-ratio: 637 / 720;
+  /* Colour again (Lucas, 2026-11-25). Was filter: grayscale(1) contrast(1.06). */
+}
+.aq-bio-t3 .aq-bio-name {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.6vw, 36px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--brand-red);   /* red (Lucas, 2026-11-25); was var(--brand-navy) */
+}
+.aq-bio-t3 .aq-dek p.aq-bio-role {
+  margin: 4px 0 14px;
+  font-family: 'Times New Roman', Times, serif;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+.aq-bio-t3 .aq-dek p:not(.aq-bio-role) {
+  font-family: 'Times New Roman', Times, serif;
+  /* Fills the band's width (Lucas, 2026-11-25: "have the text fill the
+     section out a bit better"). Was 19px, capped at 58ch. */
+  font-size: 21px;
+  line-height: 1.6;
+  max-width: none;
+}
+/* Drop cap OFF (Lucas, 2026-11-25): the first letter set like the rest of
+   the text. Was:
+   .aq-bio-t3 .aq-dek p:not(.aq-bio-role)::first-letter {
+     float: left; margin: 6px 8px 0 0; font-weight: 700; font-size: 4.6em;
+     line-height: 0.8; color: var(--brand-navy);
+   } */
+@media (max-width: 560px) {
+  .aq-bio-t3 .aq-bio-row { grid-template-columns: 1fr; row-gap: 16px; }
+  .aq-bio-t3 .aq-bio-row img { width: 150px; }
+}
+
+/* Take 2 (Lucas: take 1 "looks very off"): on the same 7|4 grid as the band
+   above. Head and text in the wide left column, like the sides; the photo
+   in the narrow right one past the same hairline, under the Author note,
+   cropped 4:3 so it doesn't tower over a short bio. */
+.aq-bio-t2 {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  column-gap: clamp(24px, 2.6vw, 40px);
+  align-items: start;
+}
+.aq-bio-t2 .aq-bio-row { display: contents; }
+.aq-bio-t2 h2 { grid-column: 1; grid-row: 1; }
+.aq-bio-t2 .aq-dek { grid-column: 1; grid-row: 2; }
+.aq-bio-t2 .aq-bio-row img {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  aspect-ratio: 4 / 3;
+  object-position: 50% 20%;
+  box-sizing: border-box;   /* the padding stays inside the column */
+  border-left: 1px solid var(--rule);
+  padding-left: clamp(20px, 2.4vw, 36px);
+}
+@media (max-width: 1100px) {
+  .aq-bio-t2 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+@media (max-width: 760px) {
+  .aq-bio-t2 { grid-template-columns: 1fr; }
+  .aq-bio-t2 .aq-bio-row img {
+    grid-column: 1; grid-row: 2;
+    width: 220px; aspect-ratio: 637 / 720;
+    border-left: 0; padding-left: 0; margin-bottom: 14px;
+  }
+  .aq-bio-t2 .aq-dek { grid-row: 3; }
+}
+
 /* Less space before the footer, as on Contact. This page only. */
 body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
 
@@ -1005,6 +1114,12 @@ body:has(.ap-main) .footer { margin-top: clamp(32px, 3.6vw, 48px); }
   color: var(--ink);
 }
 .aq-item p { margin: 0; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
+/* 2026-11-25: a side can have a second paragraph (Atlas Home Builders'
+   "reach out here" line), and its link. Underlined so it reads as a link;
+   hover turns it red, as on Contact. */
+.aq-item p + p { margin-top: 10px; }
+.aq-item p a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.aq-item p a:hover { color: var(--brand-red); }
 .aq-build {
   margin-top: clamp(28px, 3vw, 40px);                     /* .ft-tape */
   padding-top: 20px;

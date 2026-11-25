@@ -383,6 +383,8 @@ form.c-fields{display:grid;grid-template-columns:1fr 1fr;gap:28px 32px}
   color: var(--ink);
 }
 .cy-desk p { margin: 0 0 10px; font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); } /* .ft-entry p */
+/* "The Tape" in brand red inside the inquiry text (Lucas, 2026-11-25). */
+.cy-desk .cy-red { color: var(--brand-red); }
 .cy-read {
   font-family: var(--sans);                               /* .ft-read */
   font-size: 13px;

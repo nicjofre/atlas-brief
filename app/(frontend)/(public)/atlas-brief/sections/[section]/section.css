@@ -828,9 +828,13 @@
 /* One line (Lucas): the description moves left, closer to the title (gap was
    clamp(40px, 7vw, 110px), rule below), and holds to one line on wide
    screens. Below 1360px it wraps rather than run off the page. */
-@media (min-width: 1360px) {
-  .cat-masthead .cat-about { white-space: nowrap; }
-}
+/* OFF 2026-11-25 (Lucas): the longer description ran off the page on one
+   line; two lines are fine. Was:
+   @media (min-width: 1360px) {
+     .cat-masthead .cat-about { white-space: nowrap; }
+   } */
+/* Two about-even lines instead. */
+.cat-masthead .cat-about { text-wrap: balance; }
 /* TRIAL (2026-11-04): description further right. Gap was
    clamp(24px, 3vw, 44px); delete this rule to put it back. */
 .cat-masthead-inner > div:first-child { column-gap: clamp(40px, 7vw, 110px); }

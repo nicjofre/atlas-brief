@@ -385,9 +385,12 @@
    navy (2026-11-07). */
 .dp-masthead h1,
 .dp-masthead h1 em { font-style: normal; color: var(--brand-blue); }
-@media (min-width: 1360px) {
-  .dp-about { white-space: nowrap; }
-}
+/* OFF 2026-11-25 (Lucas): the longer description would run off the page on
+   one line; two lines, as on the Tape. Was:
+   @media (min-width: 1360px) {
+     .dp-about { white-space: nowrap; }
+   } */
+.dp-about { text-wrap: balance; }
 @media (max-width: 720px) {
   .dp-about { margin: 6px 0 0; }
 }

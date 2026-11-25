@@ -49,7 +49,9 @@ const HERO_IMAGE = '/images/la-skyline-dusk.jpg'
 // What Owner's Notes is: shown beside the title and used in the meta
 // description, so the two can't drift apart (the Tape does the same with its
 // registry deck).
-const ABOUT = 'David Safai’s essays on operating, building and the Los Angeles market.'
+// Lucas's wording, 2026-11-25. Was: "David Safai’s essays on operating,
+// building and the Los Angeles market."
+const ABOUT = 'David Safai’s essay collection on the Los Angeles market. Here he shares the thoughts, insights, and perspectives he’s gained over the past 30 years in the market.'
 
 export const metadata: Metadata = pageMetadata({
   title: 'Owner’s Notes · Atlas Brief',
