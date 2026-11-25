@@ -8,6 +8,14 @@ import './subscribe-bar.css'
 
 import { EMAIL_RE } from '@/lib/email-address'
 
+// Which bar shows (2026-11-25). 1 = navy strip, David's line in his hand;
+// 2 = the newspaper strip to match the pop-up's take 2: beige, "Atlas Brief"
+// nameplate, Times line, 2px ink rule. Styles: subscribe-bar.css .subbar-t2.
+const BAR_TAKE: 1 | 2 = 2
+const MSG = BAR_TAKE === 2
+  ? { badEmail: 'Enter a valid email address.', failed: 'We couldn’t sign you up just now. Try again in a minute.' }
+  : { badEmail: 'Enter a valid email.', failed: 'Something went wrong.' }
+
 // A thin subscribe bar that reveals once the reader has scrolled into the
 // article, then stays pinned. Hidden at the very top so it doesn't fight the
 // masthead. Suppressed for anyone who's already subscribed or dismissed it.
@@ -49,7 +57,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!EMAIL_RE.test(email.trim())) { setErr('Enter a valid email.'); setStatus('error'); return }
+    if (!EMAIL_RE.test(email.trim())) { setErr(MSG.badEmail); setStatus('error'); return }
     setStatus('loading'); setErr(null)
     try {
       const res = await fetch('/api/subscribe', {
@@ -58,12 +66,12 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
         body: JSON.stringify({ email: email.trim(), source: 'article_bar', source_slug: slug }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Something went wrong.')
+      if (!res.ok) throw new Error(data.error || MSG.failed)
       trackNewsletterSignup('article_bar')
       markSubscribed()
       setStatus('done')
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Something went wrong.')
+      setErr(e instanceof Error ? e.message : MSG.failed)
       setStatus('error')
     }
   }
@@ -77,13 +85,43 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
 
   return (
     <div
-      className="subbar"
+      className={`subbar subbar-t${BAR_TAKE}`}
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         transform: visible ? 'translateY(0)' : 'translateY(-100%)',
         transition: 'transform 0.28s ease',
       }}
     >
+      {BAR_TAKE === 2 ? (
+        <div className="subbar-in">
+          <span className="subbar-plate" aria-hidden="true">Atlas <em>Brief</em></span>
+          {status === 'done' ? (
+            <span className="subbar-line" role="status">
+              You&rsquo;re subscribed. The next Brief arrives Friday morning.
+            </span>
+          ) : (
+            <>
+              <span className="subbar-line">Get the Brief every Friday.</span>
+              <form onSubmit={submit} className="subbar-form" noValidate>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => { setEmail(e.target.value); if (status === 'error') setStatus('idle') }}
+                  placeholder="Email address"
+                  aria-label="Email address"
+                  autoComplete="email"
+                  className="subbar-input"
+                />
+                <button type="submit" disabled={status === 'loading'} className="subbar-submit">
+                  {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+                </button>
+              </form>
+              {err && <span className="subbar-err" role="alert">{err}</span>}
+              <button onClick={dismiss} aria-label="Close" className="subbar-dismiss">×</button>
+            </>
+          )}
+        </div>
+      ) : (
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         {status === 'done' ? (
           <span style={{ fontFamily: hand.style.fontFamily, fontSize: 22, fontWeight: 600 }}>
@@ -133,6 +171,7 @@ export default function ArticleSubscribeBar({ slug }: { slug?: string } = {}) {
           </>
         )}
       </div>
+      )}
     </div>
   )
 }

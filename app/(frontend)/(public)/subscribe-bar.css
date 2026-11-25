@@ -33,3 +33,98 @@
 .subbar-err { color: #FFB4B2 }
 .subbar-dismiss { color: rgba(255,255,255,0.6); transition: color .15s }
 .subbar-dismiss:hover { color: #FFFFFF }
+
+
+/* ===========================================================================
+   2026-11-25 — TAKE 2 (BAR_TAKE in ArticleSubscribeBar.tsx): the newspaper
+   strip, matching the pop-up's take 2. Beige, the "Atlas Brief" nameplate in
+   Times, a hairline, the pop-up's headline in navy Times; field and navy
+   button on the right; the 2px ink rule the site's sections open with along
+   the bottom. Scoped to .subbar-t2, so take 1 above is untouched.
+   =========================================================================== */
+.subbar.subbar-t2 {
+  background: #FAF7F1;
+  color: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  box-shadow: 0 2px 10px rgba(12, 21, 48, 0.12);
+}
+.subbar-t2 .subbar-in {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.subbar-t2 .subbar-plate {
+  flex: none;
+  padding-right: 16px;
+  border-right: 1px solid var(--rule);
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.subbar-t2 .subbar-plate em { font-style: normal; color: var(--brand-red); }
+.subbar-t2 .subbar-line {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--brand-navy);
+}
+.subbar-t2 .subbar-form { display: flex; align-items: center; gap: 8px; flex: none; }
+.subbar-t2 .subbar-input {
+  width: 230px;
+  padding: 8px 11px;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: #FFFFFF;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+}
+.subbar-t2 .subbar-input::placeholder { color: var(--muted); }
+.subbar-t2 .subbar-input:focus { outline: 2px solid var(--brand-navy); outline-offset: 0; border-color: var(--brand-navy); }
+.subbar-t2 .subbar-submit {
+  padding: 9px 18px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--brand-navy);
+  border: 1px solid var(--brand-navy);
+  border-radius: 0;
+  color: #FFFFFF;
+}
+.subbar-t2 .subbar-submit:hover:not(:disabled) { background: var(--brand-red); border-color: var(--brand-red); }
+.subbar-t2 .subbar-submit:focus-visible,
+.subbar-t2 .subbar-dismiss:focus-visible { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
+.subbar-t2 .subbar-err { flex: none; font-family: var(--sans); font-size: 13px; color: var(--brand-red); }
+.subbar-t2 .subbar-dismiss {
+  flex: none;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+}
+.subbar-t2 .subbar-dismiss:hover { color: var(--ink); }
+/* Narrow screens: the nameplate and its hairline go, the line shrinks, and
+   the field gives up width before anything wraps. */
+@media (max-width: 760px) {
+  .subbar-t2 .subbar-plate { display: none; }
+  .subbar-t2 .subbar-line { font-size: 16px; }
+  .subbar-t2 .subbar-input { width: 100%; min-width: 0; }
+  .subbar-t2 .subbar-form { flex: 1 1 200px; }
+  .subbar-t2 .subbar-in { flex-wrap: wrap; gap: 8px 12px; }
+}

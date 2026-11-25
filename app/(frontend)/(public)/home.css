@@ -1052,6 +1052,79 @@
 .tm-dispatch-banner.sent .tm-d-head,
 .tm-dispatch-banner.sent .tm-d-row { display: none; }
 
+/* 2026-11-25 — BANNER TAKE 2 (BANNER_TAKE in DispatchBanner.tsx): the
+   newspaper strip, matching the subscribe pop-up and the top bar. Beige, the
+   2px ink rule along its top edge, the "Atlas Brief" nameplate and a
+   hairline, the line in navy Times, a white field and the navy button (red on
+   hover), no capitals. All scoped to .db-t2; take 1 above is untouched. */
+.dispatch-banner.db-t2 {
+  background: #FAF7F1;
+  border-top: 2px solid var(--ink);
+  box-shadow: 0 -4px 16px rgba(12, 21, 48, 0.12);
+}
+.db-t2 .db-plate {
+  flex: none;
+  padding-right: 18px;
+  border-right: 1px solid var(--rule);
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.db-t2 .db-plate em { font-style: normal; color: var(--brand-red); }
+.db-t2 .tm-dispatch-banner .tm-d-label {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--brand-navy);
+}
+.db-t2 .tm-dispatch-banner .tm-d-row input {
+  min-width: 240px;
+  padding: 9px 12px;
+  font-size: 15px;
+  color: var(--ink);
+  background: #FFFFFF;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+}
+.db-t2 .tm-dispatch-banner .tm-d-row input::placeholder { color: var(--muted); }
+.db-t2 .tm-dispatch-banner .tm-d-row input:focus {
+  outline: 2px solid var(--brand-navy);
+  outline-offset: 0;
+  border-color: var(--brand-navy);
+  background: #FFFFFF;
+}
+.db-t2 .tm-dispatch-banner .tm-d-row button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  background: var(--brand-navy);
+  border: 1px solid var(--brand-navy);
+  border-radius: 0;
+}
+.db-t2 .tm-dispatch-banner .tm-d-row button:hover { background: var(--brand-red); border-color: var(--brand-red); }
+.db-t2 .tm-dispatch-banner .tm-d-row button:focus-visible,
+.db-t2 .db-close:focus-visible { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
+.db-t2 .tm-dispatch-banner .tm-d-sent {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--brand-navy);
+}
+.db-t2 .tm-dispatch-banner .tm-d-err { color: var(--brand-red); font-size: 13px; }
+.db-t2 .db-close { color: var(--muted); }
+.db-t2 .db-close:hover { color: var(--ink); }
+@media (max-width: 720px) {
+  .db-t2 .db-plate { display: none; }
+  .db-t2 .tm-dispatch-banner .tm-d-label { font-size: 17px; }
+  .db-t2 .tm-dispatch-banner .tm-d-row input { min-width: 0; }
+}
+
 /* Keep the footer clear of the pinned banner. */
 body.has-dispatch-banner { padding-bottom: 96px; }
 

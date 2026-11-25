@@ -21,12 +21,18 @@ type State = 'idle' | 'modal' | 'submitting' | 'sent' | 'error'
 // `onSubscribed` lets a host (DispatchBanner) retire itself once the signup
 // lands. `variant` only tags the form so the banner can lay it out on one row —
 // the two-step flow and the POST are identical either way.
+// `copy` lets a host replace the head lines (the banner's newspaper take,
+// 2026-11-25); `note: null` drops the second line. Defaults are the originals.
 export default function DispatchForm({
   onSubscribed,
   variant = 'card',
+  copy,
+  direct = false,
 }: {
   onSubscribed?: () => void
   variant?: 'card' | 'banner'
+  direct?: boolean
+  copy?: { label?: string; note?: string | null; sent?: string; placeholder?: string }
 } = {}) {
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -39,26 +45,31 @@ export default function DispatchForm({
     e.preventDefault()
     setError('')
     if (!EMAIL_RE.test(email.trim())) {
-      setError('Please enter a valid email address.')
+      setError(direct ? 'Enter a valid email address.' : 'Please enter a valid email address.')
       setState('error')
       return
     }
+    // `direct` (the banner's take 2, Lucas 2026-11-25): no "Tell us who you
+    // are" step, the email alone signs them up, as the pop-up does. The API
+    // treats names and role as optional.
+    if (direct) { void complete(); return }
     setState('modal')
   }
 
   async function complete() {
     if (state === 'submitting') return
-    if (!firstName.trim() || !lastName.trim()) {
+    if (!direct && (!firstName.trim() || !lastName.trim())) {
       setError('Please enter your first and last name.')
       return
     }
     setState('submitting')
     setError('')
+    const failed = direct ? 'We couldn’t sign you up just now. Try again in a minute.' : 'Something went wrong. Please try again.'
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify(direct ? { email: email.trim() } : {
           email: email.trim(),
           first_name: firstName.trim(),
           last_name: lastName.trim(),
@@ -67,8 +78,8 @@ export default function DispatchForm({
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data?.error || 'Something went wrong. Please try again.')
-        setState('modal')
+        setError(data?.error || failed)
+        setState(direct ? 'error' : 'modal')
         return
       }
       // Matches the default source on /api/subscribe when none is sent.
@@ -77,8 +88,8 @@ export default function DispatchForm({
       setState('sent')
       onSubscribed?.()
     } catch {
-      setError('Something went wrong. Please try again.')
-      setState('modal')
+      setError(failed)
+      setState(direct ? 'error' : 'modal')
     }
   }
 
@@ -90,16 +101,18 @@ export default function DispatchForm({
         noValidate
       >
         <div className="tm-d-head">
-          <span className="tm-d-label">Subscribe to the Friday Dispatch</span>
-          <span className="tm-d-note">
-            One email a week with the best of Atlas Brief.
-          </span>
+          <span className="tm-d-label">{copy?.label ?? 'Subscribe to the Friday Dispatch'}</span>
+          {copy?.note !== null && (
+            <span className="tm-d-note">
+              {copy?.note ?? 'One email a week with the best of Atlas Brief.'}
+            </span>
+          )}
         </div>
         <div className="tm-d-row">
           <input
             type="email"
             name="email"
-            placeholder="name@domain.com"
+            placeholder={copy?.placeholder ?? 'name@domain.com'}
             required
             autoComplete="email"
             aria-label="Email address"
@@ -109,9 +122,11 @@ export default function DispatchForm({
               if (state === 'error') setState('idle')
             }}
           />
-          <button type="submit">Subscribe</button>
+          <button type="submit" disabled={direct && state === 'submitting'}>
+            {direct && state === 'submitting' ? 'Subscribing…' : 'Subscribe'}
+          </button>
         </div>
-        <span className="tm-d-sent">✓ You are on the list.</span>
+        <span className="tm-d-sent">{copy?.sent ?? '✓ You are on the list.'}</span>
         {state === 'error' && (
           <span className="tm-d-err" role="alert">
             {error}
@@ -119,7 +134,7 @@ export default function DispatchForm({
         )}
       </form>
 
-      {(state === 'modal' || state === 'submitting') && (
+      {!direct && (state === 'modal' || state === 'submitting') && (
         <div
           className="tm-modal-overlay"
           role="dialog"

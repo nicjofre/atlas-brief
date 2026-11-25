@@ -496,3 +496,122 @@
 .asm-x:hover { color: var(--ink); }
 .asm-title.asm-title-hand { margin-top: 4px; }
 .asm-hand { margin-top: 0; }
+
+
+/* ===========================================================================
+   2026-11-25 — TAKE 2 (POPUP_TAKE in ArticleSubscribeModal.tsx): a newspaper
+   subscription card. Lucas's beige kept. "Atlas Brief" nameplate centred,
+   set like the nav's wordmark; the 2px ink rule About and Contact open their
+   sections with; then everything left-aligned like a column: navy Times
+   headline, sans text, a labelled field, navy button (red on hover, the
+   site's button rule), a quiet "No thanks". Everything is scoped to .asm-t2,
+   so take 1 above is untouched.
+   =========================================================================== */
+.asm-panel.asm-t2 {
+  max-width: 440px;
+  padding: 26px clamp(22px, 4vw, 34px) 22px;
+  background: #FAF7F1;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  text-align: left;
+  color: var(--ink);
+}
+.asm-t2 .asm-x { top: 8px; right: 10px; color: var(--muted); }
+.asm-t2 .asm-x:hover { color: var(--ink); }
+.asm-t2 .asm-x:focus-visible,
+.asm-t2 .asm-skip:focus-visible,
+.asm-t2 .asm-submit:focus-visible { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
+
+/* The nameplate and its rule. */
+.asm-t2 .asm-plate {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+  text-align: center;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+}
+.asm-t2 .asm-plate em { font-style: normal; color: var(--brand-red); }
+
+.asm-t2 .asm-head {
+  margin: 0 0 8px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--brand-navy);
+  text-wrap: balance;
+}
+.asm-t2 .asm-dek {
+  margin: 0 0 18px;
+  max-width: none;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* The label shows (take 1 hid it), in plain sentence case. */
+.asm-t2 .asm-field { margin-bottom: 10px; }
+.asm-t2 .asm-field span {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 6px;
+  overflow: visible;
+  clip-path: none;
+  display: block;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.asm-t2 .asm-field input {
+  padding: 11px 12px;
+  font-family: var(--sans);
+  font-size: 16px;   /* 16px keeps iOS from zooming on focus */
+  text-align: left;
+  background: #FFFFFF;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+}
+.asm-t2 .asm-field input:focus { outline: 2px solid var(--brand-navy); outline-offset: 0; border-color: var(--brand-navy); }
+
+.asm-t2 .asm-err {
+  margin: 0 0 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--brand-red);
+}
+.asm-t2 .asm-submit {
+  margin-top: 4px;
+  padding: 13px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  background: var(--brand-navy);
+  border: 1px solid var(--brand-navy);
+  border-radius: 0;
+  color: #FFFFFF;
+}
+.asm-t2 .asm-submit:hover { background: var(--brand-red); border-color: var(--brand-red); }
+
+.asm-t2 .asm-skip {
+  width: auto;
+  margin: 12px 0 0;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.asm-t2 .asm-skip:hover { color: var(--ink); text-decoration: underline; }

@@ -14,6 +14,12 @@ import { captureSuppressed, markCaptureDismissed } from '@/lib/subscribe-flag'
 // (email inline -> name/role modal -> one insert) is unchanged. Dismissal and
 // the already-subscribed check reuse the same localStorage flags as
 // ArticleSubscribeBar, so closing it here doesn't get re-asked elsewhere.
+// Which banner shows (2026-11-25). 1 = navy band, red top rule, "Subscribe
+// to the Friday Dispatch"; 2 = the newspaper strip matching the pop-up and
+// the top bar: beige, "Atlas Brief" nameplate, Times line, 2px ink rule.
+// Styles: home.css .db-t2.
+const BANNER_TAKE: 1 | 2 = 2
+
 export default function DispatchBanner() {
   const [mounted, setMounted] = useState(false)
   const [hidden, setHidden] = useState(true)
@@ -39,10 +45,23 @@ export default function DispatchBanner() {
   }
 
   return (
-    <aside className="dispatch-banner" aria-label="Subscribe to the Friday Dispatch">
+    <aside className={`dispatch-banner db-t${BANNER_TAKE}`} aria-label="Subscribe to Atlas Brief">
       <div className="db-inner">
+        {BANNER_TAKE === 2 && <span className="db-plate" aria-hidden="true">Atlas <em>Brief</em></span>}
         {/* Hold the confirmation briefly so the reader sees it, then retire. */}
-        <DispatchForm variant="banner" onSubscribed={() => setTimeout(() => setHidden(true), 2600)} />
+        <DispatchForm
+          variant="banner"
+          onSubscribed={() => setTimeout(() => setHidden(true), 2600)}
+          // Signs up on the email alone, no "Tell us who you are" step
+          // (Lucas, 2026-11-25), like the pop-up.
+          direct={BANNER_TAKE === 2}
+          copy={BANNER_TAKE === 2 ? {
+            label: 'Get the Brief every Friday.',
+            note: null,
+            placeholder: 'Email address',
+            sent: 'You’re subscribed. The next Brief arrives Friday morning.',
+          } : undefined}
+        />
         <button type="button" className="db-close" onClick={dismiss} aria-label="Dismiss">
           &times;
         </button>

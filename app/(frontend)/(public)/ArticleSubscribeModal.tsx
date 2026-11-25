@@ -16,6 +16,25 @@ import './subscribe-modal.css'
 
 import { EMAIL_RE } from '@/lib/email-address'
 
+// Which pop-up shows (2026-11-25). 1 = the handwritten headline card
+// (2026-10-12); 2 = a newspaper subscription card: "Atlas Brief" nameplate,
+// 2px ink rule, Times headline, left-aligned, Lucas's beige kept. Styles:
+// subscribe-modal.css .asm-t2 (end of file).
+const POPUP_TAKE: 1 | 2 = 2
+
+// The words for each take. Take 2's are the 2026-11-25 rewrite.
+const COPY = POPUP_TAKE === 2
+  ? {
+      badEmail: 'Enter a valid email address, like name@example.com.',
+      failed: 'We couldn’t sign you up just now. Try again in a minute.',
+      skip: 'No thanks',
+    }
+  : {
+      badEmail: 'Please enter a valid email address.',
+      failed: 'Something went wrong. Please try again.',
+      skip: 'No thanks, keep reading',
+    }
+
 // The trigger measures progress through the BODY, not the page. These pieces
 // carry a lot above the prose (crumb, kicker, headline, deck, byline, hero,
 // caption, dealstats), so a reader can be halfway down the document having
@@ -237,7 +256,7 @@ export default function ArticleSubscribeModal({
     e.preventDefault()
     if (state === 'submitting') return
     if (!EMAIL_RE.test(email.trim())) {
-      setError('Please enter a valid email address.')
+      setError(COPY.badEmail)
       return
     }
     setState('submitting')
@@ -257,7 +276,7 @@ export default function ArticleSubscribeModal({
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data?.error || 'Something went wrong. Please try again.')
+        setError(data?.error || COPY.failed)
         setState('idle')
         return
       }
@@ -269,7 +288,7 @@ export default function ArticleSubscribeModal({
       }
       setState('sent')
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError(COPY.failed)
       setState('idle')
     }
   }
@@ -287,7 +306,7 @@ export default function ArticleSubscribeModal({
     >
       <div
         ref={panelRef}
-        className="asm-panel"
+        className={`asm-panel asm-t${POPUP_TAKE}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="asm-title"
@@ -296,7 +315,53 @@ export default function ArticleSubscribeModal({
           &times;
         </button>
 
-        {state === 'sent' ? (
+        {POPUP_TAKE === 2 ? (
+          <>
+            {/* The nameplate and the 2px rule every section on About and
+                Contact opens with. Decorative: the dialog is named by the
+                headline below. */}
+            <p className="asm-plate" aria-hidden="true">Atlas <em>Brief</em></p>
+            {state === 'sent' ? (
+              <>
+                <h2 id="asm-title" className="asm-head">You&rsquo;re subscribed.</h2>
+                <p className="asm-dek">The next Brief arrives Friday morning.</p>
+                <button type="button" className="asm-skip" onClick={() => close('close')}>
+                  Back to the page
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 id="asm-title" className="asm-head">Get the Brief every Friday.</h2>
+                <p className="asm-dek">
+                  Notable trades from The Tape and David Safai&rsquo;s latest
+                  Owner&rsquo;s Notes, in one email a week.
+                </p>
+                <form onSubmit={submit} noValidate>
+                  <label className="asm-field">
+                    <span>Email address</span>
+                    <input
+                      ref={emailRef}
+                      type="email"
+                      value={email}
+                      onChange={e => { setEmail(e.target.value); if (error) setError('') }}
+                      autoComplete="email"
+                      maxLength={254}
+                    />
+                  </label>
+                  {error && <p className="asm-err" role="alert">{error}</p>}
+                  <button type="submit" className="asm-submit" disabled={busy}>
+                    {busy ? 'Subscribing…' : 'Subscribe'}
+                  </button>
+                </form>
+                {/* "No thanks" removed (Lucas, 2026-11-25): the ×, Escape and
+                    a click outside still close it. Was:
+                    <button type="button" className="asm-skip" onClick={() => !busy && close('skip')}>
+                      {COPY.skip}
+                    </button> */}
+              </>
+            )}
+          </>
+        ) : state === 'sent' ? (
           <>
             <p className={`asm-hand ${hand.className}`}>You&rsquo;re in.</p>
             <h2 id="asm-title" className="asm-title">Done. You&rsquo;re on the list.</h2>
